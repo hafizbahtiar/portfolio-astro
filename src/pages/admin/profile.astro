@@ -2,7 +2,7 @@
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
 import { profileService } from "../../lib/profile";
 
-const profile = await profileService.getProfile();
+const profile = await profileService.getOwnerProfile();
 ---
 
 <PrivateLayout title="Admin Profile">
@@ -142,6 +142,18 @@ const profile = await profileService.getProfile();
                   class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
                 />
               </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-400"
+                  >Avatar URL</label
+                >
+                <input
+                  type="text"
+                  name="avatarUrl"
+                  value={profile?.avatarUrl}
+                  placeholder="https://"
+                  class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+                />
+              </div>
             </div>
 
             <div class="space-y-2">
@@ -195,6 +207,28 @@ const profile = await profileService.getProfile();
                     class="w-full bg-gray-900/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
                   />
                 </div>
+                <div class="relative">
+                  <span
+                    class="absolute left-3 top-2.5 text-gray-500 pointer-events-none"
+                  >
+                    <svg
+                      class="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                      ></path>
+                    </svg>
+                  </span>
+                  <input
+                    type="url"
+                    name="twitterUrl"
+                    value={profile?.twitterUrl}
+                    placeholder="X (Twitter) URL"
+                    class="w-full bg-gray-900/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+                  />
+                </div>
               </div>
             </div>
           </form>
@@ -213,6 +247,21 @@ const profile = await profileService.getProfile();
   const form = document.getElementById(
     "profile-form",
   ) as HTMLFormElement | null;
+  const avatarInput = document.querySelector(
+    'input[name="avatarUrl"]',
+  ) as HTMLInputElement | null;
+  const avatarImg = document.querySelector(
+    ".group img",
+  ) as HTMLImageElement | null;
+
+  if (avatarInput && avatarImg) {
+    avatarInput.addEventListener("input", (e) => {
+      const url = (e.target as HTMLInputElement).value;
+      if (url) {
+        avatarImg.src = url;
+      }
+    });
+  }
 
   saveBtn?.addEventListener("click", async () => {
     if (!form || !saveBtn) return;
