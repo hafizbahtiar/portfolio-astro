@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@layer base {
+    body {
+        @apply font-sans antialiased text-gray-100 bg-gray-950;
+    }
+}
+
+@layer components {
+
+    /* Layout */
+    .container-main {
+        @apply max-w-7xl mx-auto px-4 md:px-6 lg:px-8;
+    }
+
+    .section-padding {
+        @apply py-16 md:py-24;
+    }
+
+    /* Typography */
+    .heading-gradient {
+        @apply text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500;
+    }
+
+    .section-title {
+        @apply text-3xl md:text-4xl font-bold mb-6 text-white;
+    }
+
+    .text-body {
+        @apply text-lg text-gray-400 leading-relaxed;
+    }
+
+    /* Buttons */
+    .btn {
+        @apply inline-flex items-center justify-center px-8 py-3.5 rounded-lg font-semibold transition-all transform duration-200;
+    }
+
+    .btn-primary {
+        @apply bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-900/50 hover:shadow-indigo-900/70 hover:-translate-y-0.5;
+    }
+
+    .btn-secondary {
+        @apply bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 hover:border-gray-600 shadow-sm hover:shadow;
+    }
+
+    .btn-text {
+        @apply inline-flex items-center text-cyan-400 font-medium hover:text-cyan-300 transition-colors;
+    }
+
+    /* Cards */
+    .card {
+        @apply bg-gray-900/50 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md hover:shadow-indigo-900/20 transition-all duration-300 border border-gray-800 overflow-hidden;
+    }
+
+    .card-hover {
+        @apply transition-transform duration-500 group-hover:scale-105;
+    }
+
+    /* Badges & Tags */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    .badge-indigo {
+        @apply bg-indigo-900/30 text-indigo-300 border border-indigo-800;
+    }
+
+    .badge-gray {
+        @apply px-3 py-1 bg-gray-800 text-gray-300 rounded-md text-sm font-medium border border-gray-700;
+    }
+}
+
+@layer utilities {
+    .glass-nav {
+        @apply bg-gray-950/80 backdrop-blur-md border-b border-gray-800;
+    }
+
+    .scroll-offset {
+        @apply scroll-mt-24;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .animate-fade-in-up {
+        opacity: 0;
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+}

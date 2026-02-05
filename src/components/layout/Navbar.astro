@@ -1,0 +1,239 @@
+---
+const links = [
+    { text: "About", href: "/#about" },
+    { text: "Projects", href: "/projects" },
+    { text: "Skills", href: "/#skills" },
+    { text: "Contact", href: "/#contact" },
+];
+---
+
+<nav
+    id="main-nav"
+    class="fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out py-6 border-b border-transparent"
+>
+    <div
+        class="container-main flex flex-wrap items-center justify-between px-4 transition-all duration-300"
+        id="nav-container"
+    >
+        <a
+            href="/"
+            class="flex items-center space-x-3 rtl:space-x-reverse group"
+        >
+            <span
+                class="self-center text-2xl font-bold whitespace-nowrap heading-gradient group-hover:scale-105 transition-transform"
+            >
+                Hafiz.dev
+            </span>
+        </a>
+
+        <button
+            data-collapse-toggle="navbar-default"
+            type="button"
+            class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-400 rounded-lg md:hidden hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-gray-700 transition-colors"
+            aria-controls="navbar-default"
+            aria-expanded="false"
+            id="navbar-toggle"
+        >
+            <span class="sr-only">Open main menu</span>
+            <svg
+                class="w-5 h-5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 17 14"
+            >
+                <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M1 1h15M1 7h15M1 13h15"></path>
+            </svg>
+        </button>
+
+        <div
+            class="hidden w-full md:block md:w-auto absolute md:relative top-full left-0 bg-gray-900/95 backdrop-blur-xl md:bg-transparent border-b md:border-none border-gray-800 shadow-lg md:shadow-none mt-4 md:mt-0 rounded-2xl md:rounded-none overflow-hidden md:overflow-visible transition-all"
+            id="navbar-default"
+        >
+            <ul
+                class="font-medium flex flex-col p-4 md:p-0 border border-gray-800/50 md:border-0 rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:bg-transparent"
+            >
+                {
+                    links.map((link) => (
+                        <li>
+                            <a
+                                href={link.href}
+                                class="block py-2 px-3 text-gray-300 rounded hover:bg-white/10 md:hover:bg-transparent md:border-0 md:hover:text-cyan-400 md:p-0 transition-colors duration-200"
+                            >
+                                {link.text}
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    /* Tech Animations */
+    @keyframes tech-pulse {
+        0% {
+            border-color: rgba(6, 182, 212, 0.1);
+            box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
+        }
+        20% {
+            border-color: rgba(6, 182, 212, 0.8);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+        100% {
+            border-color: rgba(6, 182, 212, 0.3);
+            box-shadow:
+                0 10px 40px -10px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(6, 182, 212, 0.1) inset;
+        }
+    }
+
+    @keyframes sheen {
+        0% {
+            left: -150%;
+            opacity: 0;
+        }
+        1% {
+            opacity: 1;
+        }
+        40% {
+            left: 150%;
+            opacity: 1;
+        }
+        100% {
+            left: 150%;
+            opacity: 0;
+        }
+    }
+
+    /* Floating Nav State */
+    nav.floating-nav {
+        padding-top: 0;
+        padding-bottom: 0;
+        top: 1.5rem;
+    }
+
+    nav.floating-nav #nav-container {
+        background-color: rgba(
+            10,
+            15,
+            30,
+            0.85
+        ); /* Slightly darker/bluer base */
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-width: 1px;
+
+        /* Tech border styles */
+        border-color: rgba(6, 182, 212, 0.3); /* Cyan hint */
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+
+        border-radius: 9999px;
+        padding: 0.75rem 2rem;
+        max-width: 60rem;
+        margin-left: auto;
+        margin-right: auto;
+
+        /* Animation properties */
+        position: relative;
+        overflow: hidden;
+        animation: tech-pulse 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    /* Scanner/Sheen Effect */
+    nav.floating-nav #nav-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -150%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(6, 182, 212, 0.05) 40%,
+            rgba(6, 182, 212, 0.3) 50%,
+            rgba(6, 182, 212, 0.05) 60%,
+            transparent 100%
+        );
+        transform: skewX(-25deg);
+        pointer-events: none;
+        animation: sheen 4s ease-in-out infinite;
+        animation-delay: 0.5s; /* Wait for entry animation */
+    }
+
+    /* Mobile Menu adjustments when floating */
+    nav.floating-nav #navbar-default:not(.hidden) {
+        margin-top: 1.5rem;
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        background-color: rgba(17, 24, 39, 0.95);
+        box-shadow:
+            0 20px 25px -5px rgba(0, 0, 0, 0.1),
+            0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+</style>
+
+<script>
+    const nav = document.getElementById("main-nav");
+    const toggleBtn = document.getElementById("navbar-toggle");
+    const navbar = document.getElementById("navbar-default");
+    let isMenuOpen = false;
+
+    // Scroll Handler
+    function handleScroll() {
+        if (!nav) return;
+
+        if (window.scrollY > 50) {
+            nav.classList.add("floating-nav");
+            // When floating, the nav container behaves differently
+            // We ensure the inner container gets the pill shape
+        } else {
+            nav.classList.remove("floating-nav");
+        }
+    }
+
+    window.addEventListener("scroll", handleScroll);
+
+    // Initial check
+    handleScroll();
+
+    // Toggle Menu
+    toggleBtn?.addEventListener("click", () => {
+        isMenuOpen = !isMenuOpen;
+        navbar?.classList.toggle("hidden");
+
+        // Optional: Animate icon
+        toggleBtn.setAttribute("aria-expanded", isMenuOpen.toString());
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (e) => {
+        if (
+            isMenuOpen &&
+            navbar &&
+            toggleBtn &&
+            !navbar.contains(e.target as Node) &&
+            !toggleBtn.contains(e.target as Node)
+        ) {
+            navbar.classList.add("hidden");
+            isMenuOpen = false;
+            toggleBtn.setAttribute("aria-expanded", "false");
+        }
+    });
+
+    // Close menu when clicking a link
+    navbar?.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+            navbar.classList.add("hidden");
+            isMenuOpen = false;
+        });
+    });
+</script>

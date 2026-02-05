@@ -1,0 +1,245 @@
+---
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  label: string;
+  name: string;
+  options: Option[];
+  placeholder?: string;
+  value?: string;
+  class?: string;
+}
+
+const {
+  label,
+  name,
+  options,
+  placeholder = "Select option",
+  value = "",
+  class: className = "",
+} = Astro.props;
+---
+
+<div class={`tech-dropdown-container space-y-2 ${className}`} data-name={name}>
+  <label
+    class="block text-sm font-medium text-gray-400 font-mono tracking-wide"
+  >
+    {`// ${label}`}
+  </label>
+  <div class="relative">
+    <input type="hidden" name={name} value={value} class="dropdown-input" />
+
+    <button
+      type="button"
+      class="dropdown-trigger w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-left text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all flex justify-between items-center group hover:border-cyan-500/50"
+    >
+      <span
+        class="selected-text font-mono text-sm text-gray-300 group-hover:text-cyan-400 transition-colors truncate"
+      >
+        {options.find((opt) => opt.value === value)?.label || placeholder}
+      </span>
+      <div
+        class="flex items-center text-gray-500 group-hover:text-cyan-500 transition-colors"
+      >
+        <span
+          class="mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity font-mono hidden sm:inline-block"
+          >[SELECT]</span
+        >
+        <svg
+          class="w-4 h-4 transform transition-transform duration-200"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </button>
+
+    <div
+      class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl transform origin-top transition-all duration-200"
+    >
+      <ul class="max-h-60 overflow-y-auto py-1 custom-scrollbar">
+        {
+          options.map((option) => (
+            <li>
+              <button
+                type="button"
+                class="dropdown-item w-full text-left px-4 py-2 text-sm font-mono text-gray-300 hover:bg-cyan-900/20 hover:text-cyan-400 transition-colors flex items-center justify-between group"
+                data-value={option.value}
+              >
+                <span>{option.label}</span>
+                <span class="opacity-0 group-hover:opacity-100 text-cyan-500 font-bold">
+                  _
+                </span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</div>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.5);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+</style>
+
+<script>
+  function setupDropdowns() {
+    const containers = document.querySelectorAll(".tech-dropdown-container");
+
+    containers.forEach((container) => {
+      const input = container.querySelector(
+        ".dropdown-input",
+      ) as HTMLInputElement;
+      const trigger = container.querySelector(
+        ".dropdown-trigger",
+      ) as HTMLButtonElement;
+      const menu = container.querySelector(".dropdown-menu") as HTMLDivElement;
+      const items = container.querySelectorAll(".dropdown-item");
+      const selectedText = container.querySelector(
+        ".selected-text",
+      ) as HTMLSpanElement;
+      const arrow = trigger.querySelector("svg");
+
+      let isOpen = false;
+
+      function toggleDropdown() {
+        isOpen = !isOpen;
+        if (isOpen) {
+          menu.classList.remove("hidden");
+          // Small animation delay for smooth entrance
+          requestAnimationFrame(() => {
+            menu.classList.add("opacity-100", "scale-100");
+            menu.classList.remove("opacity-0", "scale-95");
+          });
+          arrow?.classList.add("rotate-180");
+          trigger.classList.add(
+            "border-cyan-500",
+            "ring-2",
+            "ring-cyan-500/50",
+          );
+        } else {
+          menu.classList.add("opacity-0", "scale-95");
+          menu.classList.remove("opacity-100", "scale-100");
+          setTimeout(() => {
+            if (!isOpen) menu.classList.add("hidden");
+          }, 200);
+          arrow?.classList.remove("rotate-180");
+          trigger.classList.remove(
+            "border-cyan-500",
+            "ring-2",
+            "ring-cyan-500/50",
+          );
+        }
+      }
+
+      function closeDropdown() {
+        isOpen = false;
+        menu.classList.add("opacity-0", "scale-95");
+        menu.classList.remove("opacity-100", "scale-100");
+        setTimeout(() => {
+          if (!isOpen) menu.classList.add("hidden");
+        }, 200);
+        arrow?.classList.remove("rotate-180");
+        trigger.classList.remove(
+          "border-cyan-500",
+          "ring-2",
+          "ring-cyan-500/50",
+        );
+      }
+
+      // Toggle click
+      trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        // Close other dropdowns
+        document
+          .querySelectorAll(".tech-dropdown-container .dropdown-menu")
+          .forEach((el) => {
+            if (el !== menu && !el.classList.contains("hidden")) {
+              // Logic to close others could be here, but click outside handles it mostly
+              el.classList.add("hidden");
+              // We'd need to reset their visual state too.
+              // For simplicity, we rely on the click outside listener mostly.
+            }
+          });
+        toggleDropdown();
+      });
+
+      // Item selection
+      items.forEach((item) => {
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const value = (item as HTMLButtonElement).dataset.value || "";
+          const label = item.querySelector("span")?.textContent || "";
+
+          input.value = value;
+          selectedText.textContent = label;
+          selectedText.classList.add("text-cyan-400");
+
+          // Dispatch change event for external listeners
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+
+          closeDropdown();
+        });
+      });
+
+      // Click outside
+      document.addEventListener("click", (e) => {
+        if (!container.contains(e.target as Node)) {
+          closeDropdown();
+        }
+      });
+
+      // Listen for external updates to the input value (e.g. from edit page population)
+      input.addEventListener("change", () => {
+        const newValue = input.value;
+        // Find label for this value
+        let newLabel = input.getAttribute("placeholder") || "Select option";
+
+        // We need to look up the label from the items since we don't have the options prop in JS
+        // But the items are right there in the DOM
+        const matchingItem = Array.from(items).find(
+          (item) => (item as HTMLButtonElement).dataset.value === newValue,
+        );
+        if (matchingItem) {
+          newLabel =
+            matchingItem.querySelector("span")?.textContent || newLabel;
+          selectedText.classList.add("text-cyan-400");
+        } else {
+          selectedText.classList.remove("text-cyan-400");
+        }
+
+        selectedText.textContent = newLabel;
+      });
+    });
+  }
+
+  // Initialize
+  setupDropdowns();
+
+  // Re-run on view transitions if enabled, or just safe to run again?
+  // It attaches listeners. We should probably handle potential multiple calls if SPA navigation is used.
+  // But Astro MPA usually refreshes.
+  document.addEventListener("astro:page-load", setupDropdowns);
+</script>

@@ -1,0 +1,346 @@
+---
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import TechDropdown from "../../../components/ui/TechDropdown.astro";
+
+const typeOptions = [
+  { value: "personal", label: "Personal" },
+  { value: "business", label: "Business" },
+  { value: "work", label: "Work" },
+];
+
+const statusOptions = [
+  { value: "completed", label: "Completed" },
+  { value: "in-progress", label: "In Progress" },
+  { value: "maintained", label: "Maintained" },
+];
+
+const imageVariantOptions = [
+  { value: "banner", label: "Banner (Default)" },
+  { value: "logo", label: "Logo" },
+  { value: "width-banner", label: "Full Width Banner" },
+];
+---
+
+<PrivateLayout title="New Project">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-white tracking-tight">New Project</h1>
+      <a
+        href="/admin/projects"
+        class="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        BACK TO LIST
+      </a>
+    </div>
+
+    <form id="project-form" class="space-y-8">
+      <!-- Basic Info -->
+      <div
+        class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6"
+      >
+        <h3
+          class="text-lg font-bold text-white mb-6 border-b border-gray-700 pb-4"
+        >
+          Basic Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400">Title</label>
+            <input
+              type="text"
+              name="title"
+              required
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400">Slug</label>
+            <input
+              type="text"
+              name="slug"
+              required
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+          <div class="space-y-2 md:col-span-2">
+            <label class="block text-sm font-medium text-gray-400"
+              >Short Description</label
+            >
+            <textarea
+              name="description"
+              rows="2"
+              required
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all resize-none"
+            ></textarea>
+          </div>
+          <div class="space-y-2 md:col-span-2">
+            <label class="block text-sm font-medium text-gray-400"
+              >Full Description (Markdown supported)</label
+            >
+            <textarea
+              name="fullDescription"
+              rows="6"
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div
+        class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6"
+      >
+        <h3
+          class="text-lg font-bold text-white mb-6 border-b border-gray-700 pb-4"
+        >
+          Project Details
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="space-y-2">
+            <TechDropdown
+              label="Type"
+              name="projectType"
+              options={typeOptions}
+              placeholder="Select Type"
+            />
+          </div>
+          <div class="space-y-2">
+            <TechDropdown
+              label="Status"
+              name="status"
+              options={statusOptions}
+              placeholder="Select Status"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400">Year</label>
+            <input
+              type="number"
+              name="year"
+              value={new Date().getFullYear()}
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400">Role</label>
+            <input
+              type="text"
+              name="role"
+              placeholder="e.g. Lead Developer"
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400"
+              >Display Order</label
+            >
+            <input
+              type="number"
+              name="displayOrder"
+              value="0"
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+          <div class="space-y-2 flex items-center pt-8">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" name="featured" class="sr-only peer" />
+              <div
+                class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"
+              >
+              </div>
+              <span class="ml-3 text-sm font-medium text-gray-400"
+                >Featured Project</span
+              >
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Links & Media -->
+      <div
+        class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6"
+      >
+        <h3
+          class="text-lg font-bold text-white mb-6 border-b border-gray-700 pb-4"
+        >
+          Links & Media
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400"
+              >Image URL</label
+            >
+            <input
+              type="text"
+              name="imageUrl"
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+          <div class="space-y-2">
+            <TechDropdown
+              label="Image Variant"
+              name="imageVariant"
+              options={imageVariantOptions}
+              placeholder="Select Variant"
+              value="banner"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400"
+              >Live URL</label
+            >
+            <input
+              type="url"
+              name="liveUrl"
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400"
+              >GitHub URL</label
+            >
+            <input
+              type="url"
+              name="githubUrl"
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags & Tech -->
+      <div
+        class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6"
+      >
+        <h3
+          class="text-lg font-bold text-white mb-6 border-b border-gray-700 pb-4"
+        >
+          Taxonomy
+        </h3>
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400"
+              >Technologies (comma separated)</label
+            >
+            <input
+              type="text"
+              name="technologies"
+              placeholder="React, Node.js, TypeScript"
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-400"
+              >Tags (comma separated)</label
+            >
+            <input
+              type="text"
+              name="tags"
+              placeholder="Web, Mobile, SaaS"
+              class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-4">
+        <button
+          type="submit"
+          id="submit-btn"
+          class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-lg transition-colors shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-2"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          CREATE PROJECT
+        </button>
+      </div>
+    </form>
+  </div>
+</PrivateLayout>
+
+<script>
+  import { projectsService } from "../../../lib/projects";
+  import { setupFormGuard } from "../../../lib/form-guard";
+
+  const form = document.getElementById("project-form") as HTMLFormElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+
+  let formGuard: ReturnType<typeof setupFormGuard> | null = null;
+
+  if (form) {
+    formGuard = setupFormGuard(form);
+  }
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!submitBtn) return;
+
+    const originalContent = submitBtn.innerHTML;
+    submitBtn.innerHTML = "SAVING...";
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+    const data: any = {};
+
+    // Process form data
+    formData.forEach((value, key) => {
+      if (key === "technologies" || key === "tags") {
+        data[key] = (value as string)
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      } else if (key === "year" || key === "displayOrder") {
+        data[key] = Number(value);
+      } else if (key === "featured") {
+        data[key] = true;
+      } else {
+        data[key] = value;
+      }
+    });
+
+    // Handle unchecked checkbox (formData doesn't include it)
+    if (!formData.has("featured")) {
+      data.featured = false;
+    }
+
+    try {
+      const result = await projectsService.createProject(data);
+      if (result) {
+        // Clear guard before redirecting
+        formGuard?.updateInitialState();
+        alert("Project created successfully!");
+        window.location.href = "/admin/projects";
+      } else {
+        throw new Error("Failed to create project");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to create project. Please try again.");
+    } finally {
+      submitBtn.innerHTML = originalContent;
+      submitBtn.disabled = false;
+    }
+  });
+</script>

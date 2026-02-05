@@ -1,0 +1,22 @@
+---
+import CoreLayout from "./CoreLayout.astro";
+import Navbar from "../components/layout/Navbar.astro";
+import Footer from "../components/layout/Footer.astro";
+import Background from "../components/layout/Background.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<CoreLayout title={title} description={description}>
+  <Background />
+  <Navbar />
+  <main class="flex-grow pt-20">
+    <slot />
+  </main>
+  <Footer />
+</CoreLayout>

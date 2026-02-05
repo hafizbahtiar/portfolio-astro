@@ -1,0 +1,148 @@
+---
+
+---
+
+<div
+  id="unsaved-changes-modal"
+  class="fixed inset-0 z-50 hidden"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <!-- Backdrop -->
+  <div
+    class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity opacity-0"
+    id="modal-backdrop"
+  >
+  </div>
+
+  <div class="fixed inset-0 z-10 overflow-y-auto">
+    <div
+      class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
+    >
+      <!-- Modal Panel -->
+      <div
+        class="relative transform overflow-hidden rounded-lg bg-gray-900 border border-cyan-500/30 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        id="modal-panel"
+      >
+        <div class="bg-gray-800/50 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div
+              class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-cyan-900/30 sm:mx-0 sm:h-10 sm:w-10"
+            >
+              <svg
+                class="h-6 w-6 text-cyan-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                ></path>
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+              <h3
+                class="text-base font-semibold leading-6 text-white"
+                id="modal-title"
+              >
+                Unsaved Changes
+              </h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-300">
+                  You have unsaved changes. Are you sure you want to leave? Your
+                  changes will be lost.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-gray-900/50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2"
+        >
+          <button
+            type="button"
+            id="modal-confirm-btn"
+            class="inline-flex w-full justify-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 sm:ml-3 sm:w-auto transition-colors"
+          >
+            Leave Page
+          </button>
+          <button
+            type="button"
+            id="modal-cancel-btn"
+            class="mt-3 inline-flex w-full justify-center rounded-md bg-transparent border border-gray-600 px-3 py-2 text-sm font-semibold text-gray-300 shadow-sm hover:bg-gray-800 sm:mt-0 sm:w-auto transition-colors"
+          >
+            Stay
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Simple modal logic to be controlled externally
+  const modal = document.getElementById("unsaved-changes-modal");
+  const backdrop = document.getElementById("modal-backdrop");
+  const panel = document.getElementById("modal-panel");
+  const confirmBtn = document.getElementById("modal-confirm-btn");
+  const cancelBtn = document.getElementById("modal-cancel-btn");
+
+  let resolvePromise: ((value: boolean) => void) | null = null;
+
+  function show() {
+    if (!modal || !backdrop || !panel) return Promise.resolve(false);
+
+    modal.classList.remove("hidden");
+    // Animation frame for transition
+    requestAnimationFrame(() => {
+      backdrop.classList.remove("opacity-0");
+      panel.classList.remove(
+        "opacity-0",
+        "translate-y-4",
+        "sm:translate-y-0",
+        "sm:scale-95",
+      );
+    });
+
+    return new Promise<boolean>((resolve) => {
+      resolvePromise = resolve;
+    });
+  }
+
+  function hide() {
+    if (!modal || !backdrop || !panel) return;
+
+    backdrop.classList.add("opacity-0");
+    panel.classList.add(
+      "opacity-0",
+      "translate-y-4",
+      "sm:translate-y-0",
+      "sm:scale-95",
+    );
+
+    setTimeout(() => {
+      modal.classList.add("hidden");
+    }, 200); // Match transition duration
+  }
+
+  confirmBtn?.addEventListener("click", () => {
+    hide();
+    if (resolvePromise) resolvePromise(true);
+  });
+
+  cancelBtn?.addEventListener("click", () => {
+    hide();
+    if (resolvePromise) resolvePromise(false);
+  });
+
+  // Expose to window for the utility to use easily
+  (window as any).unsavedChangesModal = {
+    show,
+    hide,
+  };
+</script>

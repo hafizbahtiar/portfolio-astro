@@ -1,0 +1,16 @@
+---
+import PublicLayout from "./PublicLayout.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<PublicLayout title={title} description={description}>
+  <div class="container-main py-24 md:py-32 min-h-screen">
+    <slot />
+  </div>
+</PublicLayout>

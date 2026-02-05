@@ -1,0 +1,26 @@
+// Projects service types - matching frontend interface
+export type ImageVariant = 'banner' | 'logo' | 'width-banner';
+export type ProjectType = 'personal' | 'business' | 'work';
+
+export interface Project {
+    id: number;
+    slug: string;
+    title: string;
+    description: string;
+    fullDescription?: string;
+    imageUrl: string;
+    imageVariant?: ImageVariant;
+    technologies: string[]; // Array of technology names
+    githubUrl: string;
+    liveUrl: string;
+    year: number;
+    role: string;
+    projectType: ProjectType;
+    features?: string[]; // Array of feature descriptions
+    tags?: string[]; // Array of tag names
+    status?: 'completed' | 'in-progress' | 'maintained';
+    featured: boolean;
+    displayOrder: number;
+    createdAt: string;
+    updatedAt: string;
+}

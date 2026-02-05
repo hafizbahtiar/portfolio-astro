@@ -1,0 +1,43 @@
+---
+import ProjectLayout from "../../layouts/ProjectLayout.astro";
+import ProjectCard from "../../components/project/ProjectCard.astro";
+import { getProjects } from "../../lib/projects";
+
+const projects = await getProjects();
+---
+
+<ProjectLayout
+  title="Projects - Hafiz Bahtiar"
+  description="Explore my portfolio of projects ranging from mobile apps to web applications."
+>
+  <div class="text-center mb-16 animate-fade-in">
+    <h1 class="text-4xl md:text-5xl font-bold mb-6 heading-gradient">
+      My Projects
+    </h1>
+    <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+      A collection of my work, featuring mobile applications, web platforms, and
+      full-stack solutions. Each project represents a unique challenge and
+      solution.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {
+      projects.map((project, index) => (
+        <div
+          class="animate-fade-in-up"
+          style={`animation-delay: ${index * 100}ms`}
+        >
+          <ProjectCard
+            title={project.title}
+            description={project.description}
+            imageUrl={project.imageUrl}
+            imageVariant={project.imageVariant}
+            tags={project.tags || []}
+            link={`/projects/${project.slug}`}
+          />
+        </div>
+      ))
+    }
+  </div>
+</ProjectLayout>
