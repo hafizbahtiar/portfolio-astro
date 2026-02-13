@@ -17,6 +17,29 @@ export interface ContactResponse {
     error?: string;
 }
 
+export interface OwnerContact {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string;
+    subject: string;
+    message: string;
+    status: 'NEW' | 'READ' | 'REPLIED' | 'ARCHIVED';
+    source: 'FORM' | 'EMAIL' | 'SOCIAL' | 'OTHER';
+    readAt?: string;
+    repliedAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ContactStats {
+    total: number;
+    new: number;
+    read: number;
+    replied: number;
+    archived: number;
+}
+
 export class ContactService extends ApiClient {
     constructor() {
         super(API_BASE_URL);
@@ -54,6 +77,15 @@ export class ContactService extends ApiClient {
                 error: 'Network error. Please try again later.'
             };
         }
+    }
+
+    async getOwnerContacts(): Promise<OwnerContact[]> {
+        const result = await this.get<OwnerContact[]>('owner/contact');
+        return result || [];
+    }
+
+    async getContactStats(): Promise<ContactStats | null> {
+        return this.get<ContactStats>('owner/contact/stats');
     }
 }
 

@@ -34,3 +34,18 @@ const { title, description } = Astro.props;
         <UnsavedChangesModal />
     </div>
 </CoreLayout>
+
+<script>
+    import { authService } from "../lib/auth";
+
+    const redirectToLogin = () => {
+        if (!authService.isAuthenticated()) {
+            window.location.replace("/login");
+        }
+    };
+
+    redirectToLogin();
+    window.addEventListener("pageshow", () => {
+        redirectToLogin();
+    });
+</script>

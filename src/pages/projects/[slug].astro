@@ -1,6 +1,7 @@
 ---
 import ProjectLayout from "../../layouts/ProjectLayout.astro";
 import { getProjects } from "../../lib/projects";
+import { TextEditor } from "../../components/ui/TextEditor";
 
 export async function getStaticPaths() {
     const projects = await getProjects();
@@ -252,12 +253,23 @@ const technologies =
 
             <!-- Case Study Tab -->
             <div id="case-study" class="tab-content hidden animate-fade-in">
-                <div class="prose prose-invert prose-lg max-w-none">
-                    <p
-                        class="whitespace-pre-line text-gray-300 leading-relaxed text-lg"
-                    >
-                        {project.description}
-                    </p>
+                <div class="space-y-6">
+                    <div class="flex flex-col gap-1">
+                        <h3 class="text-xl font-bold text-white">
+                            Full Description
+                        </h3>
+                        <p
+                            class="text-xs font-mono uppercase tracking-[0.2em] text-cyan-400/80"
+                        >
+                            Markdown Supported
+                        </p>
+                    </div>
+                    <TextEditor
+                        content={project.description}
+                        editable={false}
+                        showToolbar={false}
+                        client:load
+                    />
 
                     {
                         project.features && project.features.length > 0 && (

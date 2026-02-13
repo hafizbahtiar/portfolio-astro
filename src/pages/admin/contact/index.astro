@@ -1,0 +1,19 @@
+---
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import { ContactsTable } from "../../../components/admin/contact/ContactsTable";
+---
+
+<PrivateLayout title="Contact Inbox">
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div class="space-y-1">
+        <h1 class="text-3xl font-bold text-white tracking-tight">Contact Me</h1>
+        <p class="text-sm text-gray-400 font-mono">
+          Latest messages from visitors
+        </p>
+      </div>
+    </div>
+
+    <ContactsTable client:load />
+  </div>
+</PrivateLayout>

@@ -90,6 +90,30 @@ import Background from "../components/layout/Background.astro";
             </div>
           </div>
 
+          <div id="status-display" class="mb-6 hidden">
+            <div
+              id="status-panel"
+              class="status-panel status-error border border-red-500/30 text-red-300"
+            >
+              <div id="status-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <span id="status-text"
+                >ACCESS_DENIED: Invalid credentials provided.</span
+              >
+            </div>
+          </div>
+
           <!-- Login Form -->
           <form class="space-y-6" id="login-form">
             <div class="space-y-2 group/input">
@@ -194,26 +218,6 @@ import Background from "../components/layout/Background.astro";
               </div>
             </button>
           </form>
-
-          <!-- Status Display -->
-          <div id="status-display" class="mt-6 hidden">
-            <div
-              class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm font-mono flex items-start space-x-2"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 flex-shrink-0"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clip-rule="evenodd"></path>
-              </svg>
-              <span>ACCESS_DENIED: Invalid credentials provided.</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -258,6 +262,47 @@ import Background from "../components/layout/Background.astro";
       background-position: 0% 50%;
     }
   }
+
+  .status-panel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
+    background: rgba(239, 68, 68, 0.08);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.35);
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  .status-show .status-panel {
+    animation: status-in 0.35s ease forwards;
+  }
+
+  .status-success {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: rgb(167, 243, 208);
+  }
+
+  .status-error {
+    background: rgba(239, 68, 68, 0.08);
+  }
+
+  @keyframes status-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 </style>
 
 <script>
@@ -265,7 +310,13 @@ import Background from "../components/layout/Background.astro";
 
   const form = document.getElementById("login-form");
   const statusDisplay = document.getElementById("status-display");
-  const statusText = statusDisplay?.querySelector("span");
+  const statusText = document.getElementById("status-text");
+  const statusPanel = document.getElementById("status-panel");
+  const statusIcon = document.getElementById("status-icon");
+  const submitButton = form?.querySelector(
+    "button",
+  ) as HTMLButtonElement | null;
+  const submitOriginal = submitButton?.innerHTML || "";
 
   // Toggle Password Visibility
   const togglePasswordBtn = document.getElementById("toggle-password");
@@ -300,6 +351,44 @@ import Background from "../components/layout/Background.astro";
     window.location.href = "/admin";
   }
 
+  const resetLoginUI = () => {
+    if (form) {
+      (form as HTMLFormElement).reset();
+    }
+
+    if (submitButton) {
+      submitButton.innerHTML = submitOriginal;
+      submitButton.disabled = false;
+    }
+
+    if (statusDisplay) {
+      statusDisplay.classList.add("hidden");
+      statusDisplay.classList.remove("status-show");
+    }
+
+    if (statusPanel) {
+      statusPanel.classList.remove("status-success");
+      statusPanel.classList.add("status-error");
+    }
+
+    if (statusIcon) {
+      statusIcon.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+        </svg>
+      `;
+    }
+
+    if (statusText) {
+      statusText.textContent = "ACCESS_DENIED: Invalid credentials provided.";
+    }
+  };
+
+  resetLoginUI();
+  window.addEventListener("pageshow", () => {
+    resetLoginUI();
+  });
+
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
@@ -326,16 +415,15 @@ import Background from "../components/layout/Background.astro";
       btn.disabled = true;
     }
 
-    // Hide previous status
     if (statusDisplay) {
       statusDisplay.classList.add("hidden");
+      statusDisplay.classList.remove("status-show");
     }
 
     try {
       const result = await authService.login(email, password);
 
       if (result) {
-        // Success
         if (btn) {
           btn.innerHTML = `
                     <div class="relative bg-green-900/20 text-green-400 px-4 py-3 rounded-lg flex items-center justify-center space-x-2 border border-green-500/30">
@@ -345,6 +433,20 @@ import Background from "../components/layout/Background.astro";
                         <span class="font-mono">ACCESS GRANTED</span>
                     </div>
                  `;
+        }
+        if (statusDisplay && statusText && statusPanel && statusIcon) {
+          statusText.textContent =
+            "ACCESS_GRANTED: Redirecting to dashboard...";
+          statusPanel.classList.remove("status-error");
+          statusPanel.classList.add("status-success");
+          statusIcon.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+          `;
+          statusDisplay.classList.remove("hidden");
+          void statusDisplay.offsetWidth;
+          statusDisplay.classList.add("status-show");
         }
 
         // Redirect after short delay
@@ -361,10 +463,18 @@ import Background from "../components/layout/Background.astro";
         btn.disabled = false;
       }
 
-      if (statusDisplay && statusText) {
+      if (statusDisplay && statusText && statusPanel && statusIcon) {
         statusText.textContent = `ACCESS_DENIED: ${error.message || "Invalid credentials provided."}`;
+        statusPanel.classList.remove("status-success");
+        statusPanel.classList.add("status-error");
+        statusIcon.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+          </svg>
+        `;
         statusDisplay.classList.remove("hidden");
-        statusDisplay.classList.add("animate-pulse");
+        void statusDisplay.offsetWidth;
+        statusDisplay.classList.add("status-show");
       }
     }
   });
