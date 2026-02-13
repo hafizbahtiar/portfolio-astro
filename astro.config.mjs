@@ -7,6 +7,14 @@ import tailwindcss from '@tailwindcss/vite';
 // https://astro.build/config
 export default defineConfig({
   integrations: [react()],
+  image: {
+    domains: [
+      "www.qiubbx.com",
+      "qiubbx.com",
+      "cit.securiforce.net",
+      "eperolehan.dbkl.gov.my"
+    ]
+  },
   vite: {
     plugins: [tailwindcss()],
   },

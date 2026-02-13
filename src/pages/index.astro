@@ -2,7 +2,7 @@
 import PublicLayout from "../layouts/PublicLayout.astro";
 import Hero from "../components/home/Hero.astro";
 import ContactSection from "../components/home/ContactSection.astro";
-import FeaturedProjects from "../components/home/FeaturedProjects";
+import FeaturedProjects from "../components/home/FeaturedProjects.astro";
 
 const skills = [
 	{
@@ -140,7 +140,7 @@ const skills = [
 				</p>
 			</div>
 
-			<FeaturedProjects client:load />
+			<FeaturedProjects />
 
 			<div class="text-center mt-12">
 				<a

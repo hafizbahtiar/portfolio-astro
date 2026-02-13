@@ -2,6 +2,10 @@
 import ProjectLayout from "../../layouts/ProjectLayout.astro";
 import { getProjects } from "../../lib/projects";
 import { TextEditor } from "../../components/ui/TextEditor";
+import { Image } from "astro:assets";
+import jomDapur from "../../assets/projects/jom-dapur.jpg";
+import jdManagement from "../../assets/projects/jd-management.png";
+import invois from "../../assets/projects/invois/invois.png";
 
 export async function getStaticPaths() {
     const projects = await getProjects();
@@ -12,6 +16,16 @@ export async function getStaticPaths() {
 }
 
 const { project } = Astro.props;
+const localImageMap = new Map([
+    ["/images/projects/jom-dapur.jpg", jomDapur],
+    ["/images/projects/jd-management.png", jdManagement],
+    ["/images/projects/invois/invois.png", invois],
+]);
+const resolvedImage =
+    localImageMap.get(project.imageUrl) ?? project.imageUrl ?? undefined;
+const isResolvedString = typeof resolvedImage === "string";
+const resolvedImageUrl = isResolvedString ? resolvedImage : undefined;
+const resolvedImageMeta = isResolvedString ? undefined : resolvedImage;
 
 // Helper to format status
 const formatStatus = (status?: string) => {
@@ -73,23 +87,56 @@ const technologies =
                 (!project.imageVariant ||
                     project.imageVariant === "banner" ||
                     project.imageVariant === "width-banner") &&
-                project.imageUrl ? (
+                resolvedImage ? (
                     <div class="absolute inset-0 z-0 bg-gray-900">
-                        {/* Blurred background for ambiance */}
                         <div class="absolute inset-0 overflow-hidden">
-                            <img
-                                src={project.imageUrl}
-                                alt=""
-                                class="w-full h-full object-cover blur-xl opacity-40 scale-110"
-                            />
+                            {resolvedImageUrl ? (
+                                <Image
+                                    src={resolvedImageUrl}
+                                    alt=""
+                                    width={1200}
+                                    height={480}
+                                    loading="lazy"
+                                    decoding="async"
+                                    fetchpriority="low"
+                                    class="w-full h-full object-cover blur-xl opacity-40 scale-110"
+                                />
+                            ) : (
+                                <Image
+                                    src={resolvedImageMeta!}
+                                    alt=""
+                                    width={1200}
+                                    height={480}
+                                    loading="lazy"
+                                    decoding="async"
+                                    fetchpriority="low"
+                                    class="w-full h-full object-cover blur-xl opacity-40 scale-110"
+                                />
+                            )}
                         </div>
-                        {/* Main image fitted properly */}
-                        <img
-                            src={project.imageUrl}
-                            alt={project.title}
-                            class="relative w-full h-full object-contain z-0 opacity-90"
-                        />
-                        {/* Gradient overlay for text readability */}
+                        {resolvedImageUrl ? (
+                            <Image
+                                src={resolvedImageUrl}
+                                alt={project.title}
+                                width={1200}
+                                height={480}
+                                loading="eager"
+                                decoding="async"
+                                fetchpriority="high"
+                                class="relative w-full h-full object-contain z-0 opacity-90"
+                            />
+                        ) : (
+                            <Image
+                                src={resolvedImageMeta!}
+                                alt={project.title}
+                                width={1200}
+                                height={480}
+                                loading="eager"
+                                decoding="async"
+                                fetchpriority="high"
+                                class="relative w-full h-full object-contain z-0 opacity-90"
+                            />
+                        )}
                         <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-gray-900/20 z-10" />
                     </div>
                 ) : (
@@ -109,13 +156,31 @@ const technologies =
                 class="relative z-10 flex flex-col items-center justify-center"
             >
                 {
-                    project.imageVariant === "logo" && project.imageUrl && (
-                        <img
-                            src={project.imageUrl}
-                            alt={`${project.title} logo`}
-                            class="h-24 w-auto mb-4 drop-shadow-lg"
-                        />
-                    )
+                    project.imageVariant === "logo" &&
+                        resolvedImage &&
+                        (resolvedImageUrl ? (
+                            <Image
+                                src={resolvedImageUrl}
+                                alt={`${project.title} logo`}
+                                width={96}
+                                height={96}
+                                loading="eager"
+                                decoding="async"
+                                fetchpriority="high"
+                                class="h-24 w-auto mb-4 drop-shadow-lg"
+                            />
+                        ) : (
+                            <Image
+                                src={resolvedImageMeta!}
+                                alt={`${project.title} logo`}
+                                width={96}
+                                height={96}
+                                loading="eager"
+                                decoding="async"
+                                fetchpriority="high"
+                                class="h-24 w-auto mb-4 drop-shadow-lg"
+                            />
+                        ))
                 }
                 <h1
                     class="text-4xl md:text-5xl font-bold text-white text-center px-4 drop-shadow-lg tracking-tight"

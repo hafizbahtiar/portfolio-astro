@@ -2,8 +2,21 @@
 import ProjectLayout from "../../layouts/ProjectLayout.astro";
 import ProjectCard from "../../components/project/ProjectCard.astro";
 import { getProjects } from "../../lib/projects";
+import jomDapur from "../../assets/projects/jom-dapur.jpg";
+import jdManagement from "../../assets/projects/jd-management.png";
+import invois from "../../assets/projects/invois/invois.png";
 
 const projects = await getProjects();
+const localImageMap = new Map([
+  ["/images/projects/jom-dapur.jpg", jomDapur],
+  ["/images/projects/jd-management.png", jdManagement],
+  ["/images/projects/invois/invois.png", invois],
+]);
+const eagerCount = 3;
+const resolvedProjects = projects.map((project) => ({
+  ...project,
+  imageUrl: localImageMap.get(project.imageUrl) ?? project.imageUrl,
+}));
 ---
 
 <ProjectLayout
@@ -23,7 +36,7 @@ const projects = await getProjects();
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     {
-      projects.map((project, index) => (
+      resolvedProjects.map((project, index) => (
         <div
           class="animate-fade-in-up"
           style={`animation-delay: ${index * 100}ms`}
@@ -33,6 +46,8 @@ const projects = await getProjects();
             description={project.description}
             imageUrl={project.imageUrl}
             imageVariant={project.imageVariant}
+            imageLoading={index < eagerCount ? "eager" : "lazy"}
+            imageFetchPriority={index < eagerCount ? "high" : "low"}
             tags={project.tags || []}
             link={`/projects/${project.slug}`}
           />

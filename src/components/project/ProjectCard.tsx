@@ -21,12 +21,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <img
               src={imageUrl}
               alt={title}
+              width={80}
+              height={80}
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
               className="w-20 h-20 object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm"
             />
           ) : (
             <img
               src={imageUrl}
               alt={title}
+              width={640}
+              height={192}
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
               className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm max-h-full max-w-full p-2"
             />
           )

@@ -69,6 +69,7 @@
     "postcss": "^8.5.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-phone-number-input": "^3.4.14",
     "tailwindcss": "^4.1.18",
     "y-protocols": "^1.0.7",
     "yjs": "^13.6.29"
