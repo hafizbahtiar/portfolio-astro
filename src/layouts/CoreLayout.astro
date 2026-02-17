@@ -111,6 +111,26 @@ const {
         font-family: "Inter", sans-serif;
       }
     </style>
+    <script>
+      (function () {
+        if (!document?.documentElement) return;
+        const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+        if (!isDesktop) {
+          document.documentElement.dataset.adminSidebar = "closed";
+          return;
+        }
+        const storedState = localStorage.getItem("admin-sidebar-state");
+        if (
+          storedState === "open" ||
+          storedState === "closed" ||
+          storedState === "minimized"
+        ) {
+          document.documentElement.dataset.adminSidebar = storedState;
+        } else {
+          document.documentElement.dataset.adminSidebar = "open";
+        }
+      })();
+    </script>
   </head>
   <body class={`flex flex-col min-h-screen ${className}`}>
     <slot />
