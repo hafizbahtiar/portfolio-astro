@@ -4,7 +4,7 @@ import PhoneNumberInput from "../ui/PhoneNumberInput";
 
 <section id="contact" class="scroll-offset mb-16 md:mb-20 perspective-1000">
   <div
-    class="bg-gray-900 border border-gray-800 rounded-3xl p-8 md:p-16 text-center text-white relative overflow-hidden transition-all duration-500 ease-out will-change-transform group"
+    class="bg-gray-900 border border-gray-800 rounded-3xl p-8 md:p-16 text-center text-white relative overflow-hidden transition-all duration-500 ease-out will-change-transform group will-change-[max-width] mx-auto"
     id="contact-container"
     style="min-height: 400px;"
   >
@@ -343,6 +343,16 @@ import PhoneNumberInput from "../ui/PhoneNumberInput";
       inset 0 0 10px rgba(6, 182, 212, 0.2);
     border-color: rgba(6, 182, 212, 0.6);
   }
+
+  .contact-form-active {
+    border-radius: 24px;
+  }
+
+  @media (min-width: 768px) {
+    .contact-form-active {
+      max-width: 640px;
+    }
+  }
 </style>
 
 <script>
@@ -365,6 +375,20 @@ import PhoneNumberInput from "../ui/PhoneNumberInput";
   const successView = document.getElementById("success-view");
   const successMessage = document.getElementById("success-message");
   const sendAnotherBtn = document.getElementById("send-another-btn");
+  const applyFormWidth = (active: boolean) => {
+    if (!container || !formView) return;
+    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+    const currentWidth = container.offsetWidth;
+    const parentWidth = container.parentElement?.offsetWidth ?? currentWidth;
+    const formWidth = formView.offsetWidth;
+    const padding = 64;
+    const targetWidth = active && isDesktop ? formWidth + padding : parentWidth;
+    container.style.maxWidth = `${currentWidth}px`;
+    container.style.width = "100%";
+    requestAnimationFrame(() => {
+      container.style.maxWidth = `${targetWidth}px`;
+    });
+  };
 
   if (
     getInTouchBtn &&
@@ -380,11 +404,16 @@ import PhoneNumberInput from "../ui/PhoneNumberInput";
     // Calculate initial height to prevent jump
     let initialHeight = container.offsetHeight;
     container.style.height = `${initialHeight}px`;
+    const parentWidth =
+      container.parentElement?.offsetWidth ?? container.offsetWidth;
+    container.style.maxWidth = `${parentWidth}px`;
+    container.style.width = "100%";
 
     getInTouchBtn.addEventListener("click", () => {
       // 1. Activate Scanner & Tech Effects
       scannerBeam.classList.add("scanning");
       container.classList.add("tech-border-glow");
+      container.classList.add("contact-form-active");
 
       // 2. Retract Initial View
       initialView.style.transform = "scale(0.9) translateY(20px)";
@@ -398,6 +427,9 @@ import PhoneNumberInput from "../ui/PhoneNumberInput";
         formView.classList.remove("absolute", "inset-0");
         const formHeight = formView.offsetHeight + 128;
         container.style.height = `${Math.max(formHeight, 600)}px`;
+        requestAnimationFrame(() => {
+          applyFormWidth(true);
+        });
 
         // 4. Animate Form Items In (Staggered)
         setTimeout(() => {
@@ -450,6 +482,8 @@ import PhoneNumberInput from "../ui/PhoneNumberInput";
 
         // Restore Height
         container.style.height = `${initialHeight}px`;
+        applyFormWidth(false);
+        container.classList.remove("contact-form-active");
 
         // Clean up styles on form items
         setTimeout(() => {
@@ -486,6 +520,10 @@ import PhoneNumberInput from "../ui/PhoneNumberInput";
         }, 100);
       });
     }
+
+    window.addEventListener("resize", () => {
+      applyFormWidth(container.classList.contains("contact-form-active"));
+    });
 
     // Character count for message
     const messageInput = document.getElementById(

@@ -30,11 +30,51 @@ const imageWidth = imageVariant === "logo" ? 80 : 640;
 const imageHeight = imageVariant === "logo" ? 80 : 192;
 ---
 
-<div class="card flex flex-col h-full group">
-  <div class="h-48 bg-gray-800 relative overflow-hidden">
+<div
+  class="group relative h-full bg-gray-900/40 backdrop-blur-sm border border-gray-800 rounded-xl overflow-hidden hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(34,211,238,0.1)] transition-all duration-300 flex flex-col"
+>
+  <!-- Top Bar / Window Controls -->
+  <div
+    class="flex items-center justify-between px-4 py-3 bg-gray-900/60 border-b border-gray-800 group-hover:bg-gray-900/80 transition-colors"
+  >
+    <div class="flex items-center gap-2">
+      <div class="flex gap-1.5">
+        <div
+          class="w-2.5 h-2.5 rounded-full bg-gray-700 group-hover:bg-red-500/80 transition-colors"
+        >
+        </div>
+        <div
+          class="w-2.5 h-2.5 rounded-full bg-gray-700 group-hover:bg-yellow-500/80 transition-colors"
+        >
+        </div>
+        <div
+          class="w-2.5 h-2.5 rounded-full bg-gray-700 group-hover:bg-green-500/80 transition-colors"
+        >
+        </div>
+      </div>
+    </div>
+    <div
+      class="text-xs font-mono text-gray-500 group-hover:text-cyan-400/80 transition-colors"
+    >
+      {link.split("/").pop() || "project"}
+    </div>
+  </div>
+
+  <!-- Image/Preview Area -->
+  <div
+    class="relative h-48 bg-gray-950/50 overflow-hidden border-b border-gray-800/50"
+  >
     {
       imageUrl ? (
-        <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-900/10 to-blue-900/10">
+        <div
+          class={`absolute inset-0 ${imageVariant === "logo" ? "flex items-center justify-center p-10 bg-gray-950/50" : ""}`}
+        >
+          <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          {imageVariant === "logo" && (
+            <div class="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-20 pointer-events-none" />
+          )}
+
+          {/* LOGO VARIANT */}
           {imageVariant === "logo" ? (
             !isStringImage ? (
               <Image
@@ -45,7 +85,7 @@ const imageHeight = imageVariant === "logo" ? 80 : 192;
                 loading={imageLoading}
                 decoding="async"
                 fetchpriority={imageFetchPriority}
-                class="w-20 h-20 object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm"
+                class="w-20 h-20 object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500 transform group-hover:scale-110"
               />
             ) : isRemoteImage ? (
               <Image
@@ -56,7 +96,7 @@ const imageHeight = imageVariant === "logo" ? 80 : 192;
                 loading={imageLoading}
                 decoding="async"
                 fetchpriority={imageFetchPriority}
-                class="w-20 h-20 object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm"
+                class="w-20 h-20 object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500 transform group-hover:scale-110"
               />
             ) : (
               <img
@@ -67,10 +107,11 @@ const imageHeight = imageVariant === "logo" ? 80 : 192;
                 loading={imageLoading}
                 decoding="async"
                 fetchpriority={imageFetchPriority}
-                class="w-20 h-20 object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm"
+                class="w-20 h-20 object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500 transform group-hover:scale-110"
               />
             )
-          ) : !isStringImage ? (
+          ) : /* BANNER & WIDTH-BANNER VARIANTS */
+          !isStringImage ? (
             <Image
               src={imageUrl}
               alt={title}
@@ -79,7 +120,7 @@ const imageHeight = imageVariant === "logo" ? 80 : 192;
               loading={imageLoading}
               decoding="async"
               fetchpriority={imageFetchPriority}
-              class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm max-h-full max-w-full p-2"
+              class={`w-full h-full opacity-80 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-105 ${imageVariant === "width-banner" ? "object-contain p-4" : "object-cover"}`}
             />
           ) : isRemoteImage ? (
             <Image
@@ -90,7 +131,7 @@ const imageHeight = imageVariant === "logo" ? 80 : 192;
               loading={imageLoading}
               decoding="async"
               fetchpriority={imageFetchPriority}
-              class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm max-h-full max-w-full p-2"
+              class={`w-full h-full opacity-80 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-105 ${imageVariant === "width-banner" ? "object-contain p-4" : "object-cover"}`}
             />
           ) : (
             <img
@@ -101,67 +142,77 @@ const imageHeight = imageVariant === "logo" ? 80 : 192;
               loading={imageLoading}
               decoding="async"
               fetchpriority={imageFetchPriority}
-              class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm max-h-full max-w-full p-2"
+              class={`w-full h-full opacity-80 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-105 ${imageVariant === "width-banner" ? "object-contain p-4" : "object-cover"}`}
             />
           )}
         </div>
       ) : (
-        <>
-          <div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700 card-hover opacity-50" />
-          <div class="absolute inset-0 flex items-center justify-center text-gray-600">
-            <svg
-              class="w-12 h-12"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-        </>
+        <div class="absolute inset-0 flex items-center justify-center bg-gray-900/50">
+          <svg
+            class="w-12 h-12 text-gray-700"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
       )
     }
-    <div
-      class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-    >
-    </div>
   </div>
 
+  <!-- Content -->
   <div class="p-6 flex flex-col flex-grow">
-    <h3
-      class="text-xl font-bold mb-2 text-white group-hover:text-cyan-400 transition-colors"
-    >
-      {title}
-    </h3>
-    <p class="text-gray-400 mb-4 flex-grow text-sm leading-relaxed">
-      {description}
-    </p>
-
-    <div class="flex flex-wrap gap-2 mb-6">
-      {tags.map((tag) => <span class="badge badge-indigo">{tag}</span>)}
-    </div>
-
-    <a href={link} class="btn-text text-sm">
-      View Project
+    <div class="flex items-start justify-between mb-3">
+      <h3
+        class="text-xl font-bold text-gray-100 group-hover:text-cyan-400 transition-colors font-mono"
+      >
+        {title}
+      </h3>
       <svg
-        class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform"
+        class="w-5 h-5 text-gray-600 group-hover:text-cyan-400 transition-colors transform -rotate-45 group-hover:rotate-0 duration-300"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
+        ><path
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
-          d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-      </svg>
-    </a>
+          d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg
+      >
+    </div>
+
+    <p
+      class="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2 flex-grow"
+    >
+      {description}
+    </p>
+
+    <div class="flex flex-wrap gap-2 mt-auto">
+      {
+        tags
+          .slice(0, 3)
+          .map((tag) => (
+            <span class="px-2 py-1 text-xs font-mono text-cyan-300/80 bg-cyan-950/30 border border-cyan-900/50 rounded">
+              {tag}
+            </span>
+          ))
+      }
+      {
+        tags.length > 3 && (
+          <span class="px-2 py-1 text-xs font-mono text-gray-500 bg-gray-900/50 border border-gray-800 rounded">
+            +{tags.length - 3}
+          </span>
+        )
+      }
+    </div>
+
+    <a href={link} class="absolute inset-0 z-10" aria-label={`View ${title}`}
+    ></a>
   </div>
 </div>

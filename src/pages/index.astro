@@ -29,71 +29,248 @@ const skills = [
 
 	<div class="container-main space-y-16 md:space-y-24 pb-16 md:pb-24">
 		<!-- About Section -->
-		<section id="about" class="scroll-offset">
-			<div class="flex flex-col md:flex-row gap-8 md:gap-12 items-center">
-				<div class="w-full md:w-1/2">
+		<section id="about" class="scroll-offset relative py-12 md:py-20">
+			<!-- Background Gradients -->
+			<div
+				class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none"
+			>
+				<div
+					class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/5 rounded-full blur-[100px]"
+				>
+				</div>
+				<div
+					class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]"
+				>
+				</div>
+			</div>
+
+			<div
+				class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center"
+			>
+				<!-- Profile Column (Left - 5 cols) -->
+				<div class="lg:col-span-5 flex flex-col gap-6">
+					<!-- Terminal Profile Card -->
 					<div
-						class="relative rounded-2xl overflow-hidden shadow-xl aspect-video md:aspect-square bg-gray-900 border border-gray-800 group"
+						class="group relative rounded-2xl overflow-hidden border border-gray-800 bg-gray-900/80 backdrop-blur-xl shadow-2xl transition-transform duration-500 hover:scale-[1.02]"
 					>
+						<!-- Terminal Header -->
 						<div
-							class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 group-hover:opacity-0 transition-opacity duration-500"
+							class="flex items-center justify-between px-4 py-3 bg-gray-800/50 border-b border-gray-800"
 						>
+							<div class="flex gap-2">
+								<div class="w-3 h-3 rounded-full bg-red-500/80">
+								</div>
+								<div
+									class="w-3 h-3 rounded-full bg-yellow-500/80"
+								>
+								</div>
+								<div
+									class="w-3 h-3 rounded-full bg-green-500/80"
+								>
+								</div>
+							</div>
+							<div class="text-xs font-mono text-gray-500">
+								profile.json
+							</div>
 						</div>
-						<!-- Placeholder for About Image -->
-						<div
-							class="w-full h-full flex items-center justify-center bg-gray-900 text-gray-700"
-						>
-							<svg
-								class="w-24 h-24"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-								xmlns="http://www.w3.org/2000/svg"
+
+						<!-- Profile Content -->
+						<div class="p-8 relative">
+							<!-- Tech Rings Background -->
+							<div
+								class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none"
 							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="1"
-									d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-								></path>
-							</svg>
+								<div
+									class="w-64 h-64 border border-cyan-500/30 rounded-full animate-[spin_10s_linear_infinite]"
+								>
+								</div>
+								<div
+									class="absolute w-48 h-48 border border-purple-500/30 rounded-full animate-[spin_15s_linear_infinite_reverse]"
+								>
+								</div>
+							</div>
+
+							<div
+								class="relative z-10 flex flex-col items-center text-center"
+							>
+								<div
+									class="w-32 h-32 mb-6 rounded-full p-1 bg-gradient-to-br from-cyan-500 to-purple-600"
+								>
+									<div
+										class="w-full h-full rounded-full bg-gray-900 flex items-center justify-center overflow-hidden"
+									>
+										<!-- Avatar Placeholder -->
+										<svg
+											class="w-16 h-16 text-gray-400"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="1.5"
+												d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+											></path>
+										</svg>
+									</div>
+								</div>
+
+								<h3 class="text-2xl font-bold text-white mb-2">
+									Hafiz Bahtiar
+								</h3>
+								<div
+									class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-800/50 border border-gray-700"
+								>
+									<span
+										class="w-2 h-2 rounded-full bg-green-500 animate-pulse"
+									></span>
+									<span
+										class="text-xs font-mono text-gray-300"
+										>Available for hire</span
+									>
+								</div>
+							</div>
+						</div>
+
+						<!-- Code Snippet -->
+						<div
+							class="bg-gray-950 p-6 border-t border-gray-800 font-mono text-xs overflow-x-auto"
+						>
+							<div class="flex gap-4 text-gray-500 mb-2">
+								<span>1</span>
+								<span class="text-purple-400">const</span>
+								<span class="text-blue-400">developer</span> = {
+									"{"
+								}
+							</div>
+							<div class="flex gap-4 text-gray-500 mb-1">
+								<span>2</span>
+								<span class="pl-4 text-gray-300">role:</span>
+								<span class="text-green-400"
+									>'Full Stack Engineer'</span
+								>,
+							</div>
+							<div class="flex gap-4 text-gray-500 mb-1">
+								<span>3</span>
+								<span class="pl-4 text-gray-300">level:</span>
+								<span class="text-orange-400">'Senior'</span>,
+							</div>
+							<div class="flex gap-4 text-gray-500 mb-1">
+								<span>4</span>
+								<span class="pl-4 text-gray-300">coffee:</span>
+								<span class="text-blue-400">true</span>
+							</div>
+							<div class="flex gap-4 text-gray-500">
+								<span>5</span>
+								{"}"};
+							</div>
 						</div>
 					</div>
 				</div>
-				<div class="w-full md:w-1/2">
-					<h2 class="section-title">About Me</h2>
-					<p class="text-body mb-6">
-						I'm a passionate developer with over 5 years of
-						experience in creating digital solutions. My journey
-						began with mobile development, where I fell in love with
-						the ability to bring ideas to life in the palm of
-						people's hands.
-					</p>
-					<p class="text-body mb-8">
-						Today, I work across the full stack, leveraging
-						technologies like Flutter for mobile and Node.js for
-						backend systems. I believe in writing clean,
-						maintainable code and building user-centric applications
-						that solve real-world problems.
-					</p>
 
-					<div class="grid grid-cols-2 gap-6">
-						<div>
-							<h4 class="text-4xl font-bold text-cyan-400 mb-1">
+				<!-- Content Column (Right - 7 cols) -->
+				<div class="lg:col-span-7 flex flex-col justify-center gap-8">
+					<div class="space-y-6">
+						<div class="flex items-center gap-3">
+							<span class="text-cyan-400 font-mono text-sm"
+								>~/about-me</span
+							>
+							<div
+								class="h-px flex-1 bg-gradient-to-r from-cyan-500/20 to-transparent"
+							>
+							</div>
+						</div>
+
+						<h2
+							class="text-3xl md:text-5xl font-bold leading-tight text-white"
+						>
+							<span
+								class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"
+								>Architecting</span
+							> the future of digital experiences.
+						</h2>
+
+						<p class="text-gray-400 text-lg leading-relaxed">
+							I'm a software engineer who speaks fluent <span
+								class="text-cyan-400 font-mono text-sm bg-cyan-400/10 px-1 rounded"
+								>JavaScript</span
+							> and <span
+								class="text-purple-400 font-mono text-sm bg-purple-400/10 px-1 rounded"
+								>Python</span
+							>. With a passion for clean architecture and
+							pixel-perfect UIs, I transform complex requirements
+							into elegant, scalable solutions.
+						</p>
+
+						<p class="text-gray-400 text-lg leading-relaxed">
+							My approach combines technical depth with product
+							thinking—ensuring every line of code serves a user
+							need.
+						</p>
+					</div>
+
+					<!-- Stats Grid -->
+					<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+						<!-- Stat 1 -->
+						<div
+							class="p-4 rounded-xl bg-gray-800/30 border border-gray-800 hover:border-cyan-500/50 transition-all hover:bg-gray-800/50 group"
+						>
+							<div
+								class="text-3xl font-bold text-white mb-1 group-hover:text-cyan-400 transition-colors"
+							>
 								5+
-							</h4>
-							<p class="text-gray-500 font-medium">
-								Years Experience
-							</p>
+							</div>
+							<div class="text-sm text-gray-500 font-mono">
+								Years Exp
+							</div>
 						</div>
-						<div>
-							<h4 class="text-4xl font-bold text-purple-400 mb-1">
+						<!-- Stat 2 -->
+						<div
+							class="p-4 rounded-xl bg-gray-800/30 border border-gray-800 hover:border-purple-500/50 transition-all hover:bg-gray-800/50 group"
+						>
+							<div
+								class="text-3xl font-bold text-white mb-1 group-hover:text-purple-400 transition-colors"
+							>
 								20+
-							</h4>
-							<p class="text-gray-500 font-medium">
-								Projects Completed
-							</p>
+							</div>
+							<div class="text-sm text-gray-500 font-mono">
+								Projects
+							</div>
 						</div>
+						<!-- Stat 3 -->
+						<div
+							class="col-span-2 md:col-span-1 p-4 rounded-xl bg-gray-800/30 border border-gray-800 hover:border-green-500/50 transition-all hover:bg-gray-800/50 group"
+						>
+							<div
+								class="text-3xl font-bold text-white mb-1 group-hover:text-green-400 transition-colors"
+							>
+								100%
+							</div>
+							<div class="text-sm text-gray-500 font-mono">
+								Commitment
+							</div>
+						</div>
+					</div>
+
+					<div class="pt-4">
+						<a
+							href="#contact"
+							class="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all"
+						>
+							<span>Initialize_Collab()</span>
+							<svg
+								class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								><path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg
+							>
+						</a>
 					</div>
 				</div>
 			</div>
@@ -102,24 +279,44 @@ const skills = [
 		<!-- Skills Section -->
 		<section id="skills" class="scroll-offset">
 			<div class="text-center mb-16">
-				<h2 class="section-title">Technical Skills</h2>
-				<p class="text-body max-w-2xl mx-auto">
-					My technical toolkit that helps me build efficient and
-					scalable solutions.
+				<div
+					class="inline-flex items-center gap-2 px-3 py-1 mb-6 text-sm font-mono text-cyan-400 bg-cyan-950/30 border border-cyan-500/30 rounded-full"
+				>
+					<span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"
+					></span>
+					<span>TECH ARSENAL</span>
+				</div>
+				<h2
+					class="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight"
+				>
+					Engineering <span
+						class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"
+						>Stack</span
+					>
+				</h2>
+				<p
+					class="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed"
+				>
+					Tooling I use to ship clean, scalable, and
+					performance-focused experiences.
 				</p>
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 				{
 					skills.map((skillGroup) => (
-						<div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:shadow-cyan-900/20 transition-all duration-300">
-							<h3 class="text-xl font-bold mb-4 text-white border-b pb-2 border-gray-800">
-								{skillGroup.category}
-							</h3>
-							<div class="flex flex-wrap gap-2">
-								{skillGroup.items.map((item) => (
-									<span class="badge-gray">{item}</span>
-								))}
+						<div class="group relative bg-gray-900/60 backdrop-blur-sm p-6 rounded-2xl border border-gray-800/80 hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(34,211,238,0.15)] transition-all duration-300 overflow-hidden">
+							<div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+							<div class="relative">
+								<h3 class="text-lg font-semibold tracking-wide text-white/90 mb-4 flex items-center gap-2">
+									<span class="inline-flex h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
+									{skillGroup.category}
+								</h3>
+								<div class="flex flex-wrap gap-2">
+									{skillGroup.items.map((item) => (
+										<span class="badge-gray">{item}</span>
+									))}
+								</div>
 							</div>
 						</div>
 					))
@@ -128,13 +325,27 @@ const skills = [
 		</section>
 
 		<!-- Projects Section -->
-		<section
-			id="projects"
-			class="scroll-offset -mx-4 md:-mx-8 px-4 md:px-8 py-12 md:py-16 rounded-3xl"
-		>
-			<div class="text-center mb-12 md:mb-16">
-				<h2 class="section-title">Featured Projects</h2>
-				<p class="text-body max-w-2xl mx-auto">
+		<section id="projects" class="scroll-offset relative">
+			<div class="text-center mb-16">
+				<div
+					class="inline-flex items-center gap-2 px-3 py-1 mb-6 text-sm font-mono text-purple-400 bg-purple-950/30 border border-purple-500/30 rounded-full"
+				>
+					<span
+						class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"
+					></span>
+					<span>FEATURED WORK</span>
+				</div>
+				<h2
+					class="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight"
+				>
+					Selected <span
+						class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"
+						>Projects</span
+					>
+				</h2>
+				<p
+					class="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed"
+				>
 					A selection of my recent work demonstrating my expertise in
 					mobile and web development.
 				</p>
@@ -145,9 +356,20 @@ const skills = [
 			<div class="text-center mt-12">
 				<a
 					href="/projects"
-					class="inline-block bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-8 rounded-full transition-colors border border-gray-700"
+					class="group inline-flex items-center gap-2 px-6 py-3 bg-gray-900 border border-gray-700 hover:border-cyan-500/50 text-white font-medium rounded-lg transition-all hover:shadow-[0_0_20px_rgba(34,211,238,0.15)]"
 				>
-					View All Projects
+					<span>View All Projects</span>
+					<svg
+						class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						><path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg
+					>
 				</a>
 			</div>
 		</section>
