@@ -1,0 +1,115 @@
+---
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import { settingsService } from "../../../lib/settings";
+
+const settings = {
+  siteName: "Hafiz Bahtiar",
+  siteDescription: "Full Stack Developer Portfolio",
+  contactEmail: "hafiz@example.com",
+};
+---
+
+<PrivateLayout title="General Settings">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <a
+          href="/admin/settings"
+          class="text-gray-400 hover:text-white transition-colors"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+        </a>
+        <h1 class="text-3xl font-bold text-white tracking-tight">
+          General Settings
+        </h1>
+      </div>
+      <button
+        id="save-settings-btn"
+        class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg font-mono text-sm transition-colors flex items-center gap-2"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+          ></path>
+        </svg>
+        SAVE CHANGES
+      </button>
+    </div>
+
+    <div
+      class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6 max-w-2xl"
+    >
+      <form id="general-settings-form" class="space-y-6">
+        <div class="space-y-2">
+          <label
+            for="settings-site-name"
+            class="block text-sm font-medium text-gray-400"
+          >
+            Site Name
+          </label>
+          <input
+            type="text"
+            id="settings-site-name"
+            name="siteName"
+            value={settings.siteName}
+            class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+          />
+        </div>
+        <div class="space-y-2">
+          <label
+            for="settings-site-description"
+            class="block text-sm font-medium text-gray-400"
+          >
+            Site Description
+          </label>
+          <textarea
+            id="settings-site-description"
+            name="siteDescription"
+            rows="3"
+            class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all resize-none"
+            >{settings.siteDescription}</textarea
+          >
+        </div>
+      </form>
+    </div>
+  </div>
+</PrivateLayout>
+
+<script>
+  const saveBtn = document.getElementById(
+    "save-settings-btn",
+  ) as HTMLButtonElement | null;
+
+  // Save General Settings (Mock implementation for now as no backend endpoint exists)
+  saveBtn?.addEventListener("click", () => {
+    if (!saveBtn) return;
+    const originalContent = saveBtn.innerHTML;
+    saveBtn.innerHTML = "SAVING...";
+    saveBtn.disabled = true;
+
+    setTimeout(() => {
+      alert("Settings saved locally (No backend endpoint yet)");
+      saveBtn.innerHTML = originalContent;
+      saveBtn.disabled = false;
+    }, 1000);
+  });
+</script>

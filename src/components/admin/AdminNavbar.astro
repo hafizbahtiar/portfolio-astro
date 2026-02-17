@@ -1,5 +1,27 @@
 ---
+const currentPath = Astro.url.pathname;
+const paths = currentPath.split("/").filter(Boolean);
 
+const breadcrumbs = paths.map((path, index) => {
+    const href = `/${paths.slice(0, index + 1).join("/")}`;
+    let label = path
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    if (path === "admin") label = "Admin";
+    if (path === "contact") label = "Contacts";
+
+    return {
+        label,
+        href,
+        isLast: index === paths.length - 1,
+    };
+});
+
+if (paths.length === 1 && paths[0] === "admin") {
+    breadcrumbs[0].isLast = false;
+    breadcrumbs.push({ label: "Dashboard", href: "", isLast: true });
+}
 ---
 
 <header
@@ -7,6 +29,26 @@
 >
     <div class="flex items-center gap-3">
         <div class="flex items-center gap-2">
+            <button
+                id="toggle-sidebar"
+                class="md:hidden text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
+                aria-label="Toggle sidebar"
+                type="button"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
             <button
                 id="minimize-sidebar"
                 class="hidden md:inline-flex text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
@@ -28,8 +70,24 @@
                 </svg>
             </button>
         </div>
-        <div class="hidden sm:block text-sm text-gray-400">
-            <span class="text-cyan-400">Admin</span> / Dashboard
+        <div class="hidden sm:flex items-center text-sm text-gray-400 gap-2">
+            {
+                breadcrumbs.map((crumb, index) => (
+                    <>
+                        {index > 0 && <span class="text-gray-600">/</span>}
+                        {crumb.isLast ? (
+                            <span class="text-gray-200">{crumb.label}</span>
+                        ) : (
+                            <a
+                                href={crumb.href}
+                                class="text-cyan-400 hover:text-cyan-300 transition-colors"
+                            >
+                                {crumb.label}
+                            </a>
+                        )}
+                    </>
+                ))
+            }
         </div>
     </div>
 
