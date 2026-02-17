@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 
 interface Option {
     value: string | number;
@@ -12,6 +12,7 @@ interface TechSelectProps {
     placeholder?: string;
     className?: string;
     label?: string;
+    ariaLabel?: string;
 }
 
 export const TechSelect: React.FC<TechSelectProps> = ({
@@ -20,10 +21,13 @@ export const TechSelect: React.FC<TechSelectProps> = ({
     options,
     placeholder = "Select option",
     className = "",
-    label
+    label,
+    ariaLabel
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const labelId = useId();
+    const controlId = useId();
 
     const selectedOption = options.find(opt => opt.value === value);
 
@@ -48,14 +52,21 @@ export const TechSelect: React.FC<TechSelectProps> = ({
     return (
         <div className={`relative space-y-2 ${className}`} ref={dropdownRef}>
             {label && (
-                <label className="block text-sm font-medium text-gray-400 font-mono tracking-wide">
+                <label
+                    id={labelId}
+                    htmlFor={controlId}
+                    className="block text-sm font-medium text-gray-400 font-mono tracking-wide"
+                >
                     {`// ${label}`}
                 </label>
             )}
             <div className="relative">
                 <button
                     type="button"
+                    id={controlId}
                     onClick={() => setIsOpen(!isOpen)}
+                    aria-label={!label ? ariaLabel : undefined}
+                    aria-labelledby={label ? labelId : undefined}
                     className={`
                         w-full bg-gray-900/50 border rounded-lg px-4 py-2 text-left text-white 
                         outline-none transition-all flex justify-between items-center group

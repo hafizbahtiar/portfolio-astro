@@ -128,6 +128,7 @@ export function DataTable<TData, TValue>({
                             label: size
                         }))}
                         label="Rows"
+                        ariaLabel="Rows per page"
                         className="w-24"
                     />
                 </div>

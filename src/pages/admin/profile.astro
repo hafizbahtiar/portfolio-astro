@@ -96,33 +96,45 @@ const profile: any = {}; // Client-side fetch only
             <input type="hidden" name="id" value={profile?.id} />
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-400"
-                  >Full Name</label
+                <label
+                  for="profile-full-name"
+                  class="block text-sm font-medium text-gray-400"
                 >
+                  Full Name
+                </label>
                 <input
                   type="text"
+                  id="profile-full-name"
                   name="name"
                   value={profile?.name}
                   class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
                 />
               </div>
               <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-400"
-                  >Email</label
+                <label
+                  for="profile-email"
+                  class="block text-sm font-medium text-gray-400"
                 >
+                  Email
+                </label>
                 <input
                   type="email"
+                  id="profile-email"
                   name="email"
                   value={profile?.email}
                   class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
                 />
               </div>
               <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-400"
-                  >Location</label
+                <label
+                  for="profile-location"
+                  class="block text-sm font-medium text-gray-400"
                 >
+                  Location
+                </label>
                 <input
                   type="text"
+                  id="profile-location"
                   name="location"
                   value={profile?.location}
                   placeholder="e.g. Kuala Lumpur, MY"
@@ -130,11 +142,15 @@ const profile: any = {}; // Client-side fetch only
                 />
               </div>
               <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-400"
-                  >Website</label
+                <label
+                  for="profile-website"
+                  class="block text-sm font-medium text-gray-400"
                 >
+                  Website
+                </label>
                 <input
                   type="url"
+                  id="profile-website"
                   name="website"
                   value={profile?.website}
                   placeholder="https://"
@@ -142,11 +158,15 @@ const profile: any = {}; // Client-side fetch only
                 />
               </div>
               <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-400"
-                  >Avatar URL</label
+                <label
+                  for="profile-avatar-url"
+                  class="block text-sm font-medium text-gray-400"
                 >
+                  Avatar URL
+                </label>
                 <input
                   type="text"
+                  id="profile-avatar-url"
                   name="avatarUrl"
                   value={profile?.avatarUrl}
                   placeholder="https://"
@@ -156,10 +176,14 @@ const profile: any = {}; // Client-side fetch only
             </div>
 
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-400"
-                >Bio</label
+              <label
+                for="profile-bio"
+                class="block text-sm font-medium text-gray-400"
               >
+                Bio
+              </label>
               <textarea
+                id="profile-bio"
                 name="bio"
                 rows="4"
                 class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all resize-none"
@@ -167,12 +191,15 @@ const profile: any = {}; // Client-side fetch only
               >
             </div>
 
-            <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-400"
-                >Social Links</label
-              >
+            <fieldset class="space-y-2">
+              <legend class="block text-sm font-medium text-gray-400">
+                Social Links
+              </legend>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="relative">
+                  <label for="profile-linkedin-url" class="sr-only">
+                    LinkedIn URL
+                  </label>
                   <span
                     class="absolute left-3 top-2.5 text-gray-500 pointer-events-none"
                   >
@@ -187,6 +214,7 @@ const profile: any = {}; // Client-side fetch only
                   </span>
                   <input
                     type="url"
+                    id="profile-linkedin-url"
                     name="linkedinUrl"
                     value={profile?.linkedinUrl}
                     placeholder="LinkedIn URL"
@@ -194,6 +222,9 @@ const profile: any = {}; // Client-side fetch only
                   />
                 </div>
                 <div class="relative">
+                  <label for="profile-github-url" class="sr-only">
+                    GitHub URL
+                  </label>
                   <span
                     class="absolute left-3 top-2.5 text-gray-500 pointer-events-none"
                   >
@@ -208,6 +239,7 @@ const profile: any = {}; // Client-side fetch only
                   </span>
                   <input
                     type="url"
+                    id="profile-github-url"
                     name="githubUrl"
                     value={profile?.githubUrl}
                     placeholder="GitHub URL"
@@ -215,6 +247,9 @@ const profile: any = {}; // Client-side fetch only
                   />
                 </div>
                 <div class="relative">
+                  <label for="profile-twitter-url" class="sr-only">
+                    X (Twitter) URL
+                  </label>
                   <span
                     class="absolute left-3 top-2.5 text-gray-500 pointer-events-none"
                   >
@@ -230,6 +265,7 @@ const profile: any = {}; // Client-side fetch only
                   </span>
                   <input
                     type="url"
+                    id="profile-twitter-url"
                     name="twitterUrl"
                     value={profile?.twitterUrl}
                     placeholder="X (Twitter) URL"
@@ -237,7 +273,7 @@ const profile: any = {}; // Client-side fetch only
                   />
                 </div>
               </div>
-            </div>
+            </fieldset>
 
             <div class="pt-4 border-t border-gray-700 flex justify-end">
               <button

@@ -47,21 +47,29 @@ const settings = {
         </h3>
         <form id="general-settings-form" class="space-y-6">
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-400"
-              >Site Name</label
+            <label
+              for="settings-site-name"
+              class="block text-sm font-medium text-gray-400"
             >
+              Site Name
+            </label>
             <input
               type="text"
+              id="settings-site-name"
               name="siteName"
               value={settings.siteName}
               class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
             />
           </div>
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-400"
-              >Site Description</label
+            <label
+              for="settings-site-description"
+              class="block text-sm font-medium text-gray-400"
             >
+              Site Description
+            </label>
             <textarea
+              id="settings-site-description"
               name="siteDescription"
               rows="3"
               class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all resize-none"
@@ -80,10 +88,12 @@ const settings = {
             <label class="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
+                id="settings-maintenance-mode"
                 name="maintenanceMode"
                 class="sr-only peer"
                 checked={settings.maintenanceMode}
               />
+              <span class="sr-only">Maintenance Mode</span>
               <div
                 class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"
               >
@@ -104,33 +114,45 @@ const settings = {
         </h3>
         <form id="security-settings-form" class="space-y-6">
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-400"
-              >Current Password</label
+            <label
+              for="settings-current-password"
+              class="block text-sm font-medium text-gray-400"
             >
+              Current Password
+            </label>
             <input
               type="password"
+              id="settings-current-password"
               name="currentPassword"
               placeholder="••••••••"
               class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
             />
           </div>
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-400"
-              >New Password</label
+            <label
+              for="settings-new-password"
+              class="block text-sm font-medium text-gray-400"
             >
+              New Password
+            </label>
             <input
               type="password"
+              id="settings-new-password"
               name="newPassword"
               placeholder="••••••••"
               class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
             />
           </div>
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-400"
-              >Confirm New Password</label
+            <label
+              for="settings-confirm-password"
+              class="block text-sm font-medium text-gray-400"
             >
+              Confirm New Password
+            </label>
             <input
               type="password"
+              id="settings-confirm-password"
               name="confirmPassword"
               placeholder="••••••••"
               class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"

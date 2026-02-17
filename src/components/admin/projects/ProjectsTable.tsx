@@ -92,6 +92,7 @@ export const ProjectsTable = () => {
             href={`/admin/projects/edit?id=${row.original.id}`}
             className="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/10 rounded-lg transition-colors"
             title="Edit Project"
+            aria-label={`Edit ${row.original.title}`}
           >
             <svg
               className="w-5 h-5"

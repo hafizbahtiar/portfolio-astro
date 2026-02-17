@@ -28,9 +28,11 @@ const isStringImage = typeof imageUrl === "string";
 const isRemoteImage = isStringImage && imageUrl.startsWith("http");
 const imageWidth = imageVariant === "logo" ? 80 : 640;
 const imageHeight = imageVariant === "logo" ? 80 : 192;
+const slug = link.split("/").pop() || title.toLowerCase().replace(/\s+/g, "-");
 ---
 
 <div
+  transition:name={`project-card-${slug}`}
   class="group relative h-full bg-gray-900/40 backdrop-blur-sm border border-gray-800 rounded-xl overflow-hidden hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(34,211,238,0.1)] transition-all duration-300 flex flex-col"
 >
   <!-- Top Bar / Window Controls -->

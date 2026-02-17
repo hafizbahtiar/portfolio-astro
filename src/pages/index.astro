@@ -3,7 +3,9 @@ import PublicLayout from "../layouts/PublicLayout.astro";
 import Hero from "../components/home/Hero.astro";
 import ContactSection from "../components/home/ContactSection.astro";
 import FeaturedProjects from "../components/home/FeaturedProjects.astro";
+import { getProjects } from "../lib/projects";
 
+const allProjects = await getProjects();
 const skills = [
 	{
 		category: "Mobile Development",
@@ -154,7 +156,7 @@ const skills = [
 							<div class="flex gap-4 text-gray-500 mb-1">
 								<span>3</span>
 								<span class="pl-4 text-gray-300">level:</span>
-								<span class="text-orange-400">'Senior'</span>,
+								<span class="text-orange-400">'Mid-Senior'</span>,
 							</div>
 							<div class="flex gap-4 text-gray-500 mb-1">
 								<span>4</span>
@@ -232,7 +234,7 @@ const skills = [
 							<div
 								class="text-3xl font-bold text-white mb-1 group-hover:text-purple-400 transition-colors"
 							>
-								20+
+								{allProjects.length}+
 							</div>
 							<div class="text-sm text-gray-500 font-mono">
 								Projects

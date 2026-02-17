@@ -113,30 +113,32 @@ const currentPath = Astro.url.pathname;
 
     <!-- User Profile Footer -->
     <div class="p-4 border-t border-white/10 bg-gray-900/50">
-      <div class="flex items-center space-x-3 px-2">
-        <div class="relative">
-          <div
-            class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm"
-          >
-            HB
+      <div class="space-y-3">
+        <div class="flex items-center space-x-3 px-2">
+          <div class="relative">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm"
+            >
+              HB
+            </div>
+            <div
+              class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900"
+            >
+            </div>
           </div>
-          <div
-            class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900"
-          >
+          <div class="flex-grow min-w-0">
+            <div class="text-white font-medium truncate">Hafiz Bahtiar</div>
+            <div class="text-gray-500 text-xs truncate">Super Admin</div>
           </div>
-        </div>
-        <div class="flex-grow min-w-0">
-          <div class="text-white font-medium truncate">Hafiz Bahtiar</div>
-          <div class="text-gray-500 text-xs truncate">Super Admin</div>
         </div>
         <button
           id="logout-btn"
-          class="text-gray-400 hover:text-white p-1 rounded-md hover:bg-white/10 transition-colors"
-          title="Logout"
+          class="w-full inline-flex items-center justify-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-gray-200 hover:bg-white/10 hover:text-white transition-colors"
+          type="button"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
+            class="h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -147,6 +149,7 @@ const currentPath = Astro.url.pathname;
               stroke-width="2"
               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 11-6 0v-1m6 0H9"></path>
           </svg>
+          Logout
         </button>
       </div>
     </div>
@@ -160,6 +163,90 @@ const currentPath = Astro.url.pathname;
 >
 </div>
 
+<div
+  id="logout-modal"
+  class="fixed inset-0 z-50 hidden"
+  aria-labelledby="logout-modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <div
+    class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity opacity-0"
+    id="logout-backdrop"
+  >
+  </div>
+
+  <div class="fixed inset-0 z-10 overflow-y-auto">
+    <div
+      class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
+    >
+      <div
+        class="relative transform overflow-hidden rounded-lg bg-gray-900 border border-red-500/30 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        id="logout-panel"
+      >
+        <div class="bg-gray-800/50 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div
+              class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10"
+            >
+              <svg
+                class="h-6 w-6 text-red-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v3.75m0 3.75h.007v.008H12v-.008z"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3.75 6.75h16.5M6 6.75V5.25a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 5.25v1.5"
+                ></path>
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+              <h3
+                class="text-base font-semibold leading-6 text-white"
+                id="logout-modal-title"
+              >
+                Log out
+              </h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-300">
+                  Are you sure you want to log out? You'll need to sign in again
+                  to access the admin panel.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-gray-900/50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2"
+        >
+          <button
+            type="button"
+            id="logout-confirm-btn"
+            class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto transition-colors"
+          >
+            Log out
+          </button>
+          <button
+            type="button"
+            id="logout-cancel-btn"
+            class="mt-3 inline-flex w-full justify-center rounded-md bg-transparent border border-gray-600 px-3 py-2 text-sm font-semibold text-gray-300 shadow-sm hover:bg-gray-800 sm:mt-0 sm:w-auto transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   declare global {
     interface Window {
@@ -169,22 +256,90 @@ const currentPath = Astro.url.pathname;
 
   import { authService } from "../../lib/auth";
 
+  function bindLogoutModal() {
+    const logoutBtn = document.getElementById("logout-btn");
+    const logoutModal = document.getElementById("logout-modal");
+    const logoutBackdrop = document.getElementById("logout-backdrop");
+    const logoutPanel = document.getElementById("logout-panel");
+    const logoutConfirmBtn = document.getElementById("logout-confirm-btn");
+    const logoutCancelBtn = document.getElementById("logout-cancel-btn");
+
+    if (!logoutBtn || !logoutModal || !logoutBackdrop || !logoutPanel) return;
+    if (logoutBtn.dataset.bound === "true") return;
+    const modal = logoutModal;
+    const backdrop = logoutBackdrop;
+    const panel = logoutPanel;
+
+    function showLogoutModal() {
+      modal.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        backdrop.classList.remove("opacity-0");
+        panel.classList.remove(
+          "opacity-0",
+          "translate-y-4",
+          "sm:translate-y-0",
+          "sm:scale-95",
+        );
+      });
+    }
+
+    function hideLogoutModal() {
+      backdrop.classList.add("opacity-0");
+      panel.classList.add(
+        "opacity-0",
+        "translate-y-4",
+        "sm:translate-y-0",
+        "sm:scale-95",
+      );
+      setTimeout(() => {
+        modal.classList.add("hidden");
+      }, 200);
+    }
+
+    async function performLogout() {
+      try {
+        logoutConfirmBtn?.setAttribute("disabled", "true");
+        logoutCancelBtn?.setAttribute("disabled", "true");
+        await authService.logout();
+        window.location.replace("/login");
+      } catch (error) {
+        console.error("Logout failed", error);
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        window.location.replace("/login");
+      } finally {
+        logoutConfirmBtn?.removeAttribute("disabled");
+        logoutCancelBtn?.removeAttribute("disabled");
+      }
+    }
+
+    logoutBtn.addEventListener("click", () => {
+      showLogoutModal();
+    });
+
+    logoutCancelBtn?.addEventListener("click", () => {
+      hideLogoutModal();
+    });
+
+    logoutBackdrop.addEventListener("click", () => {
+      hideLogoutModal();
+    });
+
+    logoutConfirmBtn?.addEventListener("click", async () => {
+      hideLogoutModal();
+      await performLogout();
+    });
+
+    logoutBtn.dataset.bound = "true";
+  }
+
+  bindLogoutModal();
+  document.addEventListener("astro:page-load", bindLogoutModal);
+  document.addEventListener("astro:after-swap", bindLogoutModal);
+
   const sidebar = document.getElementById("admin-sidebar");
   const overlay = document.getElementById("sidebar-overlay");
   const closeBtn = document.getElementById("close-sidebar");
-  const logoutBtn = document.getElementById("logout-btn");
-
-  logoutBtn?.addEventListener("click", async () => {
-    try {
-      await authService.logout();
-      window.location.replace("/login");
-    } catch (error) {
-      console.error("Logout failed", error);
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      window.location.replace("/login");
-    }
-  });
 
   function closeSidebar() {
     sidebar?.classList.add("-translate-x-full");

@@ -17,5 +17,9 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
+    optimizeDeps: {
+      include: ["@tanstack/react-table", "@tanstack/react-virtual"],
+      force: true,
+    },
   },
 });
