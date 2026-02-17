@@ -4,8 +4,15 @@ import Hero from "../components/home/Hero.astro";
 import ContactSection from "../components/home/ContactSection.astro";
 import FeaturedProjects from "../components/home/FeaturedProjects.astro";
 import { getProjects } from "../lib/projects";
+import type { Project } from "../types/project";
 
-const allProjects = await getProjects();
+let allProjects: Project[] = [];
+try {
+	allProjects = await getProjects();
+} catch (error) {
+	console.error("Failed to fetch projects:", error);
+}
+
 const skills = [
 	{
 		category: "Mobile Development",
@@ -156,7 +163,8 @@ const skills = [
 							<div class="flex gap-4 text-gray-500 mb-1">
 								<span>3</span>
 								<span class="pl-4 text-gray-300">level:</span>
-								<span class="text-orange-400">'Mid-Senior'</span>,
+								<span class="text-orange-400">'Mid-Senior'</span
+								>,
 							</div>
 							<div class="flex gap-4 text-gray-500 mb-1">
 								<span>4</span>

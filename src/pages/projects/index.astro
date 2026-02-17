@@ -2,11 +2,18 @@
 import ProjectLayout from "../../layouts/ProjectLayout.astro";
 import ProjectCard from "../../components/project/ProjectCard.astro";
 import { getProjects } from "../../lib/projects";
+import type { Project } from "../../types/project";
 import jomDapur from "../../assets/projects/jom-dapur.jpg";
 import jdManagement from "../../assets/projects/jd-management.png";
 import invois from "../../assets/projects/invois/invois.png";
 
-const projects = await getProjects();
+let projects: Project[] = [];
+try {
+  projects = await getProjects();
+} catch (error) {
+  console.error("Failed to fetch projects:", error);
+}
+
 const localImageMap = new Map([
   ["/images/projects/jom-dapur.jpg", jomDapur],
   ["/images/projects/jd-management.png", jdManagement],
@@ -69,10 +76,7 @@ const resolvedProjects = projects.map((project) => ({
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     {
       resolvedProjects.map((project, index) => (
-        <div
-          class="animate-fade-in-up"
-          style={`animation-delay: ${index * 100}ms`}
-        >
+        <div>
           <ProjectCard
             title={project.title}
             description={project.description}

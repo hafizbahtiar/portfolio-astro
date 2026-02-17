@@ -3,6 +3,8 @@ import type { Project } from '../../types/project';
 
 interface ProjectCardProps extends Project {
   link?: string;
+  imageLoading?: "lazy" | "eager";
+  imageFetchPriority?: "high" | "low" | "auto";
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -11,11 +13,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   imageUrl,
   imageVariant = "banner",
   tags = [],
-  link = "#"
+  link = "#",
+  imageLoading = "lazy",
+  imageFetchPriority = "low"
 }) => {
+  const slug = link.split("/").pop() || title.toLowerCase().replace(/\s+/g, "-");
+
   return (
     <div className="card flex flex-col h-full group">
-      <div className="h-48 bg-gray-800 relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-cyan-900/10 to-blue-900/10">
+      <div
+        style={{ viewTransitionName: `project-image-${slug}` }}
+        className="h-48 bg-gray-800 relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-cyan-900/10 to-blue-900/10"
+      >
         {imageUrl ? (
           imageVariant === "logo" ? (
             <img
@@ -23,9 +32,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               alt={title}
               width={80}
               height={80}
-              loading="lazy"
+              loading={imageLoading}
               decoding="async"
-              fetchPriority="low"
+              fetchPriority={imageFetchPriority}
               className="w-20 h-20 object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm"
             />
           ) : (
@@ -34,10 +43,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               alt={title}
               width={640}
               height={192}
-              loading="lazy"
+              loading={imageLoading}
               decoding="async"
-              fetchPriority="low"
-              className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm max-h-full max-w-full p-2"
+              fetchPriority={imageFetchPriority}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 drop-shadow-sm max-h-full max-w-full"
             />
           )
         ) : (
@@ -66,7 +75,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </div>
 
       <div className="p-6 flex flex-col flex-grow">
-        <h3 className="text-xl font-bold mb-2 text-white group-hover:text-cyan-400 transition-colors">
+        <h3
+          style={{ viewTransitionName: `project-title-${slug}` }}
+          className="text-xl font-bold mb-2 text-white group-hover:text-cyan-400 transition-colors"
+        >
           {title}
         </h3>
         <p className="text-gray-400 mb-4 flex-grow text-sm leading-relaxed">

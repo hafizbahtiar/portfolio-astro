@@ -3,12 +3,18 @@ import ProjectCard from '../project/ProjectCard';
 import { getProjects } from '../../lib/projects';
 import type { Project } from '../../types/project';
 
-const FeaturedProjects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+interface FeaturedProjectsProps {
+  initialProjects?: Project[];
+}
+
+const FeaturedProjects = ({ initialProjects }: FeaturedProjectsProps) => {
+  const [projects, setProjects] = useState<Project[]>(initialProjects || []);
+  const [loading, setLoading] = useState(!initialProjects);
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
+    if (initialProjects) return;
+
     const fetchProjects = async () => {
       try {
         const data = await getProjects();
@@ -87,6 +93,8 @@ const FeaturedProjects = () => {
           key={project.id}
           {...project}
           link={`/projects/${project.slug}`}
+          imageLoading="lazy"
+          imageFetchPriority="low"
         />
       ))}
     </div>
