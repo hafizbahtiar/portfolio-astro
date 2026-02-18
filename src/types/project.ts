@@ -24,3 +24,16 @@ export interface Project {
     createdAt: string;
     updatedAt: string;
 }
+
+export interface ProjectPolicy {
+    projectId: number;
+    privacyPolicy: string | null;
+    termsAndConditions: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface UpdateProjectPolicyData {
+    privacyPolicy?: string | null;
+    termsAndConditions?: string | null;
+}

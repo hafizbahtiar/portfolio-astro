@@ -1,11 +1,12 @@
 ---
-import ProjectLayout from "../../layouts/ProjectLayout.astro";
-import { getProjects } from "../../lib/projects";
-import { TextEditor } from "../../components/ui/TextEditor";
+import ProjectLayout from "../../../layouts/ProjectLayout.astro";
+import { getProjects, getProjectPolicyBySlug } from "../../../lib/projects";
+import type { ProjectPolicy } from "../../../types/project";
+import { TextEditor } from "../../../components/ui/TextEditor";
 import { Image } from "astro:assets";
-import jomDapur from "../../assets/projects/jom-dapur.jpg";
-import jdManagement from "../../assets/projects/jd-management.png";
-import invois from "../../assets/projects/invois/invois.png";
+import jomDapur from "../../../assets/projects/jom-dapur.jpg";
+import jdManagement from "../../../assets/projects/jd-management.png";
+import invois from "../../../assets/projects/invois/invois.png";
 
 export async function getStaticPaths() {
     try {
@@ -32,7 +33,6 @@ const isResolvedString = typeof resolvedImage === "string";
 const resolvedImageUrl = isResolvedString ? resolvedImage : undefined;
 const resolvedImageMeta = isResolvedString ? undefined : resolvedImage;
 
-// Helper to format status
 const formatStatus = (status?: string) => {
     if (!status) return "Completed";
     return status
@@ -57,13 +57,20 @@ const technologies =
     project.technologies && project.technologies.length > 0
         ? project.technologies
         : project.tags || [];
+
+let policy: ProjectPolicy | null = null;
+try {
+    policy = await getProjectPolicyBySlug(project.slug);
+} catch (error) {
+    console.error("Failed to fetch project policy:", error);
+}
+const hasPolicy = Boolean(policy?.privacyPolicy || policy?.termsAndConditions);
 ---
 
 <ProjectLayout
     title={`${project.title} - Hafiz Bahtiar`}
     description={project.description}
 >
-    <!-- Breadcrumb -->
     <a
         href="/projects"
         id="back-button"
@@ -102,7 +109,6 @@ const technologies =
     <div
         class="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-3xl overflow-hidden shadow-2xl"
     >
-        <!-- Hero Section -->
         <div
             transition:name={`project-image-${project.slug}`}
             class="h-64 md:h-80 bg-gray-800 relative flex items-center justify-center overflow-hidden"
@@ -215,7 +221,6 @@ const technologies =
             </div>
         </div>
 
-        <!-- Tabs Navigation -->
         <div
             class="border-b border-gray-800 bg-gray-900/80 backdrop-blur-md sticky top-0 z-20"
         >
@@ -251,7 +256,6 @@ const technologies =
         </div>
 
         <div class="p-8 md:p-12 min-h-[400px]">
-            <!-- Overview Tab -->
             <div id="overview" class="tab-content block">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     <div class="lg:col-span-2 space-y-8">
@@ -319,6 +323,78 @@ const technologies =
                                 )
                             }
                         </div>
+                        {
+                            hasPolicy && (
+                                <div class="space-y-6">
+                                    <div class="flex items-center gap-3 text-xs font-mono uppercase tracking-[0.3em] text-cyan-400/80">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-cyan-400/80" />
+                                        Legal Module
+                                    </div>
+                                    <div class="flex flex-wrap gap-3">
+                                        {policy?.privacyPolicy && (
+                                            <a
+                                                href={`/projects/${project.slug}/privacy`}
+                                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900/70 border border-cyan-500/20 text-cyan-200 hover:border-cyan-400/60 hover:text-cyan-100 transition-colors text-sm font-mono"
+                                            >
+                                                <span class="h-1.5 w-1.5 rounded-full bg-cyan-400/80" />
+                                                privacy_policy.md
+                                            </a>
+                                        )}
+                                        {policy?.termsAndConditions && (
+                                            <a
+                                                href={`/projects/${project.slug}/terms`}
+                                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900/70 border border-purple-500/20 text-purple-200 hover:border-purple-400/60 hover:text-purple-100 transition-colors text-sm font-mono"
+                                            >
+                                                <span class="h-1.5 w-1.5 rounded-full bg-purple-400/80" />
+                                                terms_and_conditions.md
+                                            </a>
+                                        )}
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {policy?.privacyPolicy && (
+                                            <div class="bg-gray-900/60 rounded-xl p-6 border border-cyan-500/20 shadow-[0_0_30px_rgba(34,211,238,0.08)]">
+                                                <div class="flex items-center justify-between mb-3">
+                                                    <h3 class="text-lg font-bold text-white">
+                                                        Privacy Policy
+                                                    </h3>
+                                                    <span class="px-2 py-1 rounded-full text-xs font-mono text-cyan-300 bg-cyan-500/10 border border-cyan-500/20">
+                                                        POLICY.md
+                                                    </span>
+                                                </div>
+                                                <TextEditor
+                                                    content={
+                                                        policy.privacyPolicy
+                                                    }
+                                                    editable={false}
+                                                    showToolbar={false}
+                                                    client:load
+                                                />
+                                            </div>
+                                        )}
+                                        {policy?.termsAndConditions && (
+                                            <div class="bg-gray-900/60 rounded-xl p-6 border border-purple-500/20 shadow-[0_0_30px_rgba(168,85,247,0.08)]">
+                                                <div class="flex items-center justify-between mb-3">
+                                                    <h3 class="text-lg font-bold text-white">
+                                                        Terms &amp; Conditions
+                                                    </h3>
+                                                    <span class="px-2 py-1 rounded-full text-xs font-mono text-purple-300 bg-purple-500/10 border border-purple-500/20">
+                                                        TERMS.md
+                                                    </span>
+                                                </div>
+                                                <TextEditor
+                                                    content={
+                                                        policy.termsAndConditions
+                                                    }
+                                                    editable={false}
+                                                    showToolbar={false}
+                                                    client:load
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )
+                        }
                     </div>
 
                     <div
@@ -348,7 +424,6 @@ const technologies =
                 </div>
             </div>
 
-            <!-- Case Study Tab -->
             <div id="case-study" class="tab-content hidden animate-fade-in">
                 <div class="space-y-6">
                     <div class="flex flex-col gap-1">
@@ -402,7 +477,6 @@ const technologies =
                 </div>
             </div>
 
-            <!-- Tech Stack Tab -->
             <div id="tech-stack" class="tab-content hidden animate-fade-in">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {
@@ -456,12 +530,9 @@ const technologies =
             btn.addEventListener("click", () => {
                 const tabId = btn.getAttribute("data-tab");
 
-                // Remove active class from all buttons
                 tabBtns.forEach((b) => b.classList.remove("active"));
-                // Add active class to clicked button
                 btn.classList.add("active");
 
-                // Hide all tab contents
                 tabContents.forEach((content) =>
                     content.classList.add("hidden"),
                 );
@@ -469,7 +540,6 @@ const technologies =
                     content.classList.remove("block"),
                 );
 
-                // Show selected tab content
                 const selectedTab = document.getElementById(tabId!);
                 selectedTab?.classList.remove("hidden");
                 selectedTab?.classList.add("block");
@@ -481,8 +551,6 @@ const technologies =
         const backBtn = document.getElementById("back-button");
         if (backBtn) {
             backBtn.addEventListener("click", (e) => {
-                // If there is history to go back to, use it.
-                // length > 1 usually means there is a previous page.
                 if (window.history.length > 1) {
                     e.preventDefault();
                     window.history.back();
@@ -496,9 +564,7 @@ const technologies =
         setupBackButton();
     }
 
-    // Run on initial load
     init();
 
-    // Run on view transitions
     document.addEventListener("astro:page-load", init);
 </script>

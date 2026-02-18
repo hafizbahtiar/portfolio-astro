@@ -1,0 +1,112 @@
+---
+import ProjectLayout from "../../../layouts/ProjectLayout.astro";
+import { TextEditor } from "../../../components/ui/TextEditor";
+import {
+  getProjectBySlug,
+  getProjectPolicyBySlug,
+  getProjects,
+} from "../../../lib/projects";
+import type { Project, ProjectPolicy } from "../../../types/project";
+
+export async function getStaticPaths() {
+  try {
+    const projects = await getProjects();
+    return projects.map((project) => ({
+      params: { slug: project.slug },
+      props: { slug: project.slug },
+    }));
+  } catch (error) {
+    console.error("Failed to fetch projects for privacy paths:", error);
+    return [];
+  }
+}
+
+const { slug } = Astro.props as { slug: string };
+let project: Project | null = null;
+let policy: ProjectPolicy | null = null;
+
+try {
+  project = await getProjectBySlug(slug);
+  policy = await getProjectPolicyBySlug(slug);
+} catch (error) {
+  console.error("Failed to fetch privacy policy:", error);
+}
+
+const hasPolicy = Boolean(policy?.privacyPolicy);
+---
+
+<ProjectLayout
+  title={`Privacy Policy - ${project?.title ?? "Project"}`}
+  description={project?.description}
+>
+  <div
+    class="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-3xl overflow-hidden shadow-2xl"
+  >
+    <div class="border-b border-gray-800 bg-gray-900/80 px-8 md:px-12 py-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="space-y-2">
+          <div
+            class="flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] text-cyan-400/80"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-cyan-400/80"></span>
+            Legal Module
+          </div>
+          <h1 class="text-3xl md:text-4xl font-bold text-white">
+            Privacy Policy
+          </h1>
+          <p class="text-gray-400 text-sm font-mono">
+            {project ? project.title : slug}
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a
+            href={`/projects/${slug}`}
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900/70 border border-gray-700 text-gray-200 hover:border-cyan-400/60 hover:text-cyan-100 transition-colors text-sm font-mono"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-cyan-400/80"></span>
+            back_to_project
+          </a>
+          <a
+            href={`/projects/${slug}/terms`}
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900/70 border border-purple-500/20 text-purple-200 hover:border-purple-400/60 hover:text-purple-100 transition-colors text-sm font-mono"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-purple-400/80"></span>
+            terms_and_conditions.md
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="p-8 md:p-12">
+      {
+        hasPolicy ? (
+          <div class="bg-gray-900/60 rounded-2xl p-8 border border-cyan-500/20 shadow-[0_0_30px_rgba(34,211,238,0.08)]">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-bold text-white">privacy_policy.md</h2>
+              <span class="px-2 py-1 rounded-full text-xs font-mono text-cyan-300 bg-cyan-500/10 border border-cyan-500/20">
+                read-only
+              </span>
+            </div>
+            <TextEditor
+              content={policy?.privacyPolicy ?? ""}
+              editable={false}
+              showToolbar={false}
+              client:load
+            />
+          </div>
+        ) : (
+          <div class="bg-gray-900/60 rounded-2xl p-8 border border-gray-800 text-gray-400">
+            <div class="text-sm font-mono uppercase tracking-[0.3em] text-gray-500 mb-3">
+              status
+            </div>
+            <p class="text-lg text-gray-300">
+              No privacy policy published for this project.
+            </p>
+            <p class="text-sm text-gray-500 mt-2">
+              Check back later or contact the owner for details.
+            </p>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</ProjectLayout>

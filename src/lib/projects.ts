@@ -1,4 +1,4 @@
-import type { Project } from '../types/project';
+import type { Project, ProjectPolicy, UpdateProjectPolicyData } from '../types/project';
 import { ApiClient } from './api-client';
 
 const API_BASE_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1";
@@ -18,6 +18,10 @@ export class ProjectsService extends ApiClient {
         return this.get<Project>(`projects/${slug}`);
     }
 
+    async getProjectPolicyBySlug(slug: string): Promise<ProjectPolicy | null> {
+        return this.get<ProjectPolicy>(`projects/${slug}/policy`);
+    }
+
     // Admin methods
     async getAdminProjects(): Promise<Project[]> {
         const result = await this.get<Project[]>('owner/projects/all');
@@ -29,12 +33,20 @@ export class ProjectsService extends ApiClient {
         return projects.find(p => p.id === id) || null;
     }
 
+    async getAdminProjectPolicyById(id: number): Promise<ProjectPolicy | null> {
+        return this.get<ProjectPolicy>(`owner/projects/${id}/policy`);
+    }
+
     async createProject(data: Partial<Project>): Promise<Project | null> {
         return this.post<Project>('owner/projects', data);
     }
 
     async updateProject(id: number, data: Partial<Project>): Promise<Project | null> {
         return this.put<Project>(`owner/projects/${id}`, data);
+    }
+
+    async upsertProjectPolicy(id: number, data: UpdateProjectPolicyData): Promise<ProjectPolicy | null> {
+        return this.put<ProjectPolicy>(`owner/projects/${id}/policy`, data);
     }
 
     async deleteProject(id: number): Promise<boolean> {
@@ -54,3 +66,4 @@ export const projectsService = new ProjectsService();
 // Export standalone functions for backward compatibility
 export const getProjects = () => projectsService.getProjects();
 export const getProjectBySlug = (slug: string) => projectsService.getProjectBySlug(slug);
+export const getProjectPolicyBySlug = (slug: string) => projectsService.getProjectPolicyBySlug(slug);

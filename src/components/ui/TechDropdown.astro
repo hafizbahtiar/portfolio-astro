@@ -11,6 +11,7 @@ interface Props {
   placeholder?: string;
   value?: string;
   class?: string;
+  id?: string;
 }
 
 const {
@@ -20,17 +21,25 @@ const {
   placeholder = "Select option",
   value = "",
   class: className = "",
+  id: inputId = `${name}-input`,
 } = Astro.props;
 ---
 
 <div class={`tech-dropdown-container space-y-2 ${className}`} data-name={name}>
   <label
     class="block text-sm font-medium text-gray-400 font-mono tracking-wide"
+    for={inputId}
   >
     {`// ${label}`}
   </label>
   <div class="relative">
-    <input type="hidden" name={name} value={value} class="dropdown-input" />
+    <input
+      id={inputId}
+      type="hidden"
+      name={name}
+      value={value}
+      class="dropdown-input"
+    />
 
     <button
       type="button"
@@ -109,6 +118,8 @@ const {
     const containers = document.querySelectorAll(".tech-dropdown-container");
 
     containers.forEach((container) => {
+      const isInitialized =
+        container.getAttribute("data-initialized") === "true";
       const input = container.querySelector(
         ".dropdown-input",
       ) as HTMLInputElement;
@@ -116,19 +127,20 @@ const {
         ".dropdown-trigger",
       ) as HTMLButtonElement;
       const menu = container.querySelector(".dropdown-menu") as HTMLDivElement;
-      const items = container.querySelectorAll(".dropdown-item");
       const selectedText = container.querySelector(
         ".selected-text",
       ) as HTMLSpanElement;
       const arrow = trigger.querySelector("svg");
 
-      let isOpen = false;
+      if (!isInitialized) {
+        container.setAttribute("data-initialized", "true");
+        container.setAttribute("data-open", "false");
+      }
 
-      function toggleDropdown() {
-        isOpen = !isOpen;
-        if (isOpen) {
+      const setOpenState = (nextOpen: boolean) => {
+        container.setAttribute("data-open", nextOpen ? "true" : "false");
+        if (nextOpen) {
           menu.classList.remove("hidden");
-          // Small animation delay for smooth entrance
           requestAnimationFrame(() => {
             menu.classList.add("opacity-100", "scale-100");
             menu.classList.remove("opacity-0", "scale-95");
@@ -143,7 +155,9 @@ const {
           menu.classList.add("opacity-0", "scale-95");
           menu.classList.remove("opacity-100", "scale-100");
           setTimeout(() => {
-            if (!isOpen) menu.classList.add("hidden");
+            if (container.getAttribute("data-open") !== "true") {
+              menu.classList.add("hidden");
+            }
           }, 200);
           arrow?.classList.remove("rotate-180");
           trigger.classList.remove(
@@ -152,94 +166,85 @@ const {
             "ring-cyan-500/50",
           );
         }
-      }
+      };
 
-      function closeDropdown() {
-        isOpen = false;
-        menu.classList.add("opacity-0", "scale-95");
-        menu.classList.remove("opacity-100", "scale-100");
-        setTimeout(() => {
-          if (!isOpen) menu.classList.add("hidden");
-        }, 200);
-        arrow?.classList.remove("rotate-180");
-        trigger.classList.remove(
-          "border-cyan-500",
-          "ring-2",
-          "ring-cyan-500/50",
-        );
-      }
+      const toggleDropdown = () => {
+        const isOpen = container.getAttribute("data-open") === "true";
+        setOpenState(!isOpen);
+      };
 
-      // Toggle click
-      trigger.addEventListener("click", (e) => {
-        e.stopPropagation();
-        // Close other dropdowns
-        document
-          .querySelectorAll(".tech-dropdown-container .dropdown-menu")
-          .forEach((el) => {
-            if (el !== menu && !el.classList.contains("hidden")) {
-              // Logic to close others could be here, but click outside handles it mostly
-              el.classList.add("hidden");
-              // We'd need to reset their visual state too.
-              // For simplicity, we rely on the click outside listener mostly.
+      const closeDropdown = () => setOpenState(false);
+
+      (
+        container as HTMLElement & { setupDropdown?: () => void }
+      ).setupDropdown = closeDropdown;
+
+      if (!isInitialized) {
+        trigger.addEventListener("click", (e) => {
+          e.stopPropagation();
+          document
+            .querySelectorAll(".tech-dropdown-container .dropdown-menu")
+            .forEach((el) => {
+              if (el !== menu && !el.classList.contains("hidden")) {
+                el.classList.add("hidden");
+              }
+            });
+          toggleDropdown();
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!container.contains(e.target as Node)) {
+            closeDropdown();
+          }
+        });
+
+        if (!input.dataset.bound) {
+          input.dataset.bound = "true";
+          input.addEventListener("change", () => {
+            const newValue = input.value;
+            let newLabel = input.getAttribute("placeholder") || "Select option";
+            const matchingItem = Array.from(
+              container.querySelectorAll(".dropdown-item"),
+            ).find(
+              (item) => (item as HTMLButtonElement).dataset.value === newValue,
+            );
+            if (matchingItem) {
+              newLabel =
+                matchingItem.querySelector("span")?.textContent || newLabel;
+              selectedText.classList.add("text-cyan-400");
+            } else {
+              selectedText.classList.remove("text-cyan-400");
             }
-          });
-        toggleDropdown();
-      });
 
-      // Item selection
+            selectedText.textContent = newLabel;
+          });
+        }
+      }
+
+      const items = container.querySelectorAll(".dropdown-item");
       items.forEach((item) => {
+        const element = item as HTMLButtonElement & { dataset: DOMStringMap };
+        if (element.dataset.bound === "true") return;
+        element.dataset.bound = "true";
         item.addEventListener("click", (e) => {
           e.stopPropagation();
-          const value = (item as HTMLButtonElement).dataset.value || "";
+          const value = element.dataset.value || "";
           const label = item.querySelector("span")?.textContent || "";
 
           input.value = value;
           selectedText.textContent = label;
           selectedText.classList.add("text-cyan-400");
 
-          // Dispatch change event for external listeners
           input.dispatchEvent(new Event("change", { bubbles: true }));
 
           closeDropdown();
         });
       });
-
-      // Click outside
-      document.addEventListener("click", (e) => {
-        if (!container.contains(e.target as Node)) {
-          closeDropdown();
-        }
-      });
-
-      // Listen for external updates to the input value (e.g. from edit page population)
-      input.addEventListener("change", () => {
-        const newValue = input.value;
-        // Find label for this value
-        let newLabel = input.getAttribute("placeholder") || "Select option";
-
-        // We need to look up the label from the items since we don't have the options prop in JS
-        // But the items are right there in the DOM
-        const matchingItem = Array.from(items).find(
-          (item) => (item as HTMLButtonElement).dataset.value === newValue,
-        );
-        if (matchingItem) {
-          newLabel =
-            matchingItem.querySelector("span")?.textContent || newLabel;
-          selectedText.classList.add("text-cyan-400");
-        } else {
-          selectedText.classList.remove("text-cyan-400");
-        }
-
-        selectedText.textContent = newLabel;
-      });
     });
   }
 
-  // Initialize
   setupDropdowns();
-
-  // Re-run on view transitions if enabled, or just safe to run again?
-  // It attaches listeners. We should probably handle potential multiple calls if SPA navigation is used.
-  // But Astro MPA usually refreshes.
+  (window as Window & { setupTechDropdowns?: () => void }).setupTechDropdowns =
+    setupDropdowns;
   document.addEventListener("astro:page-load", setupDropdowns);
 </script>
