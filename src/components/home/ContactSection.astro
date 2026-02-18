@@ -358,279 +358,304 @@ import PhoneNumberInput from "../ui/PhoneNumberInput";
 <script>
   import { submitContactForm } from "../../lib/contact";
 
-  const getInTouchBtn = document.getElementById("get-in-touch-btn");
-  const backBtn = document.getElementById("back-to-initial");
-  const initialView = document.getElementById("contact-initial");
-  const formView = document.getElementById("contact-form");
-  const container = document.getElementById("contact-container");
-  const scannerBeam = document.getElementById("scanner-beam");
-  const contactHeader = document.getElementById("contact-header");
-  const formItems = document.querySelectorAll(".form-item");
+  const initContactSection = () => {
+    const getInTouchBtn = document.getElementById("get-in-touch-btn");
+    const backBtn = document.getElementById("back-to-initial");
+    const initialView = document.getElementById("contact-initial");
+    const formView = document.getElementById("contact-form");
+    const container = document.getElementById("contact-container");
+    const scannerBeam = document.getElementById("scanner-beam");
+    const contactHeader = document.getElementById("contact-header");
+    const formItems = document.querySelectorAll(".form-item");
 
-  const contactForm = document.getElementById(
-    "main-contact-form",
-  ) as HTMLFormElement;
-  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
-  const statusDiv = document.getElementById("form-status");
-  const successView = document.getElementById("success-view");
-  const successMessage = document.getElementById("success-message");
-  const sendAnotherBtn = document.getElementById("send-another-btn");
-  const applyFormWidth = (active: boolean) => {
-    if (!container || !formView) return;
-    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-    const currentWidth = container.offsetWidth;
-    const parentWidth = container.parentElement?.offsetWidth ?? currentWidth;
-    const formWidth = formView.offsetWidth;
-    const padding = 64;
-    const targetWidth = active && isDesktop ? formWidth + padding : parentWidth;
-    container.style.maxWidth = `${currentWidth}px`;
-    container.style.width = "100%";
-    requestAnimationFrame(() => {
-      container.style.maxWidth = `${targetWidth}px`;
-    });
-  };
+    const contactForm = document.getElementById(
+      "main-contact-form",
+    ) as HTMLFormElement;
+    const submitBtn = document.getElementById(
+      "submit-btn",
+    ) as HTMLButtonElement;
+    const statusDiv = document.getElementById("form-status");
+    const successView = document.getElementById("success-view");
+    const successMessage = document.getElementById("success-message");
+    const sendAnotherBtn = document.getElementById("send-another-btn");
 
-  if (
-    getInTouchBtn &&
-    backBtn &&
-    initialView &&
-    formView &&
-    container &&
-    scannerBeam &&
-    contactForm &&
-    submitBtn &&
-    statusDiv
-  ) {
-    // Calculate initial height to prevent jump
-    let initialHeight = container.offsetHeight;
-    container.style.height = `${initialHeight}px`;
-    const parentWidth =
-      container.parentElement?.offsetWidth ?? container.offsetWidth;
-    container.style.maxWidth = `${parentWidth}px`;
-    container.style.width = "100%";
-
-    getInTouchBtn.addEventListener("click", () => {
-      // 1. Activate Scanner & Tech Effects
-      scannerBeam.classList.add("scanning");
-      container.classList.add("tech-border-glow");
-      container.classList.add("contact-form-active");
-
-      // 2. Retract Initial View
-      initialView.style.transform = "scale(0.9) translateY(20px)";
-      initialView.style.opacity = "0";
-
-      setTimeout(() => {
-        initialView.classList.add("hidden");
-        formView.classList.remove("hidden");
-
-        // 3. Resize Container
-        formView.classList.remove("absolute", "inset-0", "h-full");
-        const formHeight = formView.offsetHeight + 128;
-        container.style.height = `${Math.max(formHeight, 600)}px`;
-
-        // Allow dynamic height after transition
-        setTimeout(() => {
-          container.style.height = "auto";
-        }, 500);
-
-        requestAnimationFrame(() => {
-          applyFormWidth(true);
-        });
-
-        // 4. Animate Form Items In (Staggered)
-        setTimeout(() => {
-          formItems.forEach((item) => {
-            (item as HTMLElement).style.opacity = "1";
-            (item as HTMLElement).style.transform = "translate(0, 0)";
-          });
-        }, 300);
-
-        // Remove scanner after animation
-        setTimeout(() => {
-          scannerBeam.classList.remove("scanning");
-          container.classList.remove("tech-border-glow");
-        }, 800);
-      }, 400);
-    });
-
-    backBtn.addEventListener("click", () => {
-      closeForm();
-    });
-
-    function closeForm() {
-      // 1. Retract Form
-      formItems.forEach((item) => {
-        (item as HTMLElement).style.opacity = "0";
-        (item as HTMLElement).style.transform = "translateY(10px)";
-      });
-
-      // 2. Shrink Container & Show Initial
-      setTimeout(() => {
-        if (!formView || !initialView || !container) return;
-
-        // Lock height from auto to pixels for transition
-        const currentHeight = container.offsetHeight;
-        container.style.height = `${currentHeight}px`;
-        // Force reflow
-        void container.offsetHeight;
-
-        formView.classList.add("hidden");
-        formView.classList.add("absolute", "inset-0", "h-full");
-
-        // Hide Success View if active
-        if (successView && !successView.classList.contains("hidden")) {
-          successView.classList.add("hidden");
-          contactForm?.classList.remove("hidden");
-          contactHeader?.classList.remove("hidden");
-        }
-
-        initialView.classList.remove("hidden");
-        // Force reflow
-        void initialView.offsetWidth;
-
-        // Restore Initial View
-        initialView.style.transform = "scale(1) translateY(0)";
-        initialView.style.opacity = "1";
-
-        // Restore Height
-        container.style.height = `${initialHeight}px`;
-        applyFormWidth(false);
-        container.classList.remove("contact-form-active");
-
-        // Clean up styles on form items
-        setTimeout(() => {
-          formItems.forEach((item) => {
-            (item as HTMLElement).style.opacity = "";
-            (item as HTMLElement).style.transform = "";
-          });
-          // Reset form inputs
-          contactForm?.reset();
-          if (statusDiv) statusDiv.classList.add("hidden");
-        }, 500);
-      }, 400);
+    const existingController = (window as any).__contactUplinkController;
+    if (existingController) {
+      existingController.abort();
     }
+    const controller = new AbortController();
+    (window as any).__contactUplinkController = controller;
+    const { signal } = controller;
 
-    if (sendAnotherBtn) {
-      sendAnotherBtn.addEventListener("click", () => {
-        // Reset to form view
-        successView?.classList.add("hidden");
-        contactForm?.classList.remove("hidden");
-        contactHeader?.classList.remove("hidden");
-        contactForm?.reset();
+    const applyFormWidth = (active: boolean) => {
+      if (!container || !formView) return;
+      const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+      const currentWidth = container.offsetWidth;
+      const parentWidth = container.parentElement?.offsetWidth ?? currentWidth;
+      const formWidth = formView.offsetWidth;
+      const padding = 64;
+      const targetWidth =
+        active && isDesktop ? formWidth + padding : parentWidth;
+      container.style.maxWidth = `${currentWidth}px`;
+      container.style.width = "100%";
+      requestAnimationFrame(() => {
+        container.style.maxWidth = `${targetWidth}px`;
+      });
+    };
 
-        // Animate form items back in
+    if (
+      getInTouchBtn &&
+      backBtn &&
+      initialView &&
+      formView &&
+      container &&
+      scannerBeam &&
+      contactForm &&
+      submitBtn &&
+      statusDiv
+    ) {
+      let initialHeight = container.offsetHeight;
+      container.style.height = `${initialHeight}px`;
+      const parentWidth =
+        container.parentElement?.offsetWidth ?? container.offsetWidth;
+      container.style.maxWidth = `${parentWidth}px`;
+      container.style.width = "100%";
+
+      getInTouchBtn.addEventListener(
+        "click",
+        () => {
+          initialHeight = container.offsetHeight;
+
+          // 1. Activate Scanner & Tech Effects
+          scannerBeam.classList.add("scanning");
+          container.classList.add("tech-border-glow");
+          container.classList.add("contact-form-active");
+
+          initialView.style.transform = "scale(0.9) translateY(20px)";
+          initialView.style.opacity = "0";
+
+          setTimeout(() => {
+            initialView.classList.add("hidden");
+            formView.classList.remove("hidden");
+
+            formView.classList.remove("absolute", "inset-0", "h-full");
+            const formHeight = formView.offsetHeight + 128;
+            container.style.height = `${Math.max(formHeight, 600)}px`;
+
+            setTimeout(() => {
+              container.style.height = "auto";
+            }, 500);
+
+            requestAnimationFrame(() => {
+              applyFormWidth(true);
+            });
+
+            setTimeout(() => {
+              formItems.forEach((item) => {
+                (item as HTMLElement).style.opacity = "1";
+                (item as HTMLElement).style.transform = "translate(0, 0)";
+              });
+            }, 300);
+
+            setTimeout(() => {
+              scannerBeam.classList.remove("scanning");
+              container.classList.remove("tech-border-glow");
+            }, 800);
+          }, 400);
+        },
+        { signal },
+      );
+
+      backBtn.addEventListener(
+        "click",
+        () => {
+          closeForm();
+        },
+        { signal },
+      );
+
+      function closeForm() {
         formItems.forEach((item) => {
           (item as HTMLElement).style.opacity = "0";
           (item as HTMLElement).style.transform = "translateY(10px)";
         });
 
         setTimeout(() => {
-          formItems.forEach((item) => {
-            (item as HTMLElement).style.opacity = "1";
-            (item as HTMLElement).style.transform = "translate(0, 0)";
-          });
-        }, 100);
-      });
-    }
+          if (!formView || !initialView || !container) return;
 
-    window.addEventListener("resize", () => {
-      applyFormWidth(container.classList.contains("contact-form-active"));
-    });
+          const currentHeight = container.offsetHeight;
+          container.style.height = `${currentHeight}px`;
+          void container.offsetHeight;
 
-    // Character count for message
-    const messageInput = document.getElementById(
-      "message",
-    ) as HTMLTextAreaElement;
-    if (messageInput) {
-      messageInput.addEventListener("input", function () {
-        const currentLength = this.value.length;
-        const counter = this.nextElementSibling;
-        if (counter) {
-          counter.textContent = `${currentLength} / 2500`;
-        }
-      });
-    }
+          formView.classList.add("hidden");
+          formView.classList.add("absolute", "inset-0", "h-full");
 
-    // Handle Form Submission
-    contactForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const originalBtnContent = submitBtn.innerHTML;
-
-      // Reset status
-      statusDiv.classList.add("hidden");
-      statusDiv.className =
-        "hidden text-sm font-mono text-center p-3 rounded-lg border mb-4";
-
-      // Get data
-      const formData = new FormData(contactForm);
-      const phoneValue = (formData.get("phone") as string)?.trim();
-      const data = {
-        name: (formData.get("name") as string).trim(),
-        email: (formData.get("email") as string).trim(),
-        phone: phoneValue ? phoneValue : undefined,
-        message: (formData.get("message") as string).trim(),
-        source: "FORM", // Changed to match DB constraint
-      };
-
-      // Basic validation
-      if (!data.name || !data.email || !data.message) {
-        statusDiv.textContent = "All fields are required.";
-        statusDiv.classList.remove("hidden");
-        statusDiv.classList.add(
-          "bg-red-900/50",
-          "border-red-500/50",
-          "text-red-200",
-        );
-        return;
-      }
-
-      // Loading state
-      submitBtn.disabled = true;
-      submitBtn.innerHTML =
-        '<span class="relative z-10 flex items-center justify-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> UPLOADING DATA STREAM...</span><div class="absolute inset-0 bg-white/5"></div>';
-
-      try {
-        const result = await submitContactForm(data);
-
-        if (result.success) {
-          // Success State - Switch to Success View
-          contactForm.classList.add("hidden");
-          contactHeader?.classList.add("hidden");
-          if (successView) {
-            successView.classList.remove("hidden");
-            if (successMessage) {
-              successMessage.textContent =
-                result.message || "Message successfully relayed to HQ.";
-            }
+          if (successView && !successView.classList.contains("hidden")) {
+            successView.classList.add("hidden");
+            contactForm?.classList.remove("hidden");
+            contactHeader?.classList.remove("hidden");
           }
-          // Reset button for next time
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalBtnContent;
-        } else {
-          // Error State
-          throw new Error(result.error || "Transmission failed.");
-        }
-      } catch (error: any) {
-        console.error("Submission error:", error);
-        submitBtn.disabled = false;
-        submitBtn.innerHTML =
-          '<span class="relative z-10 flex items-center justify-center gap-2 text-red-200"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> UPLINK FAILED</span>';
 
-        statusDiv.textContent =
-          error.message || "Connection error. Please retry transmission.";
-        statusDiv.classList.remove("hidden");
-        statusDiv.classList.add(
-          "bg-red-900/50",
-          "border-red-500/50",
-          "text-red-200",
-        );
+          initialView.classList.remove("hidden");
+          void initialView.offsetWidth;
 
-        // Reset button text after delay
-        setTimeout(() => {
-          submitBtn.innerHTML = originalBtnContent;
-        }, 3000);
+          initialView.style.transform = "scale(1) translateY(0)";
+          initialView.style.opacity = "1";
+
+          container.style.height = `${initialHeight}px`;
+          applyFormWidth(false);
+          container.classList.remove("contact-form-active");
+
+          setTimeout(() => {
+            formItems.forEach((item) => {
+              (item as HTMLElement).style.opacity = "";
+              (item as HTMLElement).style.transform = "";
+            });
+            contactForm?.reset();
+            if (statusDiv) statusDiv.classList.add("hidden");
+          }, 500);
+        }, 400);
       }
-    });
-  }
+
+      if (sendAnotherBtn) {
+        sendAnotherBtn.addEventListener(
+          "click",
+          () => {
+            successView?.classList.add("hidden");
+            contactForm?.classList.remove("hidden");
+            contactHeader?.classList.remove("hidden");
+            contactForm?.reset();
+
+            formItems.forEach((item) => {
+              (item as HTMLElement).style.opacity = "0";
+              (item as HTMLElement).style.transform = "translateY(10px)";
+            });
+
+            setTimeout(() => {
+              formItems.forEach((item) => {
+                (item as HTMLElement).style.opacity = "1";
+                (item as HTMLElement).style.transform = "translate(0, 0)";
+              });
+            }, 100);
+          },
+          { signal },
+        );
+      }
+
+      window.addEventListener(
+        "resize",
+        () => {
+          applyFormWidth(container.classList.contains("contact-form-active"));
+        },
+        { signal },
+      );
+
+      const messageInput = document.getElementById(
+        "message",
+      ) as HTMLTextAreaElement;
+      if (messageInput) {
+        messageInput.addEventListener(
+          "input",
+          function () {
+            const currentLength = this.value.length;
+            const counter = this.nextElementSibling;
+            if (counter) {
+              counter.textContent = `${currentLength} / 2500`;
+            }
+          },
+          { signal },
+        );
+      }
+
+      contactForm.addEventListener(
+        "submit",
+        async (e) => {
+          e.preventDefault();
+
+          const originalBtnContent = submitBtn.innerHTML;
+
+          statusDiv.classList.add("hidden");
+          statusDiv.className =
+            "hidden text-sm font-mono text-center p-3 rounded-lg border mb-4";
+
+          const formData = new FormData(contactForm);
+          const phoneValue = (formData.get("phone") as string)?.trim();
+          const data = {
+            name: (formData.get("name") as string).trim(),
+            email: (formData.get("email") as string).trim(),
+            phone: phoneValue ? phoneValue : undefined,
+            message: (formData.get("message") as string).trim(),
+            source: "FORM",
+          };
+
+          if (!data.name || !data.email || !data.message) {
+            statusDiv.textContent = "All fields are required.";
+            statusDiv.classList.remove("hidden");
+            statusDiv.classList.add(
+              "bg-red-900/50",
+              "border-red-500/50",
+              "text-red-200",
+            );
+            return;
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.innerHTML =
+            '<span class="relative z-10 flex items-center justify-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> UPLOADING DATA STREAM...</span><div class="absolute inset-0 bg-white/5"></div>';
+
+          try {
+            const result = await submitContactForm(data);
+
+            if (result.success) {
+              contactForm.classList.add("hidden");
+              contactHeader?.classList.add("hidden");
+              if (successView) {
+                successView.classList.remove("hidden");
+                if (successMessage) {
+                  successMessage.textContent =
+                    result.message || "Message successfully relayed to HQ.";
+                }
+              }
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalBtnContent;
+            } else {
+              throw new Error(result.error || "Transmission failed.");
+            }
+          } catch (error: any) {
+            console.error("Submission error:", error);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML =
+              '<span class="relative z-10 flex items-center justify-center gap-2 text-red-200"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> UPLINK FAILED</span>';
+
+            statusDiv.textContent =
+              error.message || "Connection error. Please retry transmission.";
+            statusDiv.classList.remove("hidden");
+            statusDiv.classList.add(
+              "bg-red-900/50",
+              "border-red-500/50",
+              "text-red-200",
+            );
+
+            setTimeout(() => {
+              submitBtn.innerHTML = originalBtnContent;
+            }, 3000);
+          }
+        },
+        { signal },
+      );
+    }
+  };
+
+  const bindContactSection = () => {
+    initContactSection();
+  };
+
+  bindContactSection();
+  document.addEventListener("astro:page-load", bindContactSection);
+  document.addEventListener("astro:after-swap", bindContactSection);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      bindContactSection();
+    }
+  });
 </script>
