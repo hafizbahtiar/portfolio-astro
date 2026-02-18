@@ -1,0 +1,132 @@
+---
+const { id = "ui-alert" } = Astro.props;
+const alertId = id;
+---
+
+<div
+  id={alertId}
+  class="fixed bottom-6 right-6 z-50 hidden opacity-0 translate-y-2 transition-all duration-300"
+  role="alert"
+  aria-live="polite"
+>
+  <div
+    data-alert-panel
+    class="min-w-[280px] max-w-[360px] rounded-2xl border border-gray-800 bg-gray-950/95 backdrop-blur px-5 py-4 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)]"
+  >
+    <div class="flex items-start gap-3">
+      <div
+        data-alert-icon
+        class="mt-0.5 rounded-full border px-2 py-1 text-xs font-mono uppercase tracking-wide"
+      >
+        INFO
+      </div>
+      <div class="flex-1">
+        <p data-alert-title class="text-sm font-semibold text-white">
+          Notification
+        </p>
+        <p data-alert-message class="text-sm text-gray-400 mt-1">
+          Action completed.
+        </p>
+      </div>
+      <button
+        type="button"
+        data-alert-close
+        class="text-gray-500 hover:text-gray-200 transition-colors"
+        aria-label="Dismiss"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+            clip-rule="evenodd"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{ alertId }}>
+  const root = document.getElementById(alertId);
+  if (root) {
+    const panel = root.querySelector("[data-alert-panel]");
+    const icon = root.querySelector("[data-alert-icon]");
+    const titleEl = root.querySelector("[data-alert-title]");
+    const messageEl = root.querySelector("[data-alert-message]");
+    const closeBtn = root.querySelector("[data-alert-close]");
+
+    const panelVariants = {
+      success: [
+        "border-emerald-500/40",
+        "shadow-[0_0_30px_rgba(16,185,129,0.15)]",
+      ],
+      error: ["border-rose-500/40", "shadow-[0_0_30px_rgba(244,63,94,0.15)]"],
+      warning: [
+        "border-amber-400/40",
+        "shadow-[0_0_30px_rgba(251,191,36,0.12)]",
+      ],
+      info: ["border-cyan-400/40", "shadow-[0_0_30px_rgba(34,211,238,0.15)]"],
+    };
+
+    const iconVariants = {
+      success: ["border-emerald-500/40", "text-emerald-400"],
+      error: ["border-rose-500/40", "text-rose-400"],
+      warning: ["border-amber-400/40", "text-amber-300"],
+      info: ["border-cyan-400/40", "text-cyan-300"],
+    };
+
+    const allPanelClasses = Object.values(panelVariants).flat();
+    const allIconClasses = Object.values(iconVariants).flat();
+
+    let hideTimer = null;
+
+    const hide = () => {
+      if (hideTimer) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+      }
+      root.classList.remove("opacity-100", "translate-y-0");
+      root.classList.add("opacity-0", "translate-y-2");
+      window.setTimeout(() => {
+        root.classList.add("hidden");
+      }, 240);
+    };
+
+    const show = (options = {}) => {
+      const {
+        type = "info",
+        title = "Notification",
+        message = "Action completed.",
+        duration = 2200,
+      } = options;
+
+      if (panel) {
+        panel.classList.remove(...allPanelClasses);
+        panel.classList.add(...(panelVariants[type] || panelVariants.info));
+      }
+
+      if (icon) {
+        icon.classList.remove(...allIconClasses);
+        icon.classList.add(...(iconVariants[type] || iconVariants.info));
+        icon.textContent = type.toUpperCase();
+      }
+
+      if (titleEl) titleEl.textContent = title;
+      if (messageEl) messageEl.textContent = message;
+
+      root.classList.remove("hidden", "opacity-0", "translate-y-2");
+      root.classList.add("opacity-100", "translate-y-0");
+
+      if (duration > 0) {
+        if (hideTimer) clearTimeout(hideTimer);
+        hideTimer = window.setTimeout(hide, duration);
+      }
+    };
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", hide);
+    }
+
+    window.__uiAlerts = window.__uiAlerts || {};
+    window.__uiAlerts[alertId] = { show, hide };
+  }
+</script>

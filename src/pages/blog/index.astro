@@ -1,0 +1,128 @@
+---
+import PublicLayout from "../../layouts/PublicLayout.astro";
+
+const posts = [
+  {
+    title: "Designing Resilient UI States",
+    excerpt:
+      "A practical walkthrough of handling loading, error, and empty states without breaking visual rhythm.",
+    date: "2026-02-10",
+    readTime: "6 min read",
+    tags: ["UI/UX", "Frontend", "Patterns"],
+    slug: "designing-resilient-ui-states",
+  },
+  {
+    title: "From Prototype to Production",
+    excerpt:
+      "How I move fast on prototypes while keeping a clean path to scalable architecture.",
+    date: "2026-01-28",
+    readTime: "8 min read",
+    tags: ["Architecture", "Product", "Workflow"],
+    slug: "from-prototype-to-production",
+  },
+  {
+    title: "Choosing the Right Tech Stack",
+    excerpt:
+      "A decision framework for picking tools that fit the team, timeline, and long-term maintenance.",
+    date: "2026-01-12",
+    readTime: "5 min read",
+    tags: ["Strategy", "Engineering"],
+    slug: "choosing-the-right-tech-stack",
+  },
+  {
+    title: "Building for Performance",
+    excerpt:
+      "Optimizations that keep Lighthouse scores high without sacrificing design or accessibility.",
+    date: "2025-12-22",
+    readTime: "7 min read",
+    tags: ["Performance", "Web"],
+    slug: "building-for-performance",
+  },
+];
+---
+
+<PublicLayout
+  title="Blog - Hafiz Bahtiar"
+  description="Insights on building reliable products, clean architecture, and shipping fast."
+>
+  <div class="container-main space-y-12 md:space-y-16 pb-16 md:pb-24">
+    <section class="scroll-offset relative py-12 md:py-16">
+      <div
+        class="flex items-center gap-2 text-sm font-mono text-cyan-400 mb-6 bg-gray-900/50 w-fit px-4 py-2 rounded-lg border border-gray-800"
+      >
+        <span class="text-gray-500">root</span>
+        <span class="text-gray-600">/</span>
+        <span class="text-cyan-400 font-bold">blog</span>
+        <span class="animate-pulse">_</span>
+      </div>
+
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div class="max-w-2xl">
+          <h1
+            class="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight"
+          >
+            Field Notes on Shipping
+            <span
+              class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"
+            >
+              &nbsp;Great Software
+            </span>
+          </h1>
+          <p
+            class="text-gray-400 text-lg leading-relaxed border-l-2 border-gray-800 pl-6"
+          >
+            Practical lessons, experiments, and checklists from building modern
+            web and mobile products.
+          </p>
+        </div>
+
+        <div class="hidden md:block text-right font-mono text-xs text-gray-500">
+          <div>total_posts: {posts.length}</div>
+          <div>status: <span class="text-green-500">active</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {
+        posts.map((post) => (
+          <article class="group rounded-2xl border border-gray-800 bg-gray-900/60 backdrop-blur-sm p-6 transition-all hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(34,211,238,0.12)]">
+            <div class="flex items-center gap-2 text-xs font-mono text-gray-500 mb-4">
+              <span>{post.date}</span>
+              <span>•</span>
+              <span>{post.readTime}</span>
+            </div>
+            <h2 class="text-2xl font-semibold text-white mb-3 group-hover:text-cyan-400 transition-colors">
+              {post.title}
+            </h2>
+            <p class="text-gray-400 leading-relaxed mb-5">{post.excerpt}</p>
+            <div class="flex flex-wrap gap-2 mb-6">
+              {post.tags.map((tag) => (
+                <span class="badge-gray">{tag}</span>
+              ))}
+            </div>
+            <a
+              href={`/blog/${post.slug}`}
+              class="inline-flex items-center gap-2 text-sm font-mono text-cyan-300 hover:text-cyan-200 transition-colors"
+            >
+              Read More
+              <svg
+                class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+            </a>
+          </article>
+        ))
+      }
+    </section>
+  </div>
+</PublicLayout>

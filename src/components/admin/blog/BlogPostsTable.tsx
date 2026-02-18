@@ -1,64 +1,63 @@
-
 import React, { useEffect, useState } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "../../ui/DataTable";
-import { projectsService } from "../../../lib/projects";
-import type { Project } from "../../../types/project";
+import { blogService } from "../../../lib/blog";
+import type { BlogPostSummary } from "../../../types/blog";
 
-export const ProjectsTable = () => {
-  const [data, setData] = useState<Project[]>([]);
+export const BlogPostsTable = () => {
+  const [data, setData] = useState<BlogPostSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadProjects = async () => {
+    const loadPosts = async () => {
       try {
-        const projects = await projectsService.getAdminProjects();
-        setData(projects);
+        const posts = await blogService.getAdminPosts();
+        setData(posts);
       } catch (error) {
-        console.error("Failed to load projects:", error);
+        console.error("Failed to load posts:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadProjects();
+    loadPosts();
   }, []);
 
-  const confirmDelete = async (project: Project) => {
+  const confirmDelete = async (post: BlogPostSummary) => {
     const modal = (window as Window & { confirmModal?: any }).confirmModal;
     if (modal?.show) {
       return modal.show({
-        title: "Delete project",
-        message: `Delete “${project.title}”? This action cannot be undone.`,
+        title: "Delete post",
+        message: `Delete “${post.title}”? This action cannot be undone.`,
         confirmText: "Delete",
         cancelText: "Cancel",
         variant: "danger",
       });
     }
-    return confirm("Are you sure you want to delete this project?");
+    return confirm("Are you sure you want to delete this post?");
   };
 
-  const handleDelete = async (project: Project) => {
-    if (!project.id) {
-      alert("Missing project ID");
+  const handleDelete = async (post: BlogPostSummary) => {
+    if (!post.id) {
+      alert("Missing blog post ID");
       return;
     }
-    const shouldDelete = await confirmDelete(project);
+    const shouldDelete = await confirmDelete(post);
     if (!shouldDelete) return;
     try {
-      const success = await projectsService.deleteProject(project.id);
+      const success = await blogService.deletePost(post.id);
       if (success) {
-        setData((prev) => prev.filter((item) => item.id !== project.id));
+        setData((prev) => prev.filter((item) => item.id !== post.id));
       } else {
-        alert("Failed to delete project");
+        alert("Failed to delete post");
       }
     } catch (error) {
       console.error("Delete failed:", error);
-      alert("Failed to delete project");
+      alert("Failed to delete post");
     }
   };
 
-  const columns: ColumnDef<Project>[] = [
+  const columns: ColumnDef<BlogPostSummary>[] = [
     {
       accessorKey: "title",
       header: "Title",
@@ -72,25 +71,16 @@ export const ProjectsTable = () => {
       ),
     },
     {
-      accessorKey: "projectType",
-      header: "Type",
-      cell: ({ row }) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-300 border border-gray-600 capitalize">
-          {row.getValue("projectType")}
-        </span>
-      ),
-    },
-    {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
         const colorClass =
-          status === "completed"
+          status === "published"
             ? "bg-green-900/30 text-green-400 border border-green-900"
-            : status === "in-progress"
+            : status === "draft"
               ? "bg-yellow-900/30 text-yellow-400 border border-yellow-900"
-              : "bg-blue-900/30 text-blue-400 border border-blue-900";
+              : "bg-gray-800/60 text-gray-400 border border-gray-700";
 
         return (
           <span
@@ -102,14 +92,34 @@ export const ProjectsTable = () => {
       },
     },
     {
+      accessorKey: "publishedDate",
+      header: "Published",
+      cell: ({ row }) => (
+        <span className="text-sm text-gray-300">
+          {row.original.publishedDate || "—"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "readTimeMinutes",
+      header: "Read Time",
+      cell: ({ row }) => (
+        <span className="text-sm text-gray-300">
+          {row.original.readTimeMinutes
+            ? `${row.original.readTimeMinutes} min`
+            : "—"}
+        </span>
+      ),
+    },
+    {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <a
-            href={`/admin/projects/edit?id=${row.original.id}`}
+            href={`/admin/blog/edit?id=${row.original.id}`}
             className="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/10 rounded-lg transition-colors"
-            title="Edit Project"
+            title="Edit Post"
             aria-label={`Edit ${row.original.title}`}
           >
             <svg
@@ -129,7 +139,7 @@ export const ProjectsTable = () => {
           <button
             onClick={() => handleDelete(row.original)}
             className="p-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors"
-            title="Delete Project"
+            title="Delete Post"
           >
             <svg
               className="w-5 h-5"

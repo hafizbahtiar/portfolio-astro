@@ -3,6 +3,19 @@ export interface ApiResponse<T> {
     data: T;
     message?: string;
     error?: string;
+    field?: string;
+}
+
+export class ApiError extends Error {
+    status?: number;
+    data?: any;
+
+    constructor(message: string, status?: number, data?: any) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.data = data;
+    }
 }
 
 export class ApiClient {
@@ -155,7 +168,8 @@ export class ApiClient {
                 // Handle 404 specifically if needed, or just throw
                 if (response.status === 404) return null;
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || errorData.message || `API Error: ${response.status} ${response.statusText}`);
+                const errorMessage = errorData.error || errorData.message || `API Error: ${response.status} ${response.statusText}`;
+                throw new ApiError(errorMessage, response.status, errorData);
             }
 
             const data: ApiResponse<T> = await response.json();
@@ -165,10 +179,7 @@ export class ApiClient {
             }
 
             console.error(`API returned failure: ${data.message || data.error}`);
-            // If strictly following the ApiResponse interface, we might want to return null or throw
-            // Depending on how strict we want to be. 
-            // For now, let's throw so the caller handles it
-            throw new Error(data.message || data.error || 'Unknown API Error');
+            throw new ApiError(data.message || data.error || 'Unknown API Error', response.status, data);
 
         } catch (error) {
             console.error(`Request failed for ${endpoint}:`, error);

@@ -1,0 +1,32 @@
+---
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import { BlogPostsTable } from "../../../components/admin/blog/BlogPostsTable";
+---
+
+<PrivateLayout title="Manage Blog Posts">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-white tracking-tight">Blog Posts</h1>
+      <a
+        href="/admin/blog/new"
+        class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg font-mono text-sm transition-colors flex items-center gap-2"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"></path>
+        </svg>
+        NEW POST
+      </a>
+    </div>
+
+    <BlogPostsTable client:load />
+  </div>
+</PrivateLayout>

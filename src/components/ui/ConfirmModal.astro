@@ -1,0 +1,212 @@
+<div
+  id="confirm-modal"
+  class="fixed inset-0 z-50 hidden"
+  aria-labelledby="confirm-modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <div
+    class="fixed inset-0 bg-gray-950/80 backdrop-blur-sm transition-opacity opacity-0"
+    id="confirm-modal-backdrop"
+  >
+  </div>
+
+  <div class="fixed inset-0 z-10 overflow-y-auto">
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div
+        class="relative transform overflow-hidden rounded-xl bg-gray-900 border text-left shadow-xl transition-all w-full max-w-md opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        id="confirm-modal-panel"
+      >
+        <div class="px-4 py-4 sm:px-5">
+          <div class="flex items-start gap-3">
+            <div
+              id="confirm-modal-icon"
+              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-white/10"
+            >
+              <svg
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                ></path>
+              </svg>
+            </div>
+            <div class="text-left">
+              <h3
+                class="text-base font-semibold leading-6 text-white"
+                id="confirm-modal-title"
+              >
+                Confirm Action
+              </h3>
+              <p
+                class="mt-1.5 text-sm text-gray-300/90 leading-relaxed"
+                id="confirm-modal-message"
+              >
+                Are you sure you want to continue?
+              </p>
+            </div>
+          </div>
+        </div>
+        <div
+          class="px-4 py-3 sm:px-5 border-t border-white/5 flex flex-col-reverse sm:flex-row-reverse gap-2"
+        >
+          <button
+            type="button"
+            id="confirm-modal-confirm-btn"
+            class="inline-flex w-full justify-center rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm sm:ml-2 sm:w-auto transition-all"
+          >
+            Confirm
+          </button>
+          <button
+            type="button"
+            id="confirm-modal-cancel-btn"
+            class="inline-flex w-full justify-center rounded-lg bg-gray-900/40 border border-white/10 px-4 py-2 text-sm font-semibold text-gray-300 shadow-sm hover:bg-gray-800/60 hover:text-white sm:w-auto transition-all"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    type ConfirmModalOptions = {
+      title?: string;
+      message?: string;
+      confirmText?: string;
+      cancelText?: string;
+      variant?: "primary" | "danger";
+    };
+
+    const modal = document.getElementById("confirm-modal");
+    const backdrop = document.getElementById("confirm-modal-backdrop");
+    const panel = document.getElementById("confirm-modal-panel");
+    const titleEl = document.getElementById("confirm-modal-title");
+    const messageEl = document.getElementById("confirm-modal-message");
+    const iconEl = document.getElementById("confirm-modal-icon");
+    const confirmBtn = document.getElementById(
+      "confirm-modal-confirm-btn",
+    ) as HTMLButtonElement | null;
+    const cancelBtn = document.getElementById(
+      "confirm-modal-cancel-btn",
+    ) as HTMLButtonElement | null;
+
+    let resolvePromise: ((value: boolean) => void) | null = null;
+    let isOpen = false;
+
+    const variantClasses = {
+      primary: {
+        icon: ["bg-cyan-900/30", "text-cyan-300", "border-cyan-500/30"],
+        panel: ["border-cyan-500/30"],
+        confirm: ["bg-cyan-600", "hover:bg-cyan-500"],
+      },
+      danger: {
+        icon: ["bg-red-900/30", "text-red-300", "border-red-500/30"],
+        panel: ["border-red-500/30"],
+        confirm: ["bg-red-600", "hover:bg-red-500"],
+      },
+    };
+
+    const applyVariant = (variant: "primary" | "danger") => {
+      const allIconClasses = [
+        ...variantClasses.primary.icon,
+        ...variantClasses.danger.icon,
+      ];
+      const allPanelClasses = [
+        ...variantClasses.primary.panel,
+        ...variantClasses.danger.panel,
+      ];
+      const allConfirmClasses = [
+        ...variantClasses.primary.confirm,
+        ...variantClasses.danger.confirm,
+      ];
+
+      iconEl?.classList.remove(...allIconClasses);
+      panel?.classList.remove(...allPanelClasses);
+      confirmBtn?.classList.remove(...allConfirmClasses);
+
+      iconEl?.classList.add(...variantClasses[variant].icon);
+      panel?.classList.add(...variantClasses[variant].panel);
+      confirmBtn?.classList.add(...variantClasses[variant].confirm);
+    };
+
+    const show = (options: ConfirmModalOptions = {}) => {
+      if (!modal || !backdrop || !panel) return Promise.resolve(false);
+
+      const {
+        title = "Confirm Action",
+        message = "Are you sure you want to continue?",
+        confirmText = "Confirm",
+        cancelText = "Cancel",
+        variant = "primary",
+      } = options;
+
+      titleEl && (titleEl.textContent = title);
+      messageEl && (messageEl.textContent = message);
+      if (confirmBtn) confirmBtn.textContent = confirmText;
+      if (cancelBtn) cancelBtn.textContent = cancelText;
+      applyVariant(variant);
+
+      modal.classList.remove("hidden");
+      isOpen = true;
+      requestAnimationFrame(() => {
+        backdrop.classList.remove("opacity-0");
+        panel.classList.remove(
+          "opacity-0",
+          "translate-y-4",
+          "sm:translate-y-0",
+          "sm:scale-95",
+        );
+      });
+
+      confirmBtn?.focus();
+
+      return new Promise<boolean>((resolve) => {
+        resolvePromise = resolve;
+      });
+    };
+
+    const hide = (result = false) => {
+      if (!modal || !backdrop || !panel || !isOpen) return;
+
+      backdrop.classList.add("opacity-0");
+      panel.classList.add(
+        "opacity-0",
+        "translate-y-4",
+        "sm:translate-y-0",
+        "sm:scale-95",
+      );
+
+      setTimeout(() => {
+        modal.classList.add("hidden");
+        isOpen = false;
+      }, 200);
+
+      if (resolvePromise) {
+        resolvePromise(result);
+        resolvePromise = null;
+      }
+    };
+
+    confirmBtn?.addEventListener("click", () => hide(true));
+    cancelBtn?.addEventListener("click", () => hide(false));
+    backdrop?.addEventListener("click", () => hide(false));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        hide(false);
+      }
+    });
+
+    (window as any).confirmModal = {
+      show,
+      hide,
+    };
+  </script>
+</div>

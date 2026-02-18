@@ -10,6 +10,7 @@ type TextEditorProps = {
     editable?: boolean;
     showToolbar?: boolean;
     name?: string;
+    id?: string;
 };
 
 export const TextEditor = ({
@@ -17,6 +18,7 @@ export const TextEditor = ({
     editable = true,
     showToolbar = true,
     name,
+    id,
 }: TextEditorProps) => {
     const html = useMemo(() => String(marked.parse(content || "")), [content]);
     const [formValue, setFormValue] = useState(html);
@@ -94,8 +96,9 @@ export const TextEditor = ({
             {name && (
                 <textarea
                     ref={textareaRef}
+                    id={id}
                     name={name}
-                    className="hidden"
+                    className="sr-only"
                     value={formValue}
                     readOnly
                 />

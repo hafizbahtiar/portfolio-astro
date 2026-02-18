@@ -1,0 +1,219 @@
+---
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import BlogPostForm from "../../../components/admin/blog/BlogPostForm.astro";
+import AlertToast from "../../../components/ui/AlertToast.astro";
+
+const statusOptions = [
+  { value: "draft", label: "Draft" },
+  { value: "published", label: "Published" },
+  { value: "archived", label: "Archived" },
+];
+---
+
+<PrivateLayout title="New Blog Post">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-white tracking-tight">
+        New Blog Post
+      </h1>
+      <a
+        href="/admin/blog"
+        class="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        BACK TO LIST
+      </a>
+    </div>
+
+    <form id="blog-form" class="space-y-8">
+      <BlogPostForm
+        submitLabel="CREATE POST"
+        statusOptions={statusOptions}
+        statusValue="draft"
+      />
+    </form>
+  </div>
+  <AlertToast id="blog-alert" />
+</PrivateLayout>
+
+<script>
+  import { blogService } from "../../../lib/blog";
+  import { ApiError } from "../../../lib/api-client";
+  import { setupFormGuard } from "../../../lib/form-guard";
+
+  const form = document.getElementById("blog-form") as HTMLFormElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+
+  let formGuard: ReturnType<typeof setupFormGuard> | null = null;
+
+  if (form) {
+    formGuard = setupFormGuard(form);
+  }
+
+  const showAlert = (options: {
+    type?: "success" | "error" | "warning" | "info";
+    title?: string;
+    message?: string;
+    duration?: number;
+  }) => {
+    const registry = (window as any).__uiAlerts;
+    registry?.["blog-alert"]?.show(options);
+  };
+
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+
+  const fieldLabels: Record<string, string> = {
+    title: "Title",
+    slug: "Slug",
+    excerpt: "Excerpt",
+    heroText: "Hero Statement",
+    bodyContent: "Body Content",
+    publishedDate: "Published Date",
+    tags: "Tags",
+    category: "Category",
+    status: "Status",
+    sections: "Sections",
+    "sections.heading": "Sections",
+    "sections.body": "Sections",
+    checklist: "Checklist",
+    "checklist.itemText": "Checklist",
+  };
+
+  const getFocusFieldName = (field?: string) => {
+    if (!field) return null;
+    if (field.startsWith("sections") || field.startsWith("checklist")) {
+      return "bodyContent";
+    }
+    return field;
+  };
+
+  const formatErrorMessage = (error: unknown) => {
+    const apiError = error as ApiError & { data?: any };
+    const message =
+      apiError?.data?.error || apiError?.message || "Failed to create post.";
+    const field = apiError?.data?.field;
+    if (field) {
+      const label = fieldLabels[field] || field;
+      return { message: `${message} (Field: ${label})`, field };
+    }
+    return { message, field };
+  };
+
+  let lastGeneratedSlug = "";
+
+  const titleInput = form?.elements.namedItem(
+    "title",
+  ) as HTMLInputElement | null;
+  const slugInput = form?.elements.namedItem("slug") as HTMLInputElement | null;
+
+  if (titleInput && slugInput) {
+    titleInput.addEventListener("input", () => {
+      const nextSlug = slugify(titleInput.value);
+      if (!slugInput.value || slugInput.value === lastGeneratedSlug) {
+        slugInput.value = nextSlug;
+        slugInput.dispatchEvent(new Event("change"));
+      }
+      lastGeneratedSlug = nextSlug;
+    });
+
+    slugInput.addEventListener("input", () => {
+      lastGeneratedSlug = slugify(titleInput.value);
+    });
+  }
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!submitBtn) return;
+
+    const originalContent = submitBtn.innerHTML;
+    submitBtn.innerHTML = "SAVING...";
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+    const data: any = {};
+
+    formData.forEach((value, key) => {
+      if (key === "tags") {
+        data[key] = (value as string)
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      } else if (key === "isFeatured") {
+        data[key] = true;
+      } else if (key === "publishedDate") {
+        const dateValue = String(value).trim();
+        if (dateValue) {
+          data[key] = dateValue;
+        }
+      } else {
+        const trimmed = typeof value === "string" ? value.trim() : value;
+        if (trimmed !== "") {
+          data[key] = trimmed;
+        }
+      }
+    });
+
+    if (!formData.has("isFeatured")) {
+      data.isFeatured = false;
+    }
+
+    if (!data.status) {
+      data.status = "draft";
+    }
+
+    if (data.slug && String(data.slug).trim().length === 0) {
+      delete data.slug;
+    }
+
+    try {
+      const result = await blogService.createPost(data);
+      if (result) {
+        formGuard?.updateInitialState();
+        showAlert({
+          type: "success",
+          title: "Post created",
+          message: "Blog post created successfully.",
+        });
+        window.setTimeout(() => {
+          window.location.href = "/admin/blog";
+        }, 800);
+      } else {
+        throw new Error("Failed to create post");
+      }
+    } catch (error) {
+      console.error(error);
+      const { message, field } = formatErrorMessage(error);
+      const focusFieldName = getFocusFieldName(field);
+      if (focusFieldName) {
+        const focusElement = form?.elements.namedItem(
+          focusFieldName,
+        ) as HTMLElement | null;
+        focusElement?.focus?.();
+      }
+      showAlert({
+        type: "error",
+        title: "Save failed",
+        message,
+      });
+    } finally {
+      submitBtn.innerHTML = originalContent;
+      submitBtn.disabled = false;
+    }
+  });
+</script>

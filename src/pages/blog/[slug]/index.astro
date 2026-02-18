@@ -1,0 +1,486 @@
+---
+import PublicLayout from "../../../layouts/PublicLayout.astro";
+
+export async function getStaticPaths() {
+  const posts = [
+    {
+      title: "Designing Resilient UI States",
+      excerpt:
+        "A practical walkthrough of handling loading, error, and empty states without breaking visual rhythm.",
+      date: "2026-02-10",
+      readTime: "6 min read",
+      tags: ["UI/UX", "Frontend", "Patterns"],
+      slug: "designing-resilient-ui-states",
+      hero: "Stability is a design feature. Every state deserves intention.",
+      sections: [
+        {
+          heading: "Why State Design Matters",
+          body: "Reliable products earn trust. Thoughtful empty, loading, and error states keep people moving even when the data does not.",
+        },
+        {
+          heading: "A Simple State Model",
+          body: "Use a predictable set of states: idle, loading, success, empty, and error. Keep the UI language consistent across each state to reduce cognitive load.",
+        },
+        {
+          heading: "The Visual Rhythm",
+          body: "Maintain spacing and layout while changing content. The user should feel continuity even when the data changes.",
+        },
+      ],
+      checklist: [
+        "Reserve space for key UI blocks",
+        "Add clear recovery actions for errors",
+        "Keep placeholders close to final shapes",
+        "Announce state changes accessibly",
+      ],
+    },
+    {
+      title: "From Prototype to Production",
+      excerpt:
+        "How I move fast on prototypes while keeping a clean path to scalable architecture.",
+      date: "2026-01-28",
+      readTime: "8 min read",
+      tags: ["Architecture", "Product", "Workflow"],
+      slug: "from-prototype-to-production",
+      hero: "Speed and structure can coexist with the right constraints.",
+      sections: [
+        {
+          heading: "Start With Thin Slices",
+          body: "Prototype the thinnest complete flow first. It creates a stable spine for refactors later.",
+        },
+        {
+          heading: "Lock in Interfaces Early",
+          body: "Contract-driven design turns prototypes into stable systems. Define inputs and outputs before wiring every screen.",
+        },
+        {
+          heading: "Upgrade in Layers",
+          body: "Replace experimental pieces with durable services. Keep the surface area stable while the internals evolve.",
+        },
+      ],
+      checklist: [
+        "Document a single happy path",
+        "Refactor after each validated milestone",
+        "Add observability as soon as usage grows",
+        "Avoid coupled one-off hacks",
+      ],
+    },
+    {
+      title: "Choosing the Right Tech Stack",
+      excerpt:
+        "A decision framework for picking tools that fit the team, timeline, and long-term maintenance.",
+      date: "2026-01-12",
+      readTime: "5 min read",
+      tags: ["Strategy", "Engineering"],
+      slug: "choosing-the-right-tech-stack",
+      hero: "The best stack is the one your team can evolve.",
+      sections: [
+        {
+          heading: "Define Your Constraints",
+          body: "Budget, team experience, and product maturity should shape the stack more than hype.",
+        },
+        {
+          heading: "Balance Speed and Safety",
+          body: "Pick tools that let you ship quickly while protecting critical paths with strong defaults.",
+        },
+        {
+          heading: "Plan for Growth",
+          body: "The stack should handle new features without becoming a maintenance burden.",
+        },
+      ],
+      checklist: [
+        "Document operational requirements",
+        "Audit library maintenance activity",
+        "Prototype complex flows early",
+        "Keep exit strategies in mind",
+      ],
+    },
+    {
+      title: "Building for Performance",
+      excerpt:
+        "Optimizations that keep Lighthouse scores high without sacrificing design or accessibility.",
+      date: "2025-12-22",
+      readTime: "7 min read",
+      tags: ["Performance", "Web"],
+      slug: "building-for-performance",
+      hero: "Fast experiences feel more premium than flashy ones.",
+      sections: [
+        {
+          heading: "Ship Less JavaScript",
+          body: "Send only what the screen needs. Reduce payloads and defer non-critical work.",
+        },
+        {
+          heading: "Treat Images as First-Class",
+          body: "Optimize, lazy load, and reserve space. Your images influence every performance score.",
+        },
+        {
+          heading: "Measure Everything",
+          body: "Performance is a process. Track your key metrics and maintain a budget.",
+        },
+      ],
+      checklist: [
+        "Audit bundle size regularly",
+        "Use performance budgets",
+        "Prefer progressive loading",
+        "Keep CLS near zero",
+      ],
+    },
+  ];
+
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+type BlogPostView = {
+  title: string;
+  excerpt: string;
+  tags: string[];
+  slug: string;
+  date?: string;
+  readTime?: string;
+  hero?: string;
+  heroText?: string;
+  sections?: { heading: string; body: string }[];
+  checklist?: string[];
+  bodyContent?: string;
+  publishedDate?: string | null;
+  readTimeMinutes?: number;
+};
+
+const { post } = Astro.props as { post: BlogPostView };
+const heroText = post.hero ?? post.heroText ?? "";
+const postDate = post.date ?? post.publishedDate ?? "";
+const readTimeLabel =
+  post.readTime ??
+  (post.readTimeMinutes ? `${post.readTimeMinutes} min read` : "");
+const sections = post.sections ?? [];
+const checklist = post.checklist ?? [];
+const bodyContent = post.bodyContent ?? "";
+---
+
+<PublicLayout
+  title={`${post.title} - Hafiz Bahtiar`}
+  description={post.excerpt}
+>
+  <div
+    class="fixed top-0 left-0 right-0 h-1.5 bg-gray-900/80 z-50 backdrop-blur-sm"
+  >
+    <div
+      id="read-progress"
+      class="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 w-0 shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all duration-150 ease-out"
+    >
+    </div>
+  </div>
+
+  <div class="container-main space-y-10 md:space-y-12 pb-16 md:pb-24">
+    <section class="scroll-offset relative pt-12 md:pt-16">
+      <a
+        href="/blog"
+        id="back-to-blog"
+        class="btn-text mb-8 inline-flex items-center gap-2 group text-sm font-mono text-gray-400 hover:text-cyan-400 transition-colors"
+      >
+        <svg
+          class="w-4 h-4 group-hover:-translate-x-1 transition-transform"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        <span class="opacity-70 group-hover:opacity-100">cd ..</span>
+      </a>
+
+      <div
+        class="rounded-xl border border-gray-800 bg-[#0d1117] shadow-2xl overflow-hidden relative"
+      >
+        <!-- IDE Tab Bar -->
+        <div
+          class="flex items-center justify-between px-4 py-3 bg-[#161b22] border-b border-gray-800"
+        >
+          <div class="flex items-center gap-2">
+            <div class="flex gap-2 mr-4">
+              <div
+                class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"
+              >
+              </div>
+              <div
+                class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"
+              >
+              </div>
+              <div
+                class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"
+              >
+              </div>
+            </div>
+            <div
+              class="px-3 py-1 rounded-t-lg bg-[#0d1117] border-t border-x border-gray-800 text-xs font-mono text-gray-300 flex items-center gap-2 relative top-[1px]"
+            >
+              <span class="text-blue-400">⚛</span>
+              <span>{post.slug}.mdx</span>
+              <span class="ml-2 text-gray-600">x</span>
+            </div>
+          </div>
+          <div class="text-[10px] font-mono text-gray-600 hidden sm:block">
+            UTF-8
+          </div>
+        </div>
+
+        <!-- Editor Content -->
+        <div class="p-6 md:p-10 relative z-10 font-mono">
+          <div
+            class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none select-none"
+          >
+            <svg
+              width="200"
+              height="200"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="0.5"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              ></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+
+          <!-- Metadata Block -->
+          <div
+            class="space-y-1 mb-8 text-sm text-gray-500 select-none border-l-2 border-gray-800 pl-4"
+          >
+            <div class="flex gap-4">
+              <span class="w-6 text-gray-700 text-right">1</span>
+              <span>---</span>
+            </div>
+            <div class="flex gap-4">
+              <span class="w-6 text-gray-700 text-right">2</span>
+              <span class="text-purple-400">title:</span>
+              <span class="text-green-400">"{post.title}"</span>
+            </div>
+            <div class="flex gap-4">
+              <span class="w-6 text-gray-700 text-right">3</span>
+              <span class="text-purple-400">date:</span>
+              <span class="text-yellow-400">{postDate}</span>
+            </div>
+            <div class="flex gap-4">
+              <span class="w-6 text-gray-700 text-right">4</span>
+              <span class="text-purple-400">readTime:</span>
+              <span class="text-cyan-400">"{readTimeLabel}"</span>
+            </div>
+            <div class="flex gap-4">
+              <span class="w-6 text-gray-700 text-right">5</span>
+              <span class="text-purple-400">tags:</span>
+              <span class="text-gray-300"
+                >[{post.tags.map((t) => `"${t}"`).join(", ")}]</span
+              >
+            </div>
+            <div class="flex gap-4">
+              <span class="w-6 text-gray-700 text-right">6</span>
+              <span>---</span>
+            </div>
+          </div>
+
+          <div class="pl-10 relative">
+            <!-- Line Numbers Effect -->
+            <div
+              class="absolute left-0 top-0 bottom-0 w-6 flex flex-col gap-1 text-gray-700 text-sm text-right select-none font-mono opacity-50"
+            >
+              {Array.from({ length: 8 }).map((_, i) => <div>{i + 7}</div>)}
+            </div>
+
+            <h1
+              class="text-3xl md:text-5xl font-bold text-white tracking-tight mb-6 font-sans"
+            >
+              {post.title}
+            </h1>
+
+            <p
+              class="text-lg md:text-xl text-gray-400 leading-relaxed max-w-2xl border-l-2 border-cyan-500/50 pl-4 italic"
+            >
+              // {heroText}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="article-content"
+      class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-10"
+    >
+      <article class="space-y-8">
+        {
+          sections.length > 0 ? (
+            sections.map((section, index) => (
+              <div
+                class="group relative pl-6 border-l-2 border-gray-800 hover:border-cyan-500/50 transition-colors scroll-mt-24 py-2"
+                id={`section-${index + 1}`}
+              >
+                <div class="absolute -left-[7px] top-6 w-3 h-3 rounded-full bg-[#0d1117] border-2 border-gray-600 group-hover:border-cyan-500 transition-colors" />
+
+                <div class="mb-3">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-cyan-500/60 font-mono text-sm">
+                      0{index + 1}
+                    </span>
+                    <span class="h-px w-8 bg-gray-800 group-hover:bg-gray-700 transition-colors" />
+                  </div>
+                  <h2 class="text-2xl font-bold text-gray-100 font-sans tracking-tight group-hover:text-white transition-colors">
+                    {section.heading}
+                  </h2>
+                </div>
+
+                <p class="text-base md:text-lg text-gray-400 leading-relaxed font-sans group-hover:text-gray-300 transition-colors">
+                  {section.body}
+                </p>
+              </div>
+            ))
+          ) : bodyContent ? (
+            <div
+              class="rounded-2xl border border-gray-800 bg-[#0d1117] p-6 md:p-8 text-gray-200 prose prose-invert max-w-none"
+              set:html={bodyContent}
+            />
+          ) : null
+        }
+
+        {
+          checklist.length > 0 ? (
+            <div class="mt-12 rounded-lg border border-gray-800 bg-[#161b22] p-6 font-mono text-sm shadow-lg">
+              <div class="flex items-center gap-2 mb-4 border-b border-gray-700 pb-3">
+                <span class="text-yellow-400">TODO:</span>
+                <span class="text-gray-300">Implementation Checklist</span>
+              </div>
+              <ul class="space-y-2">
+                {checklist.map((item) => (
+                  <li class="flex items-start gap-3 group cursor-default">
+                    <span class="text-gray-500 font-bold group-hover:text-green-400 transition-colors">
+                      [ ]
+                    </span>
+                    <span class="text-gray-400 group-hover:text-gray-200 transition-colors">
+                      {item}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null
+        }
+      </article>
+
+      {
+        sections.length > 0 ? (
+          <aside class="hidden lg:block">
+            <div class="sticky top-24 space-y-4 rounded-lg border border-gray-800 bg-[#0d1117] p-4 shadow-xl">
+              <div class="flex items-center justify-between text-xs font-mono text-gray-400 uppercase tracking-wider mb-2">
+                <span>Minimap</span>
+                <span id="read-percent" class="text-cyan-400">
+                  0%
+                </span>
+              </div>
+
+              <div class="relative w-full bg-gray-800/50 rounded h-1.5 overflow-hidden">
+                <div
+                  id="read-progress-ghost"
+                  class="absolute top-0 left-0 h-full bg-cyan-500 w-0 transition-all duration-100"
+                ></div>
+              </div>
+
+              <div class="pt-4 border-t border-gray-800">
+                <div class="text-[10px] font-mono text-gray-500 mb-3 uppercase tracking-wider">
+                  Symbols
+                </div>
+                <ul class="space-y-1">
+                  {sections.map((section, index) => (
+                    <li>
+                      <a
+                        href={`#section-${index + 1}`}
+                        class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-800/50 transition-colors group"
+                      >
+                        <span class="text-cyan-500/70 text-xs font-mono group-hover:text-cyan-400">
+                          #
+                        </span>
+                        <span class="text-gray-400 text-xs font-mono truncate group-hover:text-gray-200 transition-colors">
+                          {section.heading}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div class="pt-4 mt-2 border-t border-gray-800">
+                <div class="flex justify-between text-[10px] font-mono text-gray-600">
+                  <span>Ln {sections.length * 15}, Col 1</span>
+                  <span>UTF-8</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        ) : null
+      }
+    </section>
+  </div>
+</PublicLayout>
+
+<script>
+  const initReadProgress = () => {
+    const progressBar = document.getElementById("read-progress");
+    const progressGhost = document.getElementById("read-progress-ghost");
+    const progressPercent = document.getElementById("read-percent");
+    const article = document.getElementById("article-content");
+
+    if (!progressBar || !article) return;
+
+    const existingController = (window as any).__blogReadProgressController;
+    if (existingController) {
+      existingController.abort();
+    }
+
+    const controller = new AbortController();
+    (window as any).__blogReadProgressController = controller;
+    const { signal } = controller;
+
+    const updateProgress = () => {
+      const articleTop = article.getBoundingClientRect().top + window.scrollY;
+      const articleHeight = article.offsetHeight;
+      const scrollTop = window.scrollY;
+      const viewportHeight = window.innerHeight;
+      const total = Math.max(articleHeight - viewportHeight, 1);
+      const rawProgress = (scrollTop - articleTop) / total;
+      const progress = Math.min(Math.max(rawProgress, 0), 1);
+      const width = `${progress * 100}%`;
+
+      progressBar.style.width = width;
+      if (progressGhost) {
+        progressGhost.style.width = width;
+      }
+      if (progressPercent) {
+        progressPercent.textContent = `${Math.round(progress * 100)}%`;
+      }
+    };
+
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, {
+      passive: true,
+      signal,
+    });
+    window.addEventListener("resize", updateProgress, { signal });
+  };
+
+  initReadProgress();
+  document.addEventListener("astro:page-load", initReadProgress);
+  document.addEventListener("astro:after-swap", initReadProgress);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      initReadProgress();
+    }
+  });
+</script>

@@ -182,58 +182,82 @@ const links = [
 </style>
 
 <script>
-    const nav = document.getElementById("main-nav");
-    const toggleBtn = document.getElementById("navbar-toggle");
-    const navbar = document.getElementById("navbar-default");
-    let isMenuOpen = false;
+    const initNavbar = () => {
+        const nav = document.getElementById("main-nav");
+        const toggleBtn = document.getElementById("navbar-toggle");
+        const navbar = document.getElementById("navbar-default");
+        if (!nav || !toggleBtn || !navbar) return;
 
-    // Scroll Handler
-    function handleScroll() {
-        if (!nav) return;
-
-        if (window.scrollY > 50) {
-            nav.classList.add("floating-nav");
-            // When floating, the nav container behaves differently
-            // We ensure the inner container gets the pill shape
-        } else {
-            nav.classList.remove("floating-nav");
+        const existingController = (window as any).__navbarController;
+        if (existingController) {
+            existingController.abort();
         }
-    }
 
-    window.addEventListener("scroll", handleScroll);
+        const controller = new AbortController();
+        (window as any).__navbarController = controller;
+        const { signal } = controller;
 
-    // Initial check
-    handleScroll();
+        let isMenuOpen = false;
 
-    // Toggle Menu
-    toggleBtn?.addEventListener("click", () => {
-        isMenuOpen = !isMenuOpen;
-        navbar?.classList.toggle("hidden");
+        const handleScroll = () => {
+            if (window.scrollY > 50) {
+                nav.classList.add("floating-nav");
+            } else {
+                nav.classList.remove("floating-nav");
+            }
+        };
 
-        // Optional: Animate icon
-        toggleBtn.setAttribute("aria-expanded", isMenuOpen.toString());
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener("click", (e) => {
-        if (
-            isMenuOpen &&
-            navbar &&
-            toggleBtn &&
-            !navbar.contains(e.target as Node) &&
-            !toggleBtn.contains(e.target as Node)
-        ) {
+        const closeMenu = () => {
             navbar.classList.add("hidden");
             isMenuOpen = false;
             toggleBtn.setAttribute("aria-expanded", "false");
-        }
-    });
+        };
 
-    // Close menu when clicking a link
-    navbar?.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", () => {
-            navbar.classList.add("hidden");
-            isMenuOpen = false;
+        handleScroll();
+
+        window.addEventListener("scroll", handleScroll, { signal });
+
+        toggleBtn.addEventListener(
+            "click",
+            () => {
+                isMenuOpen = !isMenuOpen;
+                navbar.classList.toggle("hidden");
+                toggleBtn.setAttribute("aria-expanded", isMenuOpen.toString());
+            },
+            { signal },
+        );
+
+        document.addEventListener(
+            "click",
+            (e) => {
+                if (
+                    isMenuOpen &&
+                    !navbar.contains(e.target as Node) &&
+                    !toggleBtn.contains(e.target as Node)
+                ) {
+                    closeMenu();
+                }
+            },
+            { signal },
+        );
+
+        navbar.querySelectorAll("a").forEach((link) => {
+            link.addEventListener(
+                "click",
+                () => {
+                    closeMenu();
+                },
+                { signal },
+            );
         });
+    };
+
+    initNavbar();
+    document.addEventListener("astro:page-load", initNavbar);
+    document.addEventListener("astro:after-swap", initNavbar);
+    window.addEventListener("pageshow", (event) => {
+        if (event.persisted) {
+            initNavbar();
+        }
     });
 </script>
