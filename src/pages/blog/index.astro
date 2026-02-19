@@ -1,44 +1,24 @@
 ---
 import PublicLayout from "../../layouts/PublicLayout.astro";
+import { blogService } from "../../lib/blog";
 
-const posts = [
-  {
-    title: "Designing Resilient UI States",
-    excerpt:
-      "A practical walkthrough of handling loading, error, and empty states without breaking visual rhythm.",
-    date: "2026-02-10",
-    readTime: "6 min read",
-    tags: ["UI/UX", "Frontend", "Patterns"],
-    slug: "designing-resilient-ui-states",
-  },
-  {
-    title: "From Prototype to Production",
-    excerpt:
-      "How I move fast on prototypes while keeping a clean path to scalable architecture.",
-    date: "2026-01-28",
-    readTime: "8 min read",
-    tags: ["Architecture", "Product", "Workflow"],
-    slug: "from-prototype-to-production",
-  },
-  {
-    title: "Choosing the Right Tech Stack",
-    excerpt:
-      "A decision framework for picking tools that fit the team, timeline, and long-term maintenance.",
-    date: "2026-01-12",
-    readTime: "5 min read",
-    tags: ["Strategy", "Engineering"],
-    slug: "choosing-the-right-tech-stack",
-  },
-  {
-    title: "Building for Performance",
-    excerpt:
-      "Optimizations that keep Lighthouse scores high without sacrificing design or accessibility.",
-    date: "2025-12-22",
-    readTime: "7 min read",
-    tags: ["Performance", "Web"],
-    slug: "building-for-performance",
-  },
-];
+const posts = await blogService.getPublicPosts().catch(() => []);
+
+const formatDate = (value?: string | null) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  });
+};
+
+const formatReadTime = (minutes?: number) => {
+  if (!minutes) return "";
+  return `${minutes} min read`;
+};
 ---
 
 <PublicLayout
@@ -71,8 +51,8 @@ const posts = [
           <p
             class="text-gray-400 text-lg leading-relaxed border-l-2 border-gray-800 pl-6"
           >
-            Practical lessons, experiments, and checklists from building modern
-            web and mobile products.
+            Practical lessons, experiments, and checklists from building <span class="text-cyan-400 font-mono">modern web</span> and
+            <span class="text-purple-400 font-mono">mobile products</span>.
           </p>
         </div>
 
@@ -88,16 +68,16 @@ const posts = [
         posts.map((post) => (
           <article class="group rounded-2xl border border-gray-800 bg-gray-900/60 backdrop-blur-sm p-6 transition-all hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(34,211,238,0.12)]">
             <div class="flex items-center gap-2 text-xs font-mono text-gray-500 mb-4">
-              <span>{post.date}</span>
+              <span>{formatDate(post.publishedDate ?? post.createdAt)}</span>
               <span>•</span>
-              <span>{post.readTime}</span>
+              <span>{formatReadTime(post.readTimeMinutes)}</span>
             </div>
             <h2 class="text-2xl font-semibold text-white mb-3 group-hover:text-cyan-400 transition-colors">
               {post.title}
             </h2>
             <p class="text-gray-400 leading-relaxed mb-5">{post.excerpt}</p>
             <div class="flex flex-wrap gap-2 mb-6">
-              {post.tags.map((tag) => (
+              {(post.tags ?? []).map((tag) => (
                 <span class="badge-gray">{tag}</span>
               ))}
             </div>
