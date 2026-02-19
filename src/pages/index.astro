@@ -3,6 +3,7 @@ import PublicLayout from "../layouts/PublicLayout.astro";
 import Hero from "../components/home/Hero.astro";
 import ContactSection from "../components/home/ContactSection.astro";
 import FeaturedProjects from "../components/home/FeaturedProjects.astro";
+import MapSection from "../components/home/MapSection.astro";
 import { getProjects } from "../lib/projects";
 import type { Project } from "../types/project";
 
@@ -420,7 +421,8 @@ const skills = [
 			</div>
 		</section>
 
-		<!-- Contact Section -->
+		<MapSection />
+
 		<ContactSection />
 	</div>
 </PublicLayout>

@@ -1,0 +1,33 @@
+---
+import MapCanvas from "./MapCanvas";
+---
+
+<section id="map" class="scroll-offset relative">
+  <div class="text-center mb-12">
+    <div
+      class="inline-flex items-center gap-2 px-3 py-1 mb-6 text-sm font-mono text-cyan-400 bg-cyan-950/30 border border-cyan-500/30 rounded-full"
+    >
+      <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+      <span>WHERE I BUILD</span>
+    </div>
+    <h2 class="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight">
+      Based in
+      <span
+        class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"
+        >Kuala Lumpur</span
+      >
+    </h2>
+    <p class="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
+      Shipping products across time zones, with roots in
+      <span class="text-cyan-400 font-mono">Malaysia</span>.
+    </p>
+  </div>
+
+  <div class="rounded-2xl border border-gray-800 bg-gray-900/60 p-4 md:p-6">
+    <div
+      class="h-[360px] md:h-[420px] w-full overflow-hidden rounded-xl border border-gray-800"
+    >
+      <MapCanvas client:only="react" />
+    </div>
+  </div>
+</section>
