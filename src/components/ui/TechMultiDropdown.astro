@@ -1,0 +1,285 @@
+---
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  label: string;
+  name: string;
+  options: Option[];
+  placeholder?: string;
+  values?: string[];
+  class?: string;
+  id?: string;
+}
+
+const {
+  label,
+  name,
+  options,
+  placeholder = "Select options",
+  values = [],
+  class: className = "",
+  id: inputId = `${name}-input`,
+} = Astro.props;
+---
+
+<div class={`tech-multi-dropdown-container space-y-2 ${className}`} data-name={name}>
+  <label
+    class="block text-sm font-medium text-gray-400 font-mono tracking-wide"
+    for={inputId}
+  >
+    {`// ${label}`}
+  </label>
+  <div class="relative">
+    <input
+      id={inputId}
+      type="hidden"
+      name={name}
+      value={JSON.stringify(values)}
+      class="dropdown-input"
+      data-placeholder={placeholder}
+    />
+
+    <button
+      type="button"
+      class="dropdown-trigger w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-left text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all flex justify-between items-center group hover:border-cyan-500/50"
+    >
+      <span
+        class="selected-text font-mono text-sm text-gray-300 group-hover:text-cyan-400 transition-colors truncate"
+      >
+        {placeholder}
+      </span>
+      <div
+        class="flex items-center text-gray-500 group-hover:text-cyan-500 transition-colors"
+      >
+        <span
+          class="mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity font-mono hidden sm:inline-block"
+          >[MULTI]</span
+        >
+        <svg
+          class="w-4 h-4 transform transition-transform duration-200"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </button>
+
+    <div
+      class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl transform origin-top transition-all duration-200"
+    >
+      <ul class="max-h-60 overflow-y-auto py-1 custom-scrollbar">
+        {
+          options.map((option) => (
+            <li>
+              <button
+                type="button"
+                class="dropdown-item w-full text-left px-4 py-2 text-sm font-mono text-gray-300 hover:bg-cyan-900/20 hover:text-cyan-400 transition-colors flex items-center justify-between group"
+                data-value={option.value}
+              >
+                <span>{option.label}</span>
+                <span class="indicator opacity-0 group-hover:opacity-100 text-cyan-500 font-bold">
+                  _
+                </span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</div>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.5);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+</style>
+
+<script>
+  function setupMultiDropdowns() {
+    const containers = document.querySelectorAll(".tech-multi-dropdown-container");
+
+    const parseValues = (raw: string | null) => {
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.map(String) : [];
+      } catch {
+        return raw
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean);
+      }
+    };
+
+    containers.forEach((container) => {
+      const isInitialized =
+        container.getAttribute("data-initialized") === "true";
+      const input = container.querySelector(
+        ".dropdown-input",
+      ) as HTMLInputElement;
+      const trigger = container.querySelector(
+        ".dropdown-trigger",
+      ) as HTMLButtonElement;
+      const menu = container.querySelector(".dropdown-menu") as HTMLDivElement;
+      const selectedText = container.querySelector(
+        ".selected-text",
+      ) as HTMLSpanElement;
+      const arrow = trigger.querySelector("svg");
+
+      if (!isInitialized) {
+        container.setAttribute("data-initialized", "true");
+        container.setAttribute("data-open", "false");
+      }
+
+      const updateSelectedText = (values: string[]) => {
+        const placeholder = input.dataset.placeholder || "Select options";
+        if (values.length === 0) {
+          selectedText.textContent = placeholder;
+          selectedText.classList.remove("text-cyan-400");
+          return;
+        }
+        const labels = values
+          .map((value) => {
+            const item = container.querySelector(
+              `.dropdown-item[data-value="${value}"] span`,
+            ) as HTMLSpanElement | null;
+            return item?.textContent || value;
+          })
+          .filter(Boolean);
+        selectedText.textContent =
+          labels.length <= 2 ? labels.join(", ") : `${labels.length} selected`;
+        selectedText.classList.add("text-cyan-400");
+      };
+
+      const updateItemState = (values: string[]) => {
+        container.querySelectorAll(".dropdown-item").forEach((item) => {
+          const element = item as HTMLButtonElement & { dataset: DOMStringMap };
+          const isActive = values.includes(String(element.dataset.value));
+          element.classList.toggle("bg-cyan-900/20", isActive);
+          element.classList.toggle("text-cyan-400", isActive);
+          element.classList.toggle("text-gray-300", !isActive);
+          const indicator = element.querySelector(".indicator");
+          indicator?.classList.toggle("opacity-100", isActive);
+          indicator?.classList.toggle("opacity-0", !isActive);
+        });
+      };
+
+      const setOpenState = (nextOpen: boolean) => {
+        container.setAttribute("data-open", nextOpen ? "true" : "false");
+        if (nextOpen) {
+          menu.classList.remove("hidden");
+          requestAnimationFrame(() => {
+            menu.classList.add("opacity-100", "scale-100");
+            menu.classList.remove("opacity-0", "scale-95");
+          });
+          arrow?.classList.add("rotate-180");
+          trigger.classList.add(
+            "border-cyan-500",
+            "ring-2",
+            "ring-cyan-500/50",
+          );
+        } else {
+          menu.classList.add("opacity-0", "scale-95");
+          menu.classList.remove("opacity-100", "scale-100");
+          setTimeout(() => {
+            if (container.getAttribute("data-open") !== "true") {
+              menu.classList.add("hidden");
+            }
+          }, 200);
+          arrow?.classList.remove("rotate-180");
+          trigger.classList.remove(
+            "border-cyan-500",
+            "ring-2",
+            "ring-cyan-500/50",
+          );
+        }
+      };
+
+      const toggleDropdown = () => {
+        const isOpen = container.getAttribute("data-open") === "true";
+        setOpenState(!isOpen);
+      };
+
+      const closeDropdown = () => setOpenState(false);
+
+      (
+        container as HTMLElement & { setupDropdown?: () => void }
+      ).setupDropdown = closeDropdown;
+
+      if (!isInitialized) {
+        trigger.addEventListener("click", (e) => {
+          e.stopPropagation();
+          document
+            .querySelectorAll(".tech-multi-dropdown-container .dropdown-menu")
+            .forEach((el) => {
+              if (el !== menu && !el.classList.contains("hidden")) {
+                el.classList.add("hidden");
+              }
+            });
+          toggleDropdown();
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!container.contains(e.target as Node)) {
+            closeDropdown();
+          }
+        });
+
+        if (!input.dataset.bound) {
+          input.dataset.bound = "true";
+          input.addEventListener("change", () => {
+            const values = parseValues(input.value);
+            updateSelectedText(values);
+            updateItemState(values);
+          });
+        }
+      }
+
+      const items = container.querySelectorAll(".dropdown-item");
+      items.forEach((item) => {
+        const element = item as HTMLButtonElement & { dataset: DOMStringMap };
+        if (element.dataset.bound === "true") return;
+        element.dataset.bound = "true";
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const value = String(element.dataset.value || "");
+          const values = parseValues(input.value);
+          const nextValues = values.includes(value)
+            ? values.filter((item) => item !== value)
+            : [...values, value];
+          input.value = JSON.stringify(nextValues);
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+      });
+
+      const initialValues = parseValues(input.value);
+      updateSelectedText(initialValues);
+      updateItemState(initialValues);
+    });
+  }
+
+  setupMultiDropdowns();
+  (window as Window & { setupTechMultiDropdowns?: () => void }).setupTechMultiDropdowns =
+    setupMultiDropdowns;
+  document.addEventListener("astro:page-load", setupMultiDropdowns);
+</script>

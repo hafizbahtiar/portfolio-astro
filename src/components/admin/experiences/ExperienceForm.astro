@@ -1,0 +1,175 @@
+---
+import { TextEditor } from "../../ui/TextEditor";
+import TechDateInput from "../../ui/TechDateInput.astro";
+import TechMultiDropdown from "../../ui/TechMultiDropdown.astro";
+import { ExperienceMapPicker } from "./ExperienceMapPicker";
+
+type Props = {
+  submitLabel: string;
+  submitButtonId?: string;
+  displayOrderValue?: number;
+  projectOptions?: Array<{ value: string; label: string }>;
+  projectValues?: string[];
+};
+
+const {
+  submitLabel,
+  submitButtonId = "submit-btn",
+  displayOrderValue = 0,
+  projectOptions = [],
+  projectValues = [],
+} = Astro.props;
+
+const cardClass =
+  "bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6";
+const titleClass =
+  "text-lg font-bold text-white mb-6 border-b border-gray-700 pb-4";
+const labelClass =
+  "block text-sm font-medium text-gray-400 font-mono tracking-wide";
+const inputClass =
+  "w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all font-mono text-sm";
+---
+
+<div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-8">
+  <div class="space-y-8">
+    <div class={cardClass}>
+      <h3 class={titleClass}>Experience Overview</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <label class={labelClass} for="experience-company">// Company </label>
+          <input
+            id="experience-company"
+            type="text"
+            name="companyName"
+            required
+            class={inputClass}
+          />
+        </div>
+        <div class="space-y-2">
+          <label class={labelClass} for="experience-role">// Role</label>
+          <input
+            id="experience-role"
+            type="text"
+            name="role"
+            required
+            class={inputClass}
+          />
+        </div>
+        <TechDateInput label="Start Date" name="startDate" required />
+        <TechDateInput
+          label="End Date"
+          name="endDate"
+          id="experience-end-date"
+        />
+        <div class="space-y-2 md:col-span-2">
+          <label class={labelClass} for="experience-is-current">
+            // Current Company
+          </label>
+          <div
+            class="flex items-center gap-3 bg-gray-900/40 border border-gray-700 rounded-lg px-4 py-2"
+          >
+            <input
+              id="experience-is-current"
+              type="checkbox"
+              name="isCurrent"
+              class="h-4 w-4 rounded border-gray-600 bg-gray-900 text-cyan-500 focus:ring-cyan-500/50"
+            />
+            <span class="text-sm font-mono text-gray-300">
+              Still working here
+            </span>
+          </div>
+        </div>
+        <div class="space-y-2 md:col-span-2">
+          <label class={labelClass} for="experience-description">
+            // Description
+          </label>
+          <TextEditor
+            id="experience-description"
+            name="description"
+            content=""
+            client:load
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="space-y-8">
+    <div class={cardClass}>
+      <h3 class={titleClass}>Location & Metadata</h3>
+      <div class="grid grid-cols-1 gap-6">
+        <div class="space-y-2">
+          <label class={labelClass} for="experience-location">// Location</label
+          >
+          <input
+            id="experience-location"
+            type="text"
+            name="location"
+            class={inputClass}
+          />
+        </div>
+        <ExperienceMapPicker client:load />
+        <TechMultiDropdown
+          label="Projects"
+          name="projectIds"
+          options={projectOptions}
+          values={projectValues}
+          placeholder="Select projects"
+        />
+        <div class="space-y-2">
+          <label class={labelClass} for="experience-display-order">
+            // Display Order
+          </label>
+          <input
+            id="experience-display-order"
+            type="number"
+            name="displayOrder"
+            value={displayOrderValue}
+            class={inputClass}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flex justify-end pt-4">
+  <button
+    type="submit"
+    id={submitButtonId}
+    class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-lg transition-colors shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-2"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+    </svg>
+    {submitLabel}
+  </button>
+</div>
+
+<script>
+  const syncEndDateState = () => {
+    const currentToggle = document.getElementById(
+      "experience-is-current",
+    ) as HTMLInputElement | null;
+    const endDateInput = document.getElementById(
+      "experience-end-date",
+    ) as HTMLInputElement | null;
+    if (!currentToggle || !endDateInput) return;
+    if (currentToggle.checked) {
+      endDateInput.value = "";
+      endDateInput.disabled = true;
+    } else {
+      endDateInput.disabled = false;
+    }
+  };
+
+  syncEndDateState();
+  document
+    .getElementById("experience-is-current")
+    ?.addEventListener("change", syncEndDateState);
+  document.addEventListener("astro:page-load", syncEndDateState);
+</script>

@@ -1,0 +1,39 @@
+---
+interface Props {
+  label: string;
+  name: string;
+  value?: string;
+  required?: boolean;
+  class?: string;
+  id?: string;
+  placeholder?: string;
+}
+
+const {
+  label,
+  name,
+  value = "",
+  required = false,
+  class: className = "",
+  id: inputId = `${name}-input`,
+  placeholder,
+} = Astro.props;
+---
+
+<div class={`space-y-2 ${className}`}>
+  <label
+    class="block text-sm font-medium text-gray-400 font-mono tracking-wide"
+    for={inputId}
+  >
+    {`// ${label}`}
+  </label>
+  <input
+    id={inputId}
+    type="date"
+    name={name}
+    value={value}
+    required={required}
+    placeholder={placeholder}
+    class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all font-mono text-sm"
+  />
+</div>
