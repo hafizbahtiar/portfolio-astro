@@ -1,5 +1,135 @@
 ---
 import MapCanvas from "./MapCanvas";
+import { experiencesService } from "../../lib/experiences";
+import type { Experience } from "../../types/experiences";
+
+const fallbackExperiences: Experience[] = [
+  {
+    id: 1,
+    companyName: "Laureate System Solution Sdn Bhd",
+    role: "Mobile Developer",
+    startDate: "2024-08-01",
+    endDate: null,
+    isCurrent: true,
+    location: "Kuala Lumpur, Malaysia",
+    latitude: 3.162812,
+    longitude: 101.649956,
+    projectIds: [4],
+    description: "Government procurement platform development",
+    displayOrder: 1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    companyName: "Securiforce Sdn Bhd",
+    role: "Programmer",
+    startDate: "2022-12-01",
+    endDate: "2024-07-31",
+    isCurrent: false,
+    location: "Kuala Lumpur, Malaysia",
+    latitude: 3.169587829506779,
+    longitude: 101.69440540132585,
+    projectIds: [5, 9],
+    description: "Cash-in-transit receipt book system",
+    displayOrder: 2,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 3,
+    companyName: "Jom Dapur Sdn Bhd",
+    role: "Software Engineer",
+    startDate: "2020-09-01",
+    endDate: "2022-11-30",
+    isCurrent: false,
+    location: "Kuala Lumpur, Malaysia",
+    latitude: 3.2045919219587615,
+    longitude: 101.72203100800152,
+    projectIds: [6, 7, 8],
+    description: "Food delivery platform development",
+    displayOrder: 3,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 4,
+    companyName: "Associated Testing Laboratory Sdn Bhd",
+    role: "Site & Lab Technician",
+    startDate: "2019-05-01",
+    endDate: "2020-08-31",
+    isCurrent: false,
+    location: "Kuala Lumpur, Malaysia",
+    latitude: 3.196580727512005,
+    longitude: 101.67055660869626,
+    projectIds: [],
+    description: "Laboratory testing and site inspections",
+    displayOrder: 4,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+const experiences = await (async () => {
+  try {
+    const data = await experiencesService.getPublicExperiences();
+    if (data && data.length > 0) {
+      return data;
+    }
+  } catch (error) {
+    return fallbackExperiences;
+  }
+  return fallbackExperiences;
+})();
+
+const formatMonthYear = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat("en-MY", { month: "short", year: "numeric" }).format(date);
+};
+
+const formatDateRange = (experience: Experience) => {
+  const start = formatMonthYear(experience.startDate);
+  const endLabel = experience.isCurrent
+    ? `Current (${new Date().toLocaleDateString("en-MY")})`
+    : experience.endDate
+      ? formatMonthYear(experience.endDate)
+      : "Present";
+  return `${start} - ${endLabel}`;
+};
+
+const timelineEntries = experiences
+  .slice()
+  .sort((a, b) => {
+    if (a.isCurrent !== b.isCurrent) {
+      return a.isCurrent ? -1 : 1;
+    }
+    return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+  })
+  .map((experience) => ({
+    company: experience.companyName,
+    role: experience.role,
+    date: formatDateRange(experience),
+  }));
+
+const mapMarkers = experiences
+  .filter((experience) => experience.latitude !== null && experience.longitude !== null)
+  .map((experience) => ({
+    company: experience.companyName,
+    role: experience.role,
+    date: formatDateRange(experience),
+    latitude: experience.latitude as number,
+    longitude: experience.longitude as number,
+  }));
+
+const mapCenter = mapMarkers.length
+  ? ([
+      mapMarkers.reduce((sum, marker) => sum + marker.longitude, 0) / mapMarkers.length,
+      mapMarkers.reduce((sum, marker) => sum + marker.latitude, 0) / mapMarkers.length,
+    ] as [number, number])
+  : ([101.68879746977579, 3.1789972504885134] as [number, number]);
 ---
 
 <section id="map" class="scroll-offset relative">
@@ -23,11 +153,49 @@ import MapCanvas from "./MapCanvas";
     </p>
   </div>
 
-  <div class="rounded-2xl border border-gray-800 bg-gray-900/60 p-4 md:p-6">
-    <div
-      class="h-[360px] md:h-[420px] w-full overflow-hidden rounded-xl border border-gray-800"
-    >
-      <MapCanvas client:only="react" />
+  <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-6 lg:gap-8">
+    <div class="rounded-2xl border border-gray-800 bg-gray-900/60 p-4 md:p-6">
+      <div
+        class="h-[320px] sm:h-[360px] md:h-[420px] w-full overflow-hidden rounded-xl border border-gray-800"
+      >
+        <MapCanvas client:only="react" markers={mapMarkers} center={mapCenter} />
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-800 bg-gray-900/60 p-4 md:p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-bold text-white tracking-tight">
+          Experience Timeline
+        </h3>
+        <span class="text-xs font-mono text-cyan-400">[PATH]</span>
+      </div>
+      <div class="relative">
+        <div class="absolute left-3 top-0 h-full w-px bg-gradient-to-b from-cyan-500/60 via-purple-500/30 to-transparent"></div>
+        <div class="space-y-5">
+          {
+            timelineEntries.map((entry) => (
+              <div class="group relative pl-10">
+                <div class="absolute left-1.5 top-2 h-3 w-3 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)] transition-transform duration-300 group-hover:scale-110"></div>
+                <div class="rounded-xl border border-gray-800 bg-gray-950/60 px-4 py-3 transition-all duration-300 group-hover:border-cyan-500/50 group-hover:shadow-[0_0_24px_rgba(34,211,238,0.2)] group-hover:-translate-y-0.5">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <div class="text-sm font-semibold text-white">
+                        {entry.company}
+                      </div>
+                      <div class="text-xs font-mono text-cyan-300">
+                        {entry.role}
+                      </div>
+                    </div>
+                    <div class="text-xs font-mono text-gray-400 whitespace-nowrap">
+                      {entry.date}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
     </div>
   </div>
 </section>
