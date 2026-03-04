@@ -45,7 +45,7 @@ const alertId = id;
   </div>
 </div>
 
-<script define:vars={{ alertId }}>
+<script is:inline define:vars={{ alertId }}>
   const root = document.getElementById(alertId);
   if (root) {
     const panel = root.querySelector("[data-alert-panel]");

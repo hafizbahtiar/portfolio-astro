@@ -71,10 +71,11 @@ const hasPolicy = Boolean(policy?.privacyPolicy || policy?.termsAndConditions);
     title={`${project.title} - Hafiz Bahtiar`}
     description={project.description}
 >
-    <a
-        href="/projects"
-        id="back-button"
+    <button
+        type="button"
         class="btn-text mb-8 group inline-flex items-center"
+        data-project-slug={project.slug}
+        onclick="history.back()"
     >
         <svg
             class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform"
@@ -90,21 +91,8 @@ const hasPolicy = Boolean(policy?.privacyPolicy || policy?.termsAndConditions);
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
         Back to Projects
-    </a>
+    </button>
 
-    <script is:inline>
-        document
-            .getElementById("back-button")
-            ?.addEventListener("click", (e) => {
-                if (
-                    document.referrer &&
-                    document.referrer.includes(window.location.origin)
-                ) {
-                    e.preventDefault();
-                    window.history.back();
-                }
-            });
-    </script>
 
     <div
         class="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-3xl overflow-hidden shadow-2xl"

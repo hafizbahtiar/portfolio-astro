@@ -87,7 +87,10 @@ const formatMonthYear = (value: string) => {
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return new Intl.DateTimeFormat("en-MY", { month: "short", year: "numeric" }).format(date);
+  return new Intl.DateTimeFormat("en-MY", {
+    month: "short",
+    year: "numeric",
+  }).format(date);
 };
 
 const formatDateRange = (experience: Experience) => {
@@ -109,14 +112,19 @@ const timelineEntries = experiences
     return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
   })
   .map((experience) => ({
+    id: experience.id,
     company: experience.companyName,
     role: experience.role,
     date: formatDateRange(experience),
   }));
 
 const mapMarkers = experiences
-  .filter((experience) => experience.latitude !== null && experience.longitude !== null)
+  .filter(
+    (experience) =>
+      experience.latitude !== null && experience.longitude !== null,
+  )
   .map((experience) => ({
+    id: experience.id,
     company: experience.companyName,
     role: experience.role,
     date: formatDateRange(experience),
@@ -126,8 +134,10 @@ const mapMarkers = experiences
 
 const mapCenter = mapMarkers.length
   ? ([
-      mapMarkers.reduce((sum, marker) => sum + marker.longitude, 0) / mapMarkers.length,
-      mapMarkers.reduce((sum, marker) => sum + marker.latitude, 0) / mapMarkers.length,
+      mapMarkers.reduce((sum, marker) => sum + marker.longitude, 0) /
+        mapMarkers.length,
+      mapMarkers.reduce((sum, marker) => sum + marker.latitude, 0) /
+        mapMarkers.length,
     ] as [number, number])
   : ([101.68879746977579, 3.1789972504885134] as [number, number]);
 ---
@@ -153,12 +163,18 @@ const mapCenter = mapMarkers.length
     </p>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-6 lg:gap-8">
+  <div
+    class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-6 lg:gap-8"
+  >
     <div class="rounded-2xl border border-gray-800 bg-gray-900/60 p-4 md:p-6">
       <div
         class="h-[320px] sm:h-[360px] md:h-[420px] w-full overflow-hidden rounded-xl border border-gray-800"
       >
-        <MapCanvas client:only="react" markers={mapMarkers} center={mapCenter} />
+        <MapCanvas
+          client:only="react"
+          markers={mapMarkers}
+          center={mapCenter}
+        />
       </div>
     </div>
 
@@ -170,13 +186,20 @@ const mapCenter = mapMarkers.length
         <span class="text-xs font-mono text-cyan-400">[PATH]</span>
       </div>
       <div class="relative">
-        <div class="absolute left-3 top-0 h-full w-px bg-gradient-to-b from-cyan-500/60 via-purple-500/30 to-transparent"></div>
+        <div
+          class="absolute left-3 top-0 h-full w-px bg-gradient-to-b from-cyan-500/60 via-purple-500/30 to-transparent"
+        >
+        </div>
         <div class="space-y-5">
           {
             timelineEntries.map((entry) => (
-              <div class="group relative pl-10">
-                <div class="absolute left-1.5 top-2 h-3 w-3 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)] transition-transform duration-300 group-hover:scale-110"></div>
-                <div class="rounded-xl border border-gray-800 bg-gray-950/60 px-4 py-3 transition-all duration-300 group-hover:border-cyan-500/50 group-hover:shadow-[0_0_24px_rgba(34,211,238,0.2)] group-hover:-translate-y-0.5">
+              <button
+                type="button"
+                class="map-timeline-item group relative w-full pl-10 text-left"
+                data-marker-id={entry.id}
+              >
+                <div class="map-timeline-dot absolute left-1.5 top-2 h-3 w-3 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)] transition-transform duration-300 group-hover:scale-110" />
+                <div class="map-timeline-card rounded-xl border border-gray-800 bg-gray-950/60 px-4 py-3 transition-all duration-300 group-hover:border-cyan-500/50 group-hover:shadow-[0_0_24px_rgba(34,211,238,0.2)] group-hover:-translate-y-0.5">
                   <div class="flex items-center justify-between gap-3">
                     <div>
                       <div class="text-sm font-semibold text-white">
@@ -191,7 +214,7 @@ const mapCenter = mapMarkers.length
                     </div>
                   </div>
                 </div>
-              </div>
+              </button>
             ))
           }
         </div>
@@ -199,3 +222,59 @@ const mapCenter = mapMarkers.length
     </div>
   </div>
 </section>
+
+<script>
+  const activeCardClass =
+    "border-cyan-500/70 shadow-[0_0_28px_rgba(34,211,238,0.25)] -translate-y-0.5";
+  const activeDotClass =
+    "bg-cyan-300 scale-110 shadow-[0_0_16px_rgba(103,232,249,0.9)]";
+  const activeCardTokens = activeCardClass.split(" ");
+  const activeDotTokens = activeDotClass.split(" ");
+
+  const setupMapTimeline = () => {
+    const timelineItems = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(".map-timeline-item"),
+    );
+    if (timelineItems.length === 0) return;
+
+    const setActive = (markerId: number) => {
+      timelineItems.forEach((item) => {
+        const card = item.querySelector<HTMLElement>(".map-timeline-card");
+        const dot = item.querySelector<HTMLElement>(".map-timeline-dot");
+        const isActive = Number(item.dataset.markerId) === markerId;
+        activeCardTokens.forEach((token) =>
+          card?.classList.toggle(token, isActive),
+        );
+        activeDotTokens.forEach((token) =>
+          dot?.classList.toggle(token, isActive),
+        );
+      });
+    };
+
+    const firstId = Number(timelineItems[0]?.dataset.markerId);
+    if (!Number.isNaN(firstId)) {
+      setActive(firstId);
+    }
+
+    timelineItems.forEach((item) => {
+      if (item.dataset.mapTimelineBound === "true") {
+        return;
+      }
+      item.addEventListener("click", () => {
+        const markerId = Number(item.dataset.markerId);
+        if (Number.isNaN(markerId)) return;
+        setActive(markerId);
+        window.dispatchEvent(
+          new CustomEvent("map-focus-marker", {
+            detail: { markerId },
+          }),
+        );
+      });
+      item.dataset.mapTimelineBound = "true";
+    });
+  };
+
+  setupMapTimeline();
+  document.addEventListener("astro:page-load", setupMapTimeline);
+  document.addEventListener("astro:after-swap", setupMapTimeline);
+</script>

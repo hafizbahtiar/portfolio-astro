@@ -66,12 +66,12 @@ export function setupFormGuard(form: HTMLFormElement) {
   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
     if (isDirty) {
       e.preventDefault();
-      e.returnValue = '';
+      (e as unknown as { returnValue: string }).returnValue = '';
       return '';
     }
   };
 
-  const handlePopState = async (e: PopStateEvent) => {
+  const handlePopState = async () => {
     // If we are dirty and a popstate occurs (User pressed Back)
     if (isDirty) {
       // The user pressed Back, so they are now at the previous state.

@@ -39,7 +39,7 @@ class ProfileService extends ApiClient {
     }
   }
 
-  async updateProfile(id: number, data: Partial<Profile>): Promise<Profile | null> {
+  async updateProfile(_id: number, data: Partial<Profile>): Promise<Profile | null> {
     try {
       // Use the owner/profile endpoint which updates the owner table
       // The id parameter is kept for signature compatibility but not used by the endpoint

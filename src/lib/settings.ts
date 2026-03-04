@@ -38,7 +38,7 @@ class SettingsService extends ApiClient {
   // 
   // BETTER IDEA: I'll use the Profile service for "Personal Settings" (password update) which IS in the backend (`users.ts` PUT).
 
-  async updatePassword(id: number, current: string, newPass: string) {
+  async updatePassword(id: number, _current: string, newPass: string) {
     // The backend `users.ts` PUT endpoint takes any data, but usually password updates require special handling.
     // Looking at `users.ts`:
     // users.put('/:id', ... const result = await userService.updateUser(id, data))
