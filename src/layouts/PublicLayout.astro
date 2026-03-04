@@ -19,20 +19,4 @@ const { title, description } = Astro.props;
     <slot />
   </main>
   <Footer />
-  <script is:inline type="text/javascript">
-    if (!window.__tawkLoaded) {
-      window.__tawkLoaded = true;
-      window.Tawk_API = window.Tawk_API || {};
-      window.Tawk_LoadStart = new Date();
-      (function () {
-        const s1 = document.createElement("script");
-        const s0 = document.getElementsByTagName("script")[0];
-        s1.async = true;
-        s1.src = "https://embed.tawk.to/69a116e24afa321c34c7932d/1jiek2piq";
-        s1.setAttribute("charset", "UTF-8");
-        s1.setAttribute("crossorigin", "*");
-        s0.parentNode?.insertBefore(s1, s0);
-      })();
-    }
-  </script>
 </CoreLayout>
