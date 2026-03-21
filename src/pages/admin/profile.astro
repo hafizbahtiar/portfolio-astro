@@ -1,5 +1,6 @@
 ---
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
+import { Image } from "astro:assets";
 
 const profile: any = {}; // Client-side fetch only
 ---
@@ -23,10 +24,12 @@ const profile: any = {}; // Client-side fetch only
               class="absolute inset-0 bg-cyan-500 rounded-full blur-lg opacity-20 group-hover:opacity-40 transition-opacity"
             >
             </div>
-            <img
+            <Image
               id="avatar-preview"
               src={profile?.avatarUrl || "https://github.com/hafizbahtiar.png"}
               alt="Profile"
+              width={128}
+              height={128}
               class="relative w-full h-full rounded-full border-2 border-gray-700 object-cover"
             />
             <label

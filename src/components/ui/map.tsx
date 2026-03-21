@@ -1164,6 +1164,163 @@ function MapRoute({
   return null;
 }
 
+type MapPolygonProps = {
+  /** Optional unique identifier for the polygon layer */
+  id?: string;
+  /** Array of [longitude, latitude] coordinate pairs defining the polygon. Note: In GeoJSON, Polygon coordinates are an array of linear rings, where each linear ring is an array of coordinates. Alternatively, you can pass a full GeoJSON Feature or Geometry object. */
+  coordinates: any; // Relaxed type to allow passing MultiPolygon or full GeoJSON
+  /** Fill color as CSS color value (default: "#4285F4") */
+  fillColor?: string;
+  /** Fill opacity from 0 to 1 (default: 0.2) */
+  fillOpacity?: number;
+  /** Outline color as CSS color value (default: "#4285F4") */
+  outlineColor?: string;
+  /** Outline width in pixels (default: 1) */
+  outlineWidth?: number;
+  /** Callback when the polygon is clicked */
+  onClick?: () => void;
+  /** Callback when mouse enters the polygon */
+  onMouseEnter?: () => void;
+  /** Callback when mouse leaves the polygon */
+  onMouseLeave?: () => void;
+  /** Whether the polygon is interactive - shows pointer cursor on hover (default: true) */
+  interactive?: boolean;
+};
+
+function MapPolygon({
+  id: propId,
+  coordinates,
+  fillColor = "#4285F4",
+  fillOpacity = 0.2,
+  outlineColor = "#4285F4",
+  outlineWidth = 1,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+  interactive = true,
+}: MapPolygonProps) {
+  const { map, isLoaded } = useMap();
+  const autoId = useId();
+  const id = propId ?? autoId;
+  const sourceId = `polygon-source-${id}`;
+  const fillLayerId = `polygon-fill-layer-${id}`;
+  const outlineLayerId = `polygon-outline-layer-${id}`;
+
+  useEffect(() => {
+    if (!isLoaded || !map) return;
+
+    // Check if source already exists
+    if (!map.getSource(sourceId)) {
+      // Handle case where coordinates might be a full GeoJSON object
+      const isFullGeoJson = coordinates && coordinates.type;
+
+      const geojsonData = isFullGeoJson
+        ? coordinates
+        : {
+          type: "Feature",
+          properties: {},
+          geometry: { type: "Polygon", coordinates: coordinates?.length > 0 ? coordinates : [] },
+        };
+
+      map.addSource(sourceId, {
+        type: "geojson",
+        data: geojsonData,
+      });
+    }
+
+    if (!map.getLayer(fillLayerId)) {
+      map.addLayer({
+        id: fillLayerId,
+        type: "fill",
+        source: sourceId,
+        paint: {
+          "fill-color": fillColor,
+          "fill-opacity": fillOpacity,
+        },
+      });
+    }
+
+    if (!map.getLayer(outlineLayerId)) {
+      map.addLayer({
+        id: outlineLayerId,
+        type: "line",
+        source: sourceId,
+        paint: {
+          "line-color": outlineColor,
+          "line-width": outlineWidth,
+        },
+      });
+    }
+
+    return () => {
+      try {
+        if (map.getLayer(fillLayerId)) map.removeLayer(fillLayerId);
+        if (map.getLayer(outlineLayerId)) map.removeLayer(outlineLayerId);
+        if (map.getSource(sourceId)) map.removeSource(sourceId);
+      } catch {
+        // ignore
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, map, sourceId, fillLayerId, outlineLayerId]);
+
+  useEffect(() => {
+    if (!isLoaded || !map || !coordinates) return;
+
+    const source = map.getSource(sourceId) as MapLibreGL.GeoJSONSource;
+    if (source) {
+      const isFullGeoJson = coordinates && coordinates.type;
+
+      const geojsonData = isFullGeoJson
+        ? coordinates
+        : {
+          type: "Feature",
+          properties: {},
+          geometry: { type: "Polygon", coordinates },
+        };
+
+      source.setData(geojsonData);
+    }
+  }, [isLoaded, map, coordinates, sourceId]);
+
+  useEffect(() => {
+    if (!isLoaded || !map || !map.getLayer(fillLayerId)) return;
+
+    map.setPaintProperty(fillLayerId, "fill-color", fillColor);
+    map.setPaintProperty(fillLayerId, "fill-opacity", fillOpacity);
+    map.setPaintProperty(outlineLayerId, "line-color", outlineColor);
+    map.setPaintProperty(outlineLayerId, "line-width", outlineWidth);
+  }, [isLoaded, map, fillLayerId, outlineLayerId, fillColor, fillOpacity, outlineColor, outlineWidth]);
+
+  useEffect(() => {
+    if (!isLoaded || !map || !interactive) return;
+
+    const handleClick = () => {
+      onClick?.();
+    };
+    const handleMouseEnter = () => {
+      map.getCanvas().style.cursor = "pointer";
+      onMouseEnter?.();
+    };
+    const handleMouseLeave = () => {
+      map.getCanvas().style.cursor = "";
+      onMouseLeave?.();
+    };
+
+    map.on("click", fillLayerId, handleClick);
+    map.on("mouseenter", fillLayerId, handleMouseEnter);
+    map.on("mouseleave", fillLayerId, handleMouseLeave);
+
+    return () => {
+      map.off("click", fillLayerId, handleClick);
+      map.off("mouseenter", fillLayerId, handleMouseEnter);
+      map.off("mouseleave", fillLayerId, handleMouseLeave);
+    };
+  }, [isLoaded, map, fillLayerId, interactive, onClick, onMouseEnter, onMouseLeave]);
+
+  return null;
+}
+
 type MapClusterLayerProps<
   P extends GeoJSON.GeoJsonProperties = GeoJSON.GeoJsonProperties
 > = {
@@ -1477,6 +1634,7 @@ export {
   MapPopup,
   MapControls,
   MapRoute,
+  MapPolygon,
   MapClusterLayer,
 };
 

@@ -7,7 +7,12 @@ import {
   MarkerContent,
   MarkerLabel,
   MarkerPopup,
+  MapPolygon,
 } from "@/components/ui/map";
+import klBoundary from "./kl-boundary.json";
+
+// The accurate coordinates for Kuala Lumpur boundary
+const kualaLumpurPolygon = klBoundary;
 
 type MapMarkerData = {
   id: number;
@@ -71,6 +76,17 @@ const MapCanvas = ({
     <div className="h-full w-full">
       <Map ref={mapRef} center={center} zoom={zoom} className="h-full w-full">
         <MapControls position="bottom-right" showZoom={true} showLocate={true} />
+
+        <MapPolygon
+          id="kuala-lumpur-boundary"
+          coordinates={kualaLumpurPolygon}
+          fillColor="#22c55e" // Light green
+          fillOpacity={0.15}
+          outlineColor="#16a34a"
+          outlineWidth={2}
+          interactive={false}
+        />
+
         {markers.map((marker) => {
           const isActive = marker.id === activeMarkerId;
           return (

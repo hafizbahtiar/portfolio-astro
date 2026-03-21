@@ -12,7 +12,10 @@ export default defineConfig({
       "www.qiubbx.com",
       "qiubbx.com",
       "cit.securiforce.net",
-      "eperolehan.dbkl.gov.my"
+      "eperolehan.dbkl.gov.my",
+      "github.com",
+      "avatars.githubusercontent.com",
+      "media.licdn.com"
     ]
   },
   vite: {
