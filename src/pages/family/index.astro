@@ -1,6 +1,6 @@
 ---
 import PublicLayout from "../../layouts/PublicLayout.astro";
-import { PublicFamilyExplorer } from "../../components/family/PublicFamilyExplorer";
+import { CombinedFamilyExplorer } from "../../components/family/CombinedFamilyExplorer";
 import { getPublicFamilyTrees } from "../../lib/family";
 import TechDropdown from "../../components/ui/TechDropdown.astro";
 import { FamilyTreeChart } from "../../components/family/FamilyTreeChart";
@@ -113,10 +113,12 @@ for (const d of details) {
 
 function addParentRelIfMissing(parentName: string, childName: string) {
   const parent = combinedPeople.find(
-    (p) => p.displayName.trim().toLowerCase() === parentName.trim().toLowerCase(),
+    (p) =>
+      p.displayName.trim().toLowerCase() === parentName.trim().toLowerCase(),
   );
   const child = combinedPeople.find(
-    (p) => p.displayName.trim().toLowerCase() === childName.trim().toLowerCase(),
+    (p) =>
+      p.displayName.trim().toLowerCase() === childName.trim().toLowerCase(),
   );
   if (!parent || !child) return;
   const candidate: FamilyRelationship = {
@@ -155,8 +157,13 @@ const combinedDetail: FamilyTreeDetail = {
     id: 0,
     slug: "combined-family",
     name: "Combined Family",
-    description: "Combined view of all related families centered on Muhamad Nurhafiz.",
+    description:
+      "Combined view of all related families centered on Muhamad Nurhafiz.",
     isPublic: true,
+    defaultMainPersonId: (() => {
+      const me = combinedPeople.find((p) => p.displayName.trim().toLowerCase() === "muhamad nurhafiz");
+      return me ? me.id : null;
+    })(),
     createdByUserId: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -170,24 +177,29 @@ const combinedDetail: FamilyTreeDetail = {
   <section class="container-main py-24 space-y-8">
     <div class="space-y-3">
       <p class="text-cyan-400 font-mono text-sm">~/family</p>
-      <h1 class="text-4xl font-bold text-white tracking-tight">Big Family (Combined)</h1>
+      <h1 class="text-4xl font-bold text-white tracking-tight">
+        Big Family (Combined)
+      </h1>
       <p class="text-gray-400 max-w-2xl">
-        Combined view of Hafiz, Bahtiar, and Azhari families, centered for full ancestry.
+        Combined view of Hafiz, Bahtiar, and Azhari families, centered for full
+        ancestry.
       </p>
     </div>
 
-    {trees.length > 0 && (
-      <div class="flex flex-wrap gap-2">
-        {trees.map((t) => (
-          <a
-            href={`/family/${t.slug}`}
-            class="inline-flex items-center rounded-md border border-gray-700 bg-gray-900/60 px-3 py-2 text-sm text-gray-200 hover:border-cyan-500/50 hover:text-cyan-300 transition-colors"
-          >
-            {t.name}
-          </a>
-        ))}
-      </div>
-    )}
+    {
+      trees.length > 0 && (
+        <div class="flex flex-wrap gap-2">
+          {trees.map((t) => (
+            <a
+              href={`/family/${t.slug}`}
+              class="inline-flex items-center rounded-md border border-gray-700 bg-gray-900/60 px-3 py-2 text-sm text-gray-200 hover:border-cyan-500/50 hover:text-cyan-300 transition-colors"
+            >
+              {t.name}
+            </a>
+          ))}
+        </div>
+      )
+    }
 
     {
       combinedPeople.length > 0 ? (
@@ -204,10 +216,7 @@ const combinedDetail: FamilyTreeDetail = {
         />
       ) : (
         <div class="space-y-6">
-          <div class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-300 text-sm">
-            Combined view data is unavailable during build. Loading live data in the browser...
-          </div>
-          <PublicFamilyExplorer client:load />
+          <CombinedFamilyExplorer client:load />
         </div>
       )
     }
