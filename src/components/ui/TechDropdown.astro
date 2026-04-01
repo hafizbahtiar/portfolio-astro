@@ -23,12 +23,16 @@ const {
   class: className = "",
   id: inputId = `${name}-input`,
 } = Astro.props;
+const triggerId = `${name}-trigger`;
+const labelId = `${name}-label`;
+const menuId = `${name}-menu`;
 ---
 
 <div class={`tech-dropdown-container space-y-2 ${className}`} data-name={name}>
   <label
+    id={labelId}
     class="block text-sm font-medium text-gray-400 font-mono tracking-wide"
-    for={inputId}
+    for={triggerId}
   >
     {`// ${label}`}
   </label>
@@ -42,6 +46,10 @@ const {
     />
 
     <button
+      id={triggerId}
+      aria-labelledby={labelId}
+      aria-haspopup="listbox"
+      aria-expanded="false"
       type="button"
       class="dropdown-trigger w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-left text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all flex justify-between items-center group hover:border-cyan-500/50"
     >
@@ -73,14 +81,20 @@ const {
     </button>
 
     <div
+      id={menuId}
       class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl transform origin-top transition-all duration-200"
     >
-      <ul class="max-h-60 overflow-y-auto py-1 custom-scrollbar">
+      <ul
+        class="max-h-60 overflow-y-auto py-1 custom-scrollbar"
+        role="listbox"
+        aria-labelledby={labelId}
+      >
         {
           options.map((option) => (
             <li>
               <button
                 type="button"
+                role="option"
                 class="dropdown-item w-full text-left px-4 py-2 text-sm font-mono text-gray-300 hover:bg-cyan-900/20 hover:text-cyan-400 transition-colors flex items-center justify-between group"
                 data-value={option.value}
               >
@@ -139,6 +153,8 @@ const {
 
       const setOpenState = (nextOpen: boolean) => {
         container.setAttribute("data-open", nextOpen ? "true" : "false");
+        trigger.setAttribute("aria-expanded", nextOpen ? "true" : "false");
+        trigger.setAttribute("aria-controls", menu.id);
         if (nextOpen) {
           menu.classList.remove("hidden");
           requestAnimationFrame(() => {

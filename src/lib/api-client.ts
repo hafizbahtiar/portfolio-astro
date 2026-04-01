@@ -132,7 +132,12 @@ export class ApiClient {
 
             const response = await fetch(url, {
                 ...options,
-                headers,
+                headers: {
+                    ...headers,
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache',
+                },
+                cache: 'no-store',
             });
 
             // Handle 401 Unauthorized (Token Expired)

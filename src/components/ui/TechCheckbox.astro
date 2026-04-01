@@ -1,0 +1,108 @@
+---
+interface Props {
+  label: string;
+  name: string;
+  checked?: boolean;
+  class?: string;
+  id?: string;
+}
+
+const {
+  label,
+  name,
+  checked = false,
+  class: className = "",
+  id: inputId = `${name}-checkbox`,
+} = Astro.props;
+const labelId = `${name}-label`;
+---
+
+<div class={`tech-checkbox-container space-y-2 ${className}`} data-name={name}>
+  <label
+    id={labelId}
+    class="block text-sm font-medium text-gray-400 font-mono tracking-wide"
+    for={inputId}
+  >
+    {`// ${label}`}
+  </label>
+  <div class="relative">
+    <input
+      id={inputId}
+      type="checkbox"
+      name={name}
+      checked={checked}
+      class="sr-only"
+      aria-labelledby={labelId}
+    />
+    <button
+      type="button"
+      class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-left text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all flex justify-between items-center group hover:border-cyan-500/50"
+      data-trigger="true"
+      aria-controls={inputId}
+    >
+      <span
+        class="selected-text font-mono text-sm text-gray-300 group-hover:text-cyan-400 transition-colors truncate"
+      >
+        <span data-off>Spouse links: ON</span>
+        <span data-on class="hidden">Spouse links: OFF</span>
+      </span>
+      <div
+        class="flex items-center text-gray-500 group-hover:text-cyan-500 transition-colors"
+      >
+        <span
+          class="mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity font-mono hidden sm:inline-block"
+          >[TOGGLE]</span
+        >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 12h16"></path>
+        </svg>
+      </div>
+    </button>
+  </div>
+</div>
+
+<script>
+  function setupTechCheckboxes() {
+    const containers = document.querySelectorAll(".tech-checkbox-container");
+    containers.forEach((cont) => {
+      if (cont.getAttribute("data-initialized") === "true") return;
+      cont.setAttribute("data-initialized", "true");
+      const input = cont.querySelector("input[type='checkbox']");
+      const trigger = cont.querySelector("[data-trigger='true']");
+      const textOff = cont.querySelector("[data-off]");
+      const textOn = cont.querySelector("[data-on]");
+      const updateUI = () => {
+        const isChecked = input && input instanceof HTMLInputElement ? input.checked : false;
+        if (isChecked) {
+          textOff && textOff.classList.add("hidden");
+          textOn && textOn.classList.remove("hidden");
+        } else {
+          textOn && textOn.classList.add("hidden");
+          textOff && textOff.classList.remove("hidden");
+        }
+      };
+      updateUI();
+      trigger && trigger.addEventListener("click", (e) => {
+        e.preventDefault();
+        const el = input && input instanceof HTMLInputElement ? input : null;
+        if (!el) return;
+        el.checked = !el.checked;
+        updateUI();
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    });
+  }
+  setupTechCheckboxes();
+  (window as Window & { setupTechCheckboxes?: () => void }).setupTechCheckboxes = setupTechCheckboxes;
+  document.addEventListener("astro:page-load", setupTechCheckboxes);
+  document.addEventListener("DOMContentLoaded", setupTechCheckboxes);
+</script>

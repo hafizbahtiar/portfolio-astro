@@ -1,0 +1,265 @@
+---
+import PublicLayout from "../../../layouts/PublicLayout.astro";
+import {
+  getPublicFamilyTreeBySlug,
+  getPublicFamilyTrees,
+} from "../../../lib/family";
+import { FamilyTreeChart } from "../../../components/family/FamilyTreeChart";
+import TechCheckbox from "../../../components/ui/TechCheckbox.astro";
+import type { FamilyTreeDetail } from "../../../types/family";
+import TechDropdown from "../../../components/ui/TechDropdown.astro";
+
+export async function getStaticPaths() {
+  try {
+    const families = await getPublicFamilyTrees();
+    const paths = await Promise.all(
+      families.map(async (f) => {
+        const detail = await getPublicFamilyTreeBySlug(f.slug);
+        if (!detail) return null;
+        return {
+          params: { slug: f.slug },
+          props: { detail, families, slug: f.slug },
+        };
+      }),
+    );
+    return paths.filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+const { slug, detail, families } = Astro.props as {
+  slug: string;
+  detail: FamilyTreeDetail | null;
+  families: Array<{ slug: string; name: string }>;
+};
+const familyOptions = families.map((t) => ({ value: t.slug, label: t.name }));
+const personOptions = (detail?.people || []).map((p) => ({
+  value: String(p.id),
+  label: p.displayName,
+}));
+const initialMainId = (() => {
+  const defId = detail?.tree.defaultMainPersonId ?? null;
+  if (defId) return String(defId);
+  return String(detail?.people[0]?.id || "");
+})();
+---
+
+<PublicLayout title={`${detail?.tree.name || "Family"} Family`}>
+  <section class="container-main py-24 space-y-8">
+    <div class="space-y-3">
+      <a
+        href="/family"
+        class="text-sm text-cyan-400 hover:text-cyan-300 font-mono"
+      >
+        ← Back to Families
+      </a>
+      <h1 class="text-4xl font-bold text-white tracking-tight">
+        {detail?.tree.name || slug}
+      </h1>
+      <p class="text-gray-400 max-w-3xl">
+        {
+          detail?.tree.description ??
+            (detail
+              ? "No description provided for this family tree."
+              : "Family tree not found.")
+        }
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+      <aside
+        class="rounded-xl border border-gray-800 bg-gray-900/40 p-4 space-y-4"
+      >
+        <TechDropdown
+          label="Choose Family"
+          name="choose-family"
+          options={familyOptions}
+          value={detail?.tree.slug || slug}
+          placeholder="Select family"
+        />
+        <TechDropdown
+          label="Main Person"
+          name="main-person"
+          options={personOptions}
+          value={initialMainId}
+          placeholder="Select main person"
+        />
+        <TechCheckbox label="No Spouse" name="no-spouse" />
+        <div class="flex flex-wrap gap-2">
+          <button
+            id="btn-orient-vertical"
+            type="button"
+            class="rounded-md px-3 py-2 text-sm border border-gray-700 text-gray-300 hover:bg-gray-800"
+            >Vertical</button
+          >
+          <button
+            id="btn-orient-horizontal"
+            type="button"
+            class="rounded-md px-3 py-2 text-sm border border-gray-700 text-gray-300 hover:bg-gray-800"
+            >Horizontal</button
+          >
+          <button
+            id="btn-zoom-out"
+            type="button"
+            class="rounded-md px-3 py-2 text-sm border border-gray-700 text-gray-300 hover:bg-gray-800"
+            >-</button
+          >
+          <button
+            id="btn-zoom-in"
+            type="button"
+            class="rounded-md px-3 py-2 text-sm border border-gray-700 text-gray-300 hover:bg-gray-800"
+            >+</button
+          >
+          <button
+            id="btn-center-main"
+            type="button"
+            class="rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20"
+            >Center Main</button
+          >
+          <button
+            id="btn-fit"
+            type="button"
+            class="rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20"
+            >Fit</button
+          >
+        </div>
+      </aside>
+
+      <div class="space-y-3">
+        <h2 class="text-xl font-semibold text-white">Family Tree Chart</h2>
+        {
+          detail ? (
+            <FamilyTreeChart
+              client:load
+              detail={detail}
+              currentSlug={detail.tree.slug}
+              sortChildrenBy="metadata.birth_order"
+              sortAscending={true}
+            />
+          ) : (
+            <div class="rounded-xl border border-gray-800 bg-gray-900/40 p-5 text-sm text-gray-400">
+              Family tree not found.
+            </div>
+          )
+        }
+      </div>
+    </div>
+
+    <script is:inline>
+      const chooseInput = document.querySelector('input[name="choose-family"]');
+      const mainInput = document.querySelector('input[name="main-person"]');
+      const noSpouseInput = document.querySelector('input[name="no-spouse"]');
+      function onChooseChange() {
+        const slug = chooseInput?.value || "";
+        if (!slug) return;
+        window.dispatchEvent(
+          new CustomEvent("family:set-family", { detail: { slug } }),
+        );
+        window.location.href = `/family/${slug}`;
+      }
+      function onMainChange() {
+        const id = mainInput?.value || "";
+        if (!id) return;
+        window.dispatchEvent(
+          new CustomEvent("family:set-main", { detail: { id } }),
+        );
+      }
+      function onNoSpouseChange() {
+        const el = document.querySelector('input[name="no-spouse"]');
+        const checked = !!(el && el instanceof HTMLInputElement
+          ? el.checked
+          : false);
+        const api =
+          typeof window !== "undefined" && window && window["familyChartApi"]
+            ? window["familyChartApi"]
+            : null;
+        if (api && typeof api.setShowSpouses === "function") {
+          api.setShowSpouses(!checked);
+        }
+        window.dispatchEvent(new CustomEvent("family:center-main"));
+      }
+      chooseInput?.addEventListener("change", onChooseChange);
+      mainInput?.addEventListener("change", onMainChange);
+      noSpouseInput?.addEventListener("change", onNoSpouseChange);
+      document.addEventListener("change", (e) => {
+        const el = e.target instanceof Element ? e.target : null;
+        if (!el) return;
+        let name = el.getAttribute ? el.getAttribute("name") : null;
+        if (!name && el.closest) {
+          const inputEl = el.closest("input[name]");
+          if (inputEl && inputEl.getAttribute) {
+            name = inputEl.getAttribute("name");
+          }
+        }
+        if (name === "choose-family") onChooseChange();
+        if (name === "main-person") onMainChange();
+        if (name === "no-spouse") onNoSpouseChange();
+      });
+      window.addEventListener("family:on-main-changed", (e) => {
+        const id = e?.detail?.id;
+        if (!id || !mainInput) return;
+        mainInput.value = id;
+        mainInput.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      if (window.setupTechDropdowns) {
+        window.setupTechDropdowns();
+      }
+      const zIn = document.getElementById("btn-zoom-in");
+      const zOut = document.getElementById("btn-zoom-out");
+      const fit = document.getElementById("btn-fit");
+      const center = document.getElementById("btn-center-main");
+      const v = document.getElementById("btn-orient-vertical");
+      const h = document.getElementById("btn-orient-horizontal");
+      zIn?.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("family:zoom-in"));
+      });
+      zOut?.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("family:zoom-out"));
+      });
+      fit?.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("family:fit"));
+      });
+      center?.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("family:center-main"));
+      });
+      function setOrientUI(vertical) {
+        if (!v || !h) return;
+        const active = "bg-cyan-600 text-white";
+        const inactive =
+          "border border-gray-700 text-gray-300 hover:bg-gray-800";
+        const clean = (el) =>
+          el.className.replace(active, "").replace(inactive, "").trim();
+        v.className = clean(v);
+        h.className = clean(h);
+        if (vertical) {
+          v.className += ` ${active}`;
+          h.className += ` ${inactive}`;
+        } else {
+          h.className += ` ${active}`;
+          v.className += ` ${inactive}`;
+        }
+      }
+      v?.addEventListener("click", () => {
+        window.dispatchEvent(
+          new CustomEvent("family:set-orientation", {
+            detail: { vertical: true },
+          }),
+        );
+        setOrientUI(true);
+      });
+      h?.addEventListener("click", () => {
+        window.dispatchEvent(
+          new CustomEvent("family:set-orientation", {
+            detail: { vertical: false },
+          }),
+        );
+        setOrientUI(false);
+      });
+      setOrientUI(true);
+      if (mainInput && mainInput.value) {
+        mainInput.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    </script>
+  </section>
+</PublicLayout>
