@@ -8,6 +8,7 @@ import { FamilyTreeChart } from "../../../components/family/FamilyTreeChart";
 import TechCheckbox from "../../../components/ui/TechCheckbox.astro";
 import type { FamilyTreeDetail } from "../../../types/family";
 import TechDropdown from "../../../components/ui/TechDropdown.astro";
+import { PublicFamilyExplorer } from "../../../components/family/PublicFamilyExplorer";
 
 export async function getStaticPaths() {
   try {
@@ -129,7 +130,7 @@ const initialMainId = (() => {
       <div class="space-y-3">
         <h2 class="text-xl font-semibold text-white">Family Tree Chart</h2>
         {
-          detail ? (
+          detail && detail.people.length > 0 ? (
             <FamilyTreeChart
               client:load
               detail={detail}
@@ -138,8 +139,14 @@ const initialMainId = (() => {
               sortAscending={true}
             />
           ) : (
-            <div class="rounded-xl border border-gray-800 bg-gray-900/40 p-5 text-sm text-gray-400">
-              Family tree not found.
+            <div class="space-y-6">
+              <div class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-300 text-sm">
+                Live data will be loaded in the browser for this family.
+              </div>
+              <div>
+                <!-- Client fallback: fetch and render by slug -->
+                <PublicFamilyExplorer client:load minimal={true} initialSlug={slug} />
+              </div>
             </div>
           )
         }

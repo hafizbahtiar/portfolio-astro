@@ -3,7 +3,12 @@ import { getPublicFamilyTreeBySlug, getPublicFamilyTrees } from "../../lib/famil
 import type { FamilyTree, FamilyTreeDetail } from "../../types/family";
 import { FamilyTreeChart } from "./FamilyTreeChart";
 
-export const PublicFamilyExplorer = () => {
+interface Props {
+  initialSlug?: string;
+  minimal?: boolean;
+}
+
+export const PublicFamilyExplorer = ({ initialSlug, minimal }: Props) => {
   const [trees, setTrees] = useState<FamilyTree[]>([]);
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const [detail, setDetail] = useState<FamilyTreeDetail | null>(null);
@@ -18,8 +23,10 @@ export const PublicFamilyExplorer = () => {
       try {
         const result = await getPublicFamilyTrees();
         setTrees(result);
-        const preferred = result.find((t) => t.slug === "hafiz-family");
-        setSelectedSlug(preferred?.slug || result[0]?.slug || "");
+        const preferred = initialSlug
+          ? result.find((t) => t.slug === initialSlug)
+          : result.find((t) => t.slug === "hafiz-family");
+        setSelectedSlug(preferred?.slug || initialSlug || result[0]?.slug || "");
       } catch (err) {
         console.error(err);
         setError("Failed to load public family trees.");
@@ -29,7 +36,7 @@ export const PublicFamilyExplorer = () => {
     };
 
     load();
-  }, []);
+  }, [initialSlug]);
 
   useEffect(() => {
     if (!selectedSlug) {
@@ -90,12 +97,14 @@ export const PublicFamilyExplorer = () => {
         </div>
       ) : (
         <div className="space-y-5">
-          <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-5">
-            <h2 className="text-2xl font-semibold text-white">{detail.tree.name}</h2>
-            <p className="mt-2 text-sm text-gray-400">
-              {detail.tree.description || "No description provided."}
-            </p>
-          </div>
+          {!minimal && (
+            <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-5">
+              <h2 className="text-2xl font-semibold text-white">{detail.tree.name}</h2>
+              <p className="mt-2 text-sm text-gray-400">
+                {detail.tree.description || "No description provided."}
+              </p>
+            </div>
+          )}
 
           <FamilyTreeChart detail={detail} currentSlug={detail.tree.slug} />
         </div>

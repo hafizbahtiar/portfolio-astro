@@ -189,16 +189,27 @@ const combinedDetail: FamilyTreeDetail = {
       </div>
     )}
 
-    <FamilyTreeChart
-      client:load
-      detail={combinedDetail}
-      currentSlug="combined-family"
-      useLabelOnly={true}
-      ancestryDepth={6}
-      progenyDepth={3}
-      showSiblings={true}
-      sortChildrenBy="metadata.birth_order"
-      sortAscending={true}
-    />
+    {
+      combinedPeople.length > 0 ? (
+        <FamilyTreeChart
+          client:load
+          detail={combinedDetail}
+          currentSlug="combined-family"
+          useLabelOnly={true}
+          ancestryDepth={6}
+          progenyDepth={3}
+          showSiblings={true}
+          sortChildrenBy="metadata.birth_order"
+          sortAscending={true}
+        />
+      ) : (
+        <div class="space-y-6">
+          <div class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-300 text-sm">
+            Combined view data is unavailable during build. Loading live data in the browser...
+          </div>
+          <PublicFamilyExplorer client:load />
+        </div>
+      )
+    }
   </section>
 </PublicLayout>
