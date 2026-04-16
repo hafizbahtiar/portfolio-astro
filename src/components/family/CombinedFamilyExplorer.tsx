@@ -179,7 +179,7 @@ export const CombinedFamilyExplorer = () => {
       currentSlug="combined-family"
       useLabelOnly={true}
       ancestryDepth={6}
-      progenyDepth={3}
+      progenyDepth={5}
       showSiblings={true}
       sortChildrenBy="metadata.birth_order"
       sortAscending={true}
