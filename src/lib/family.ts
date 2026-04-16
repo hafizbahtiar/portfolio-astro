@@ -14,26 +14,33 @@ import type {
 
 const API_BASE_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1";
 
+const withNoCache = (endpoint: string) => {
+  const separator = endpoint.includes("?") ? "&" : "?";
+  return `${endpoint}${separator}noCache=1&_=${Date.now()}`;
+};
+
 export class FamilyService extends ApiClient {
   constructor() {
     super(API_BASE_URL);
   }
 
   async getPublicTrees(): Promise<FamilyTree[]> {
-    const result = await this.get<FamilyTree[]>("family");
+    const result = await this.get<FamilyTree[]>(withNoCache("family"));
     return result || [];
   }
 
   async getPublicTreeBySlug(slug: string): Promise<FamilyTreeDetail | null> {
-    return this.get<FamilyTreeDetail>(`family/${slug}`);
+    return this.get<FamilyTreeDetail>(withNoCache(`family/${slug}`));
   }
 
   async getPublicPersonById(id: number): Promise<FamilyPerson | null> {
-    return this.get<FamilyPerson>(`family/person/${id}`);
+    return this.get<FamilyPerson>(withNoCache(`family/person/${id}`));
   }
   
   async getPublicTreesByGlobalKey(key: string): Promise<FamilyTree[]> {
-    const result = await this.get<FamilyTree[]>(`family/trees-by-global/${encodeURIComponent(key)}`);
+    const result = await this.get<FamilyTree[]>(
+      withNoCache(`family/trees-by-global/${encodeURIComponent(key)}`),
+    );
     return result || [];
   }
 

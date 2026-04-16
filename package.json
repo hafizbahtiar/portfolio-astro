@@ -9,8 +9,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.6",
-    "@astrojs/react": "^4.4.2",
+    "@astrojs/check": "^0.9.8",
+    "@astrojs/react": "^5.0.3",
     "@floating-ui/dom": "^1.7.5",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/typography": "^0.5.19",
@@ -63,7 +63,7 @@
     "@tiptap/starter-kit": "^3.19.0",
     "@tiptap/suggestion": "^3.19.0",
     "@tiptap/y-tiptap": "^3.0.2",
-    "astro": "^5.16.15",
+    "astro": "^6.1.7",
     "autoprefixer": "^10.4.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
