@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { familyService } from "../../../lib/family";
+import { FamilyTreeChart } from "../../family/FamilyTreeChart";
 import type {
   CreateFamilyPersonPayload,
   CreateFamilyRelationshipPayload,
@@ -111,6 +112,28 @@ export const FamilyManager = () => {
     return map;
   }, [detail]);
 
+  const personOptions = useMemo(
+    () =>
+      (detail?.people || []).map((person) => ({
+        value: person.id,
+        label: person.displayName,
+      })),
+    [detail],
+  );
+
+  const selectedMainPerson = useMemo(() => {
+    const defaultId = treeEditForm.defaultMainPersonId ?? detail?.tree.defaultMainPersonId;
+    return defaultId ? peopleById.get(defaultId) ?? null : null;
+  }, [detail, peopleById, treeEditForm.defaultMainPersonId]);
+
+  const treeStats = useMemo(() => {
+    const peopleCount = detail?.people.length || 0;
+    const relationshipCount = detail?.relationships.length || 0;
+    const livingCount =
+      detail?.people.filter((person) => person.isLiving).length || 0;
+    return { peopleCount, relationshipCount, livingCount };
+  }, [detail]);
+
   const canSubmitRelationship =
     relationshipForm.personId > 0 &&
     relationshipForm.relatedPersonId > 0 &&
@@ -141,6 +164,7 @@ export const FamilyManager = () => {
           name: nextDetail.tree.name,
           description: nextDetail.tree.description || "",
           isPublic: nextDetail.tree.isPublic,
+          defaultMainPersonId: nextDetail.tree.defaultMainPersonId ?? null,
         });
       }
       setEditingPersonId(null);
@@ -220,6 +244,7 @@ export const FamilyManager = () => {
         name: treeEditForm.name?.trim(),
         description: normalizeText(treeEditForm.description as string | null),
         isPublic: Boolean(treeEditForm.isPublic),
+        defaultMainPersonId: treeEditForm.defaultMainPersonId ?? null,
       });
 
       if (!updated) {
@@ -442,8 +467,8 @@ export const FamilyManager = () => {
                   type="button"
                   onClick={() => setSelectedTreeId(tree.id)}
                   className={`w-full rounded-lg border px-3 py-2 text-left transition ${selectedTreeId === tree.id
-                      ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
-                      : "border-gray-700 bg-gray-900/40 text-gray-200 hover:border-gray-500"
+                    ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
+                    : "border-gray-700 bg-gray-900/40 text-gray-200 hover:border-gray-500"
                     }`}
                 >
                   <div className="text-sm font-semibold">{tree.name}</div>
@@ -530,6 +555,66 @@ export const FamilyManager = () => {
             </div>
           ) : (
             <>
+              <section className="space-y-4 rounded-xl border border-gray-700 bg-gray-800/40 p-5">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-white">
+                      Tree Builder Preview
+                    </h2>
+                    <p className="mt-1 text-sm text-gray-400">
+                      Live preview of the selected family tree. Use the forms below
+                      to add people, connect relationships, and choose the main
+                      person the chart centers on.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-lg border border-gray-700 bg-gray-900/40 px-3 py-2">
+                      <div className="text-lg font-semibold text-white">
+                        {treeStats.peopleCount}
+                      </div>
+                      <div className="text-[11px] uppercase tracking-wide text-gray-400">
+                        People
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-gray-700 bg-gray-900/40 px-3 py-2">
+                      <div className="text-lg font-semibold text-white">
+                        {treeStats.relationshipCount}
+                      </div>
+                      <div className="text-[11px] uppercase tracking-wide text-gray-400">
+                        Links
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-gray-700 bg-gray-900/40 px-3 py-2">
+                      <div className="text-lg font-semibold text-white">
+                        {treeStats.livingCount}
+                      </div>
+                      <div className="text-[11px] uppercase tracking-wide text-gray-400">
+                        Living
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-gray-700 bg-gray-900/30 p-4">
+                  <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
+                    <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-cyan-300">
+                      Main person:{" "}
+                      {selectedMainPerson?.displayName || "Not selected"}
+                    </span>
+                    <span className="text-gray-400">
+                      Builder inspiration: editable node data, relationship links,
+                      and a persistent main focus person.
+                    </span>
+                  </div>
+                  <FamilyTreeChart
+                    detail={detail}
+                    currentSlug={detail.tree.slug}
+                    sortChildrenBy="metadata.birth_order"
+                    sortAscending={true}
+                  />
+                </div>
+              </section>
+
               <form
                 onSubmit={handleUpdateTree}
                 className="space-y-4 rounded-xl border border-gray-700 bg-gray-800/40 p-5"
@@ -566,6 +651,36 @@ export const FamilyManager = () => {
                   rows={2}
                   className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
                 />
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">
+                      Default Main Person
+                    </label>
+                    <select
+                      value={treeEditForm.defaultMainPersonId ?? ""}
+                      onChange={(e) =>
+                        setTreeEditForm((prev) => ({
+                          ...prev,
+                          defaultMainPersonId: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        }))
+                      }
+                      className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                    >
+                      <option value="">Auto select first person</option>
+                      {personOptions.map((person) => (
+                        <option key={person.value} value={person.value}>
+                          {person.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="rounded-md border border-gray-700 bg-gray-900/40 px-3 py-3 text-sm text-gray-400">
+                    Saves the person the tree preview and public page should focus
+                    on first. This mirrors the builder-style "main person" flow.
+                  </div>
+                </div>
                 <div className="flex items-center justify-between gap-3">
                   <label className="inline-flex items-center gap-2 text-sm text-gray-300">
                     <input
@@ -759,6 +874,25 @@ export const FamilyManager = () => {
                             </td>
                             <td className="px-3 py-2">
                               <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setTreeEditForm((prev) => ({
+                                      ...prev,
+                                      defaultMainPersonId: person.id,
+                                    }))
+                                  }
+                                  className={`text-xs ${(treeEditForm.defaultMainPersonId ??
+                                      detail.tree.defaultMainPersonId) === person.id
+                                      ? "text-cyan-300"
+                                      : "text-amber-300 hover:text-amber-200"
+                                    }`}
+                                >
+                                  {(treeEditForm.defaultMainPersonId ??
+                                    detail.tree.defaultMainPersonId) === person.id
+                                    ? "Main"
+                                    : "Set Main"}
+                                </button>
                                 <button
                                   type="button"
                                   onClick={() => startEditPerson(person)}

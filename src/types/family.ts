@@ -66,7 +66,9 @@ export interface CreateFamilyTreePayload {
 }
 
 export interface UpdateFamilyTreePayload
-  extends Partial<CreateFamilyTreePayload> { }
+  extends Partial<CreateFamilyTreePayload> {
+  defaultMainPersonId?: number | null;
+}
 
 export interface CreateFamilyPersonPayload {
   firstName?: string | null;

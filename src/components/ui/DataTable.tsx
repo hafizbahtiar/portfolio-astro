@@ -10,7 +10,6 @@ import {
     type ColumnDef,
     type SortingState,
 } from '@tanstack/react-table';
-import { TechSelect } from './TechSelect';
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -120,17 +119,24 @@ export function DataTable<TData, TValue>({
 
                 {/* Page Size Selector */}
                 <div className="flex items-center gap-2">
-                    <TechSelect
+                    <label
+                        htmlFor="datatable-page-size"
+                        className="text-sm font-medium text-gray-400 font-mono tracking-wide"
+                    >
+                        // Rows
+                    </label>
+                    <select
+                        id="datatable-page-size"
                         value={table.getState().pagination.pageSize}
-                        onChange={(value) => table.setPageSize(Number(value))}
-                        options={[10, 20, 30, 40, 50].map(size => ({
-                            value: size,
-                            label: size
-                        }))}
-                        label="Rows"
-                        ariaLabel="Rows per page"
-                        className="w-24"
-                    />
+                        onChange={(e) => table.setPageSize(Number(e.target.value))}
+                        className="w-24 bg-gray-900/50 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white outline-none transition-all font-mono focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500"
+                    >
+                        {[10, 20, 30, 40, 50].map((size) => (
+                            <option key={size} value={size}>
+                                {size}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
