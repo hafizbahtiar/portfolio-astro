@@ -20,157 +20,87 @@ export class ApiError extends Error {
 
 export class ApiClient {
     protected baseUrl: string;
-    protected accessToken: string | null = null;
-    protected refreshToken: string | null = null;
-    protected isRefreshing = false;
-    protected failedQueue: Array<{
-        resolve: (value: unknown) => void;
-        reject: (reason?: any) => void;
-    }> = [];
+    private refreshTokenPromise: Promise<boolean> | null = null;
 
     constructor(baseUrl: string) {
-        this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash if present
-
-        // Load tokens from storage if available (client-side only)
-        if (typeof window !== 'undefined') {
-            this.accessToken = localStorage.getItem('access_token');
-            this.refreshToken = localStorage.getItem('refresh_token');
-        }
+        this.baseUrl = baseUrl.replace(/\/$/, '');
     }
 
-    setTokens(accessToken: string, refreshToken: string) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('access_token', accessToken);
-            localStorage.setItem('refresh_token', refreshToken);
-        }
+    // Auth state is tracked via a non-httpOnly cookie set by the server.
+    // The actual access_token and refresh_token are httpOnly and invisible to JS.
+    isAuthenticated(): boolean {
+        if (typeof document === 'undefined') return false;
+        return document.cookie.split(';').some(c => c.trim() === 'session_active=1');
     }
 
-    clearTokens() {
-        this.accessToken = null;
-        this.refreshToken = null;
-
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
+    // Clears the readable session flag. The server clears the httpOnly tokens on logout.
+    clearAuthState(): void {
+        if (typeof document !== 'undefined') {
+            document.cookie = 'session_active=; Max-Age=0; path=/';
         }
-    }
-
-    getAccessToken(): string | null {
-        return this.accessToken;
     }
 
     /**
-     * Process the queue of failed requests
+     * Silently attempt to refresh the access token using the httpOnly refresh_token cookie.
+     * The server reads the cookie automatically via credentials: 'include'.
      */
-    protected processQueue(error: any, token: string | null = null) {
-        this.failedQueue.forEach(prom => {
-            if (error) {
-                prom.reject(error);
-            } else {
-                prom.resolve(token);
-            }
-        });
-        this.failedQueue = [];
-    }
-
-    /**
-     * Attempt to refresh the access token
-     */
-    protected async refreshAccessToken(): Promise<string | null> {
-        if (!this.refreshToken) return null;
-
+    protected async refreshAccessToken(): Promise<boolean> {
         try {
-            const url = `${this.baseUrl}/auth/refresh`;
-            const response = await fetch(url, {
+            const response = await fetch(`${this.baseUrl}/auth/refresh`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ refreshToken: this.refreshToken }),
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
             });
-
             if (!response.ok) {
-                throw new Error('Refresh failed');
+                this.clearAuthState();
             }
-
-            const data = await response.json();
-            if (data.success && data.data?.token) {
-                const newAccessToken = data.data.token;
-                // If the backend returns a new refresh token, update it too
-                const newRefreshToken = data.data.refreshToken || this.refreshToken;
-
-                this.setTokens(newAccessToken, newRefreshToken);
-                return newAccessToken;
-            }
-
-            return null;
-        } catch (error) {
-            this.clearTokens();
-            return null;
+            return response.ok;
+        } catch {
+            this.clearAuthState();
+            return false;
         }
     }
 
-    /**
-     * Helper to handle fetch requests
-     */
     protected async request<T>(endpoint: string, options?: RequestInit): Promise<T | null> {
         try {
             const url = `${this.baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
-            // Attach Authorization header if token exists
             const headers: HeadersInit = {
                 'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
                 ...options?.headers,
             };
 
-            if (this.accessToken) {
-                (headers as any)['Authorization'] = `Bearer ${this.accessToken}`;
-            }
-
             const response = await fetch(url, {
                 ...options,
-                headers: {
-                    ...headers,
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache',
-                },
+                headers,
+                credentials: 'include', // sends httpOnly cookies automatically
                 cache: 'no-store',
             });
 
-            // Handle 401 Unauthorized (Token Expired)
-            if (response.status === 401 && this.refreshToken && !endpoint.includes('/auth/login')) {
-                if (this.isRefreshing) {
-                    return new Promise((resolve, reject) => {
-                        this.failedQueue.push({ resolve, reject });
-                    }).then(() => {
-                        return this.request<T>(endpoint, options);
+            // Token expired — attempt silent refresh then retry once
+            if (response.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
+                if (!this.refreshTokenPromise) {
+                    this.refreshTokenPromise = this.refreshAccessToken().finally(() => {
+                        this.refreshTokenPromise = null;
                     });
                 }
 
-                this.isRefreshing = true;
-                const newToken = await this.refreshAccessToken();
-                this.isRefreshing = false;
+                const refreshed = await this.refreshTokenPromise;
 
-                if (newToken) {
-                    this.processQueue(null, newToken);
-                    // Retry original request
+                if (refreshed) {
                     return this.request<T>(endpoint, options);
-                } else {
-                    this.processQueue(new Error('Failed to refresh token'));
-                    this.clearTokens();
-                    // Optional: Redirect to login
-                    if (typeof window !== 'undefined') {
-                        window.location.href = '/login';
-                    }
-                    return null;
                 }
+
+                this.clearAuthState();
+                if (typeof window !== 'undefined') {
+                    window.location.href = '/login';
+                }
+                return null;
             }
 
             if (!response.ok) {
-                // Handle 404 specifically if needed, or just throw
                 if (response.status === 404) return null;
                 const errorData = await response.json().catch(() => ({}));
                 const errorMessage = errorData.error || errorData.message || `API Error: ${response.status} ${response.statusText}`;
@@ -183,26 +113,20 @@ export class ApiClient {
                 return data.data;
             }
 
-            console.error(`API returned failure: ${data.message || data.error}`);
             throw new ApiError(data.message || data.error || 'Unknown API Error', response.status, data);
 
         } catch (error) {
-            console.error(`Request failed for ${endpoint}:`, error);
-            // Re-throw so the UI can show the error
+            if (error instanceof ApiError) throw error;
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            console.error(`Request failed for ${endpoint}: ${message}`);
             throw error;
         }
     }
 
-    /**
-     * GET request
-     */
     async get<T>(endpoint: string): Promise<T | null> {
         return this.request<T>(endpoint, { method: 'GET' });
     }
 
-    /**
-     * POST request
-     */
     async post<T>(endpoint: string, body: any): Promise<T | null> {
         return this.request<T>(endpoint, {
             method: 'POST',
@@ -210,9 +134,6 @@ export class ApiClient {
         });
     }
 
-    /**
-     * PUT request
-     */
     async put<T>(endpoint: string, body: any): Promise<T | null> {
         return this.request<T>(endpoint, {
             method: 'PUT',
@@ -220,9 +141,6 @@ export class ApiClient {
         });
     }
 
-    /**
-     * DELETE request
-     */
     async delete<T>(endpoint: string): Promise<T | null> {
         return this.request<T>(endpoint, { method: 'DELETE' });
     }

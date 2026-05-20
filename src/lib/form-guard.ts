@@ -107,7 +107,7 @@ export function setupFormGuard(form: HTMLFormElement) {
     if (!target) return;
 
     const href = target.getAttribute('href');
-    if (!href || href.startsWith('#') || href.startsWith('mailto:') || target.target === '_blank') return;
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.toLowerCase().startsWith('javascript:') || target.target === '_blank') return;
 
     if (isDirty) {
       e.preventDefault();

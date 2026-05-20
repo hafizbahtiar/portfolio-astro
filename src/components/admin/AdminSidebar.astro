@@ -388,8 +388,7 @@ const currentPath = Astro.url.pathname;
         window.location.replace("/login");
       } catch (error) {
         console.error("Logout failed", error);
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        authService.clearAuthState();
         window.location.replace("/login");
       } finally {
         logoutConfirmBtn?.removeAttribute("disabled");

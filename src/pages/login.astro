@@ -318,6 +318,9 @@ import Background from "../components/layout/Background.astro";
   ) as HTMLButtonElement | null;
   const submitOriginal = submitButton?.innerHTML || "";
 
+  let failedAttempts = 0;
+  let lockUntil = 0;
+
   // Toggle Password Visibility
   const togglePasswordBtn = document.getElementById("toggle-password");
   const passwordInput = document.getElementById("password") as HTMLInputElement;
@@ -397,6 +400,23 @@ import Background from "../components/layout/Background.astro";
 
     if (!email || !password) return;
 
+    // Rate-limit check
+    if (Date.now() < lockUntil) {
+      const remaining = Math.ceil((lockUntil - Date.now()) / 1000);
+      if (statusText)
+        statusText.textContent = `ACCESS_LOCKED: Too many attempts. Try again in ${remaining}s.`;
+      if (statusPanel) {
+        statusPanel.classList.remove("status-success");
+        statusPanel.classList.add("status-error");
+      }
+      if (statusDisplay) {
+        statusDisplay.classList.remove("hidden");
+        void statusDisplay.offsetWidth;
+        statusDisplay.classList.add("status-show");
+      }
+      return;
+    }
+
     // Loading State
     const btn = form.querySelector("button");
     let originalContent = "";
@@ -423,7 +443,9 @@ import Background from "../components/layout/Background.astro";
     try {
       const result = await authService.login(email, password);
 
+      // server sets httpOnly cookies; a non-null result means login succeeded
       if (result) {
+        failedAttempts = 0;
         if (btn) {
           btn.innerHTML = `
                     <div class="relative bg-green-900/20 text-green-400 px-4 py-3 rounded-lg flex items-center justify-center space-x-2 border border-green-500/30">
@@ -457,6 +479,12 @@ import Background from "../components/layout/Background.astro";
         throw new Error("Authentication failed");
       }
     } catch (error: any) {
+      failedAttempts++;
+      if (failedAttempts >= 5) {
+        lockUntil = Date.now() + 60_000;
+        failedAttempts = 0;
+      }
+
       // Error handling
       if (btn) {
         btn.innerHTML = originalContent;

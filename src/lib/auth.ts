@@ -9,12 +9,8 @@ export interface User {
 }
 
 export interface LoginResponse {
-  token: string;
-  type: string;
-  expiresAt: string;
-  refreshToken: string;
-  refreshTokenExpiresAt: string;
   user: User;
+  expiresAt: string;
 }
 
 class AuthService extends ApiClient {
@@ -24,19 +20,11 @@ class AuthService extends ApiClient {
 
   async login(email: string, password: string): Promise<LoginResponse | null> {
     try {
-      const response = await this.post<LoginResponse>('/auth/login', {
-        email,
-        password
-      });
-
-      if (response && response.token && response.refreshToken) {
-        this.setTokens(response.token, response.refreshToken);
-        return response;
-      }
-
-      return null;
+      const response = await this.post<LoginResponse>('/auth/login', { email, password });
+      // Cookies (access_token, refresh_token, session_active) are set by the server.
+      // isAuthenticated() will return true automatically once session_active cookie is set.
+      return response;
     } catch (error) {
-      console.error('Login service error:', error);
       throw error;
     }
   }
@@ -45,15 +33,12 @@ class AuthService extends ApiClient {
     try {
       await this.post('/auth/logout', {});
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Logout error:', error instanceof Error ? error.message : 'Unknown error');
     } finally {
-      this.clearTokens();
-      return true;
+      // Clear the readable session flag in case the server call failed
+      this.clearAuthState();
     }
-  }
-
-  isAuthenticated(): boolean {
-    return !!this.getAccessToken();
+    return true;
   }
 }
 

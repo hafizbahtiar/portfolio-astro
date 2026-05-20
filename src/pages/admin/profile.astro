@@ -2,7 +2,19 @@
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
 import { Image } from "astro:assets";
 
-const profile: any = {}; // Client-side fetch only
+const apiUrl = import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1";
+let profile: any = {};
+try {
+  const res = await fetch(`${apiUrl}/owner/profile`, {
+    headers: { Cookie: Astro.request.headers.get("Cookie") ?? "" },
+  });
+  if (res.ok) {
+    const json = await res.json();
+    profile = json.data ?? {};
+  }
+} catch {
+  // API unavailable — client-side hydration will populate the form
+}
 ---
 
 <PrivateLayout title="Admin Profile">
@@ -378,7 +390,14 @@ const profile: any = {}; // Client-side fetch only
 
         const url = (e.target as HTMLInputElement).value;
         if (url) {
-          avatarImg.src = url;
+          try {
+            const parsed = new URL(url);
+            if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+              avatarImg.src = url;
+            }
+          } catch {
+            // Invalid URL — skip preview update
+          }
         }
       });
     }
