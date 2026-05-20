@@ -99,12 +99,12 @@ const MapCanvas = ({
               <MarkerContent className="relative">
                 <div
                   className={`h-3 w-3 rounded-full transition-all ${isActive
-                    ? "bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.95)] scale-125"
-                    : "bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+                    ? "bg-blue-400 shadow-[0_0_18px_rgba(59,130,246,0.9)] scale-125"
+                    : "bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.7)]"
                     }`}
                 />
                 <MarkerLabel
-                  className={`text-[11px] ${isActive ? "text-cyan-200" : "text-white"}`}
+                  className={`text-[11px] ${isActive ? "text-blue-200" : "text-white"}`}
                 >
                   {marker.company}
                 </MarkerLabel>

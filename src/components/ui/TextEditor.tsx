@@ -38,7 +38,7 @@ export const TextEditor = ({
                 autolink: true,
                 linkOnPaste: true,
                 HTMLAttributes: {
-                    class: "text-cyan-300 underline underline-offset-4",
+                    class: "text-blue-300 underline underline-offset-4",
                 },
             }),
         ],
@@ -51,7 +51,7 @@ export const TextEditor = ({
         editorProps: {
             attributes: {
                 class:
-                    "prose prose-invert prose-lg max-w-none text-gray-200 leading-relaxed focus:outline-none min-h-[220px] sm:min-h-[240px] md:min-h-[280px] lg:min-h-[320px] prose-headings:text-white prose-strong:text-white prose-a:text-cyan-300 prose-a:font-medium prose-a:no-underline prose-a:hover:text-cyan-200 prose-code:text-cyan-300 prose-code:bg-gray-950/70 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-pre:bg-gray-950/70 prose-pre:border prose-pre:border-cyan-500/30 prose-pre:shadow-[inset_0_0_0_1px_rgba(34,211,238,0.12)] prose-pre:overflow-x-auto prose-pre:rounded-xl prose-pre:font-mono prose-blockquote:border-cyan-500/40 prose-blockquote:text-gray-300 prose-hr:border-gray-800",
+                    "prose prose-invert prose-lg max-w-none text-gray-200 leading-relaxed focus:outline-none min-h-[220px] sm:min-h-[240px] md:min-h-[280px] lg:min-h-[320px] prose-headings:text-white prose-strong:text-white prose-a:text-blue-300 prose-a:font-medium prose-a:no-underline prose-a:hover:text-blue-200 prose-code:text-blue-300 prose-code:bg-gray-950/70 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-pre:bg-gray-950/70 prose-pre:border prose-pre:border-blue-500/30 prose-pre:shadow-[inset_0_0_0_1px_rgba(59,130,246,0.12)] prose-pre:overflow-x-auto prose-pre:rounded-xl prose-pre:font-mono prose-blockquote:border-blue-500/40 prose-blockquote:text-gray-300 prose-hr:border-gray-800",
             },
         },
     });
@@ -87,12 +87,12 @@ export const TextEditor = ({
         "h-8 w-8 sm:h-9 sm:w-9 grid place-items-center rounded-md border transition-colors";
     const wideButtonClass =
         "h-8 w-10 sm:h-9 sm:w-11 grid place-items-center rounded-md border transition-colors";
-    const activeClass = "text-white border-cyan-400/60 bg-cyan-500/20";
+    const activeClass = "text-white border-blue-400/60 bg-blue-500/20";
     const inactiveClass =
-        "text-gray-400 border-gray-800 hover:text-white hover:border-cyan-500/40";
+        "text-gray-400 border-gray-800 hover:text-white hover:border-blue-500/40";
 
     return (
-        <div className="rounded-2xl border border-cyan-500/20 bg-gray-950/60 shadow-[0_0_32px_rgba(34,211,238,0.08)] overflow-hidden">
+        <div className="rounded-2xl border border-blue-500/20 bg-gray-950/60 shadow-[0_0_32px_rgba(59,130,246,0.08)] overflow-hidden">
             {name && (
                 <textarea
                     ref={textareaRef}
@@ -104,7 +104,7 @@ export const TextEditor = ({
                 />
             )}
             {showToolbar && (
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 border-b border-cyan-500/20 bg-gray-950/80 px-2 sm:px-3 py-2 overflow-x-auto">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 border-b border-blue-500/20 bg-gray-950/80 px-2 sm:px-3 py-2 overflow-x-auto">
                     <button
                         type="button"
                         aria-label="Bold"

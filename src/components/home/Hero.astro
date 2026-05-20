@@ -1,304 +1,182 @@
 ---
+import { Image } from "astro:assets";
 
+interface Props {
+    projectCount?: number;
+}
+const { projectCount = 0 } = Astro.props;
 ---
 
-<section id="hero" class="relative py-20 md:py-32 overflow-hidden">
-  <!-- Grid Background -->
-  <div class="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
-
-  <!-- Background Glows -->
-  <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-    <div
-      class="absolute top-[-10%] right-[-5%] w-96 h-96 rounded-full bg-cyan-500/10 blur-[100px] animate-pulse"
-    >
-    </div>
-    <div
-      class="absolute bottom-[-10%] left-[-10%] w-96 h-96 rounded-full bg-purple-500/10 blur-[100px] animate-pulse"
-      style="animation-delay: 1s;"
-    >
-    </div>
-  </div>
-
-  <div
-    class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-12"
-  >
-    <!-- Left Content -->
-    <div class="w-full md:w-1/2 text-center md:text-left z-10">
-      <div
-        class="inline-flex items-center gap-2 px-3 py-1 mb-6 text-sm font-mono text-cyan-400 bg-cyan-950/30 border border-cyan-500/30 rounded-full"
-      >
-        <span class="relative flex h-2 w-2">
-          <span
-            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"
-          ></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"
-          ></span>
-        </span>
-        <span>Open to Opportunities</span>
-      </div>
-
-      <h1
-        class="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6 leading-tight"
-      >
-        <span
-          class="block text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-gray-500"
-        >
-          Build. Ship.
-        </span>
-        <span
-          class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"
-        >
-          Scale.
-        </span>
-      </h1>
-
-      <p
-        class="text-gray-400 text-lg md:text-xl mb-8 max-w-lg mx-auto md:mx-0 leading-relaxed"
-      >
-        Full-stack engineer crafting high-performance digital experiences.
-        Specialized in <span class="text-cyan-400 font-mono">Flutter</span> and <span
-          class="text-purple-400 font-mono">Scalable Architecture</span
-        >.
-      </p>
-
-      <div
-        class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start"
-      >
-        <a
-          href="#projects"
-          class="group relative px-6 py-3 bg-white text-gray-900 font-semibold rounded-lg overflow-hidden transition-all hover:scale-105"
-        >
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity"
-          >
-          </div>
-          <span class="relative flex items-center gap-2">
-            View Projects
-            <svg
-              class="w-4 h-4 group-hover:translate-x-1 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              ><path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg
-            >
-          </span>
-        </a>
-        <a
-          href="#contact"
-          class="px-6 py-3 border border-gray-700 text-gray-300 font-medium rounded-lg hover:border-gray-500 hover:text-white transition-colors"
-        >
-          Contact Me
-        </a>
-      </div>
-    </div>
-
-    <!-- Right Content: Code Terminal -->
-    <div
-      class="w-full md:w-1/2 flex justify-center md:justify-end relative perspective-1000"
-    >
-      <div
-        class="relative w-full max-w-md transform transition-transform hover:scale-[1.02] duration-500"
-      >
-        <!-- Glow Effect -->
-        <div
-          class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl blur opacity-20"
-        >
-        </div>
-
-        <!-- Terminal Window -->
-        <div
-          class="relative rounded-xl bg-[#0d1117] border border-gray-800 shadow-2xl overflow-hidden"
-        >
-          <!-- Window Controls -->
-          <div
-            class="flex items-center justify-between px-4 py-3 bg-gray-900/50 border-b border-gray-800"
-          >
-            <div class="flex items-center gap-2">
-              <div
-                class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"
-              >
-              </div>
-              <div
-                class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"
-              >
-              </div>
-              <div
-                class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"
-              >
-              </div>
-            </div>
-            <div
-              class="flex items-center gap-2 text-xs font-mono text-gray-500"
-            >
-              <svg
-                class="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                ><path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 9l3 3-3 3m5 0h3"></path></svg
-              >
-              stack.config.ts
-            </div>
-            <div class="w-12"></div>
-            <!-- Spacer for centering -->
-          </div>
-
-          <!-- Code Content -->
-          <div class="p-6 font-mono text-sm overflow-hidden">
-            <div class="space-y-1">
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">1</span>
-                <span class="text-purple-400">import</span>
-                <span class="text-white ml-2">{</span>
-                <span class="text-red-400 ml-2">Passion</span>
-                <span class="text-white">,</span>
-                <span class="text-red-400 ml-2">Skill</span>
-                <span class="text-purple-400 ml-2">from</span>
-                <span class="text-green-400 ml-2">'@hafiz/core'</span>
-                <span class="text-white">;</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">2</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">3</span>
-                <span class="text-purple-400">export</span>
-                <span class="text-blue-400 ml-2">const</span>
-                <span class="text-yellow-400 ml-2">Developer</span>
-                <span class="text-white ml-2">=</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">4</span>
-                <span class="text-cyan-400 ml-4">stack</span>
-                <span class="text-white">:</span>
-                <span class="text-white ml-2">{</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">5</span>
-                <span class="text-cyan-400 ml-8">backend</span>
-                <span class="text-white">:</span>
-                <span class="text-white ml-2">[</span>
-                <span class="text-green-400">'Node.js'</span>
-                <span class="text-white">,</span>
-                <span class="text-green-400 ml-2">'Bun'</span>
-                <span class="text-white">,</span>
-                <span class="text-green-400 ml-2">'Express'</span>
-                <span class="text-white">,</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">6</span>
-                <span class="text-green-400 ml-8">'Hono'</span>
-                <span class="text-white">],</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">7</span>
-                <span class="text-cyan-400 ml-8">db</span>
-                <span class="text-white">:</span>
-                <span class="text-white ml-2">[</span>
-                <span class="text-green-400">'PostgreSQL'</span>
-                <span class="text-white">,</span>
-                <span class="text-green-400 ml-2">'MongoDB'</span>
-                <span class="text-white">],</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">8</span>
-                <span class="text-cyan-400 ml-8">mobile</span>
-                <span class="text-white">:</span>
-                <span class="text-white ml-2">[</span>
-                <span class="text-green-400">'Flutter'</span>
-                <span class="text-white">,</span>
-                <span class="text-green-400 ml-2">'React Native'</span>
-                <span class="text-white">,</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">9</span>
-                <span class="text-green-400 ml-8">'Kotlin'</span>
-                <span class="text-white">],</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">10</span>
-                <span class="text-cyan-400 ml-8">framework</span>
-                <span class="text-white">:</span>
-                <span class="text-white ml-2">[</span>
-                <span class="text-green-400">'CodeIgniter'</span>
-                <span class="text-white">,</span>
-                <span class="text-green-400 ml-2">'Laravel'</span>
-                <span class="text-white">],</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">11</span>
-                <span class="text-white ml-4">},</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">12</span>
-                <span class="text-cyan-400 ml-4">focus</span>
-                <span class="text-white">:</span>
-                <span class="text-green-400 ml-2">'High Performance'</span>
-                <span class="text-white">,</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">13</span>
-                <span class="text-cyan-400 ml-4">status</span>
-                <span class="text-white">:</span>
-                <span class="text-blue-400 ml-2">async</span>
-                <span class="text-white ml-2">()</span>
-                <span class="text-blue-400 ml-2">=></span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">14</span>
-                <span class="text-purple-400 ml-8">return</span>
-                <span class="text-green-400 ml-2">"Ready to Ship 🚀"</span>
-                <span class="text-white">;</span>
-              </div>
-
-              <div class="flex">
-                <span class="text-gray-500 w-6 text-right mr-4 select-none">15</span>
-                <span class="text-white">};</span>
-              </div>
-            </div>
-
-            <!-- Terminal Output -->
-            <div class="mt-6 pt-4 border-t border-gray-800">
-              <div
-                class="flex items-center gap-2 text-gray-400 text-xs font-mono"
-              >
-                <span class="text-green-500">➜</span>
-                <span class="text-cyan-400">~/portfolio</span>
-                <span class="text-gray-500">git commit -m "Initial launch"</span
+<section id="about" class="relative pt-14 pb-10 md:pt-20 md:pb-14 scroll-offset">
+    <div class="container-main">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+            <!-- Profile card -->
+            <div class="lg:col-span-4 order-last lg:order-first">
+                <div
+                    class="rounded-xl border border-slate-200 bg-white p-6 max-w-xs mx-auto lg:mx-0"
                 >
-              </div>
-              <div
-                class="flex items-center gap-2 text-gray-400 text-xs font-mono mt-1"
-              >
-                <span class="text-green-500">➜</span>
-                <span class="text-cyan-400">~/portfolio</span>
-                <span class="animate-pulse">_</span>
-              </div>
+                    <div class="flex flex-col items-center text-center gap-4">
+                        <div
+                            class="w-20 h-20 rounded-full ring-2 ring-slate-300 overflow-hidden"
+                        >
+                            <Image
+                                src="/favicons/icon1.png"
+                                alt="Hafiz Bahtiar"
+                                width={80}
+                                height={80}
+                                class="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div>
+                            <h2 class="text-base font-semibold text-slate-900">
+                                Hafiz Bahtiar
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Full Stack Engineer
+                            </p>
+                        </div>
+                        <div
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 border border-green-200"
+                        >
+                            <span
+                                class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"
+                            ></span>
+                            <span class="text-xs text-green-700"
+                                >Available for hire</span
+                            >
+                        </div>
+                    </div>
+                    <div
+                        class="mt-5 pt-5 border-t border-slate-200 grid grid-cols-2 gap-3 text-center"
+                    >
+                        <div>
+                            <div class="text-xl font-bold text-slate-900">5+</div>
+                            <div class="text-xs text-slate-400 mt-0.5">
+                                Years Exp
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-slate-900">
+                                {projectCount}+
+                            </div>
+                            <div class="text-xs text-slate-400 mt-0.5">
+                                Projects
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-200">
+                        <a
+                            href="https://github.com/hafizbahtiar"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs text-slate-500 border border-slate-300 rounded-lg hover:border-slate-400 hover:text-slate-700 transition-colors"
+                        >
+                            <svg
+                                class="w-3.5 h-3.5"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            GitHub
+                        </a>
+                    </div>
+                </div>
             </div>
-          </div>
+
+            <!-- Content -->
+            <div class="lg:col-span-8 flex flex-col gap-5">
+                <div>
+                    <div
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 mb-4 rounded-full bg-green-50 border border-green-200 lg:hidden"
+                    >
+                        <span
+                            class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"
+                        ></span>
+                        <span class="text-xs text-green-700"
+                            >Available for hire</span
+                        >
+                    </div>
+                    <h1
+                        class="text-3xl md:text-4xl font-bold text-slate-900 leading-snug tracking-tight"
+                    >
+                        Building reliable software,<br
+                            class="hidden sm:block"
+                        /> one layer at a time.
+                    </h1>
+                    <p
+                        class="text-slate-500 text-sm md:text-base mt-3 leading-relaxed"
+                    >
+                        I'm a software engineer focused on backend first and
+                        mobile second. I build reliable services and practical
+                        mobile experiences that ship fast and stay maintainable.
+                    </p>
+                </div>
+
+                <p class="text-slate-500 text-sm md:text-base leading-relaxed">
+                    Main stack: <span
+                        class="text-blue-600 font-mono text-xs bg-blue-50 px-1.5 py-0.5 rounded"
+                        >Bun</span
+                    > + <span
+                        class="text-blue-600 font-mono text-xs bg-blue-50 px-1.5 py-0.5 rounded"
+                        >Hono</span
+                    > + <span
+                        class="text-blue-600 font-mono text-xs bg-blue-50 px-1.5 py-0.5 rounded"
+                        >PostgreSQL</span
+                    >, <span
+                        class="text-blue-600 font-mono text-xs bg-blue-50 px-1.5 py-0.5 rounded"
+                        >Spring Boot</span
+                    >, plus <span
+                        class="text-blue-600 font-mono text-xs bg-blue-50 px-1.5 py-0.5 rounded"
+                        >Flutter</span
+                    > and <span
+                        class="text-blue-600 font-mono text-xs bg-blue-50 px-1.5 py-0.5 rounded"
+                        >Kotlin</span
+                    >.
+                </p>
+
+                <div class="flex flex-wrap gap-3">
+                    <a
+                        href="#projects"
+                        class="px-5 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        View Projects
+                    </a>
+                    <a
+                        href="#contact"
+                        class="px-5 py-2.5 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:border-slate-400 hover:text-slate-900 transition-colors"
+                    >
+                        Get in touch
+                    </a>
+                </div>
+
+                <!-- Location tag -->
+                <p class="text-xs text-slate-600 flex items-center gap-1.5">
+                    <svg
+                        class="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        ></path>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Kuala Lumpur, Malaysia
+                </p>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </section>

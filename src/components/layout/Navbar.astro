@@ -1,183 +1,101 @@
 ---
 const links = [
-    { text: "About", href: "/#about" },
-    { text: "Projects", href: "/projects" },
-    { text: "Skills", href: "/#skills" },
-    { text: "Contact", href: "/#contact" },
+    { text: "About", href: "/#about", reload: true },
+    { text: "Projects", href: "/projects", reload: false },
+    { text: "Skills", href: "/#skills", reload: true },
+    { text: "Contact", href: "/#contact", reload: true },
 ];
 ---
 
 <nav
     id="main-nav"
-    class="fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out py-6 border-b border-transparent"
+    class="fixed top-0 left-0 w-full z-50 transition-all duration-300 py-5"
 >
     <div
-        class="container-main flex flex-wrap items-center justify-between px-4 transition-all duration-300"
         id="nav-container"
+        class="container-main flex items-center justify-between transition-all duration-300"
     >
         <a
             href="/"
-            class="flex items-center space-x-3 rtl:space-x-reverse group"
+            data-astro-reload
+            class="text-xl font-bold text-slate-900 tracking-tight hover:text-blue-400 transition-colors"
         >
-            <span
-                class="self-center text-2xl font-bold whitespace-nowrap heading-gradient group-hover:scale-105 transition-transform"
-            >
-                Hafiz.dev
-            </span>
+            Hafiz.dev
         </a>
 
         <button
-            data-collapse-toggle="navbar-default"
+            id="navbar-toggle"
             type="button"
-            class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-400 rounded-lg md:hidden hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-gray-700 transition-colors"
+            class="inline-flex items-center p-2 w-9 h-9 justify-center text-slate-500 rounded-lg md:hidden hover:bg-slate-100 transition-colors"
             aria-controls="navbar-default"
             aria-expanded="false"
-            id="navbar-toggle"
         >
             <span class="sr-only">Open main menu</span>
             <svg
                 class="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
                 fill="none"
-                viewBox="0 0 17 14"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
             >
                 <path
-                    stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M1 1h15M1 7h15M1 13h15"></path>
+                    d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
         </button>
 
-        <div
-            class="hidden w-full md:block md:w-auto absolute md:relative top-full left-0 bg-gray-900/95 backdrop-blur-xl md:bg-transparent border-b md:border-none border-gray-800 shadow-lg md:shadow-none mt-4 md:mt-0 rounded-2xl md:rounded-none overflow-hidden md:overflow-visible transition-all"
-            id="navbar-default"
-        >
-            <ul
-                class="font-medium flex flex-col p-4 md:p-0 border border-gray-800/50 md:border-0 rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:bg-transparent"
-            >
-                {
-                    links.map((link) => (
-                        <li>
-                            <a
-                                href={link.href}
-                                class="block py-2 px-3 text-gray-300 rounded hover:bg-white/10 md:hover:bg-transparent md:border-0 md:hover:text-cyan-400 md:p-0 transition-colors duration-200"
-                            >
-                                {link.text}
-                            </a>
-                        </li>
-                    ))
-                }
-            </ul>
+        <div class="hidden md:flex items-center gap-1" id="navbar-default">
+            {
+                links.map((link) => (
+                    <a
+                        href={link.href}
+                        data-astro-reload={link.reload ? true : undefined}
+                        class="px-4 py-2 text-sm text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-all"
+                    >
+                        {link.text}
+                    </a>
+                ))
+            }
         </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div
+        id="mobile-menu"
+        class="hidden md:hidden mx-4 mt-2 rounded-xl border border-slate-200 bg-white/97 backdrop-blur-xl overflow-hidden"
+    >
+        {
+            links.map((link) => (
+                <a
+                    href={link.href}
+                    data-astro-reload={link.reload ? true : undefined}
+                    class="block px-4 py-3 text-sm text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                >
+                    {link.text}
+                </a>
+            ))
+        }
     </div>
 </nav>
 
 <style>
-    /* Tech Animations */
-    @keyframes tech-pulse {
-        0% {
-            border-color: rgba(6, 182, 212, 0.1);
-            box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
-        }
-        20% {
-            border-color: rgba(6, 182, 212, 0.8);
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
-        }
-        100% {
-            border-color: rgba(6, 182, 212, 0.3);
-            box-shadow:
-                0 10px 40px -10px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(6, 182, 212, 0.1) inset;
-        }
-    }
-
-    @keyframes sheen {
-        0% {
-            left: -150%;
-            opacity: 0;
-        }
-        1% {
-            opacity: 1;
-        }
-        40% {
-            left: 150%;
-            opacity: 1;
-        }
-        100% {
-            left: 150%;
-            opacity: 0;
-        }
-    }
-
-    /* Floating Nav State */
     nav.floating-nav {
         padding-top: 0;
         padding-bottom: 0;
-        top: 1.5rem;
+        top: 1rem;
     }
 
     nav.floating-nav #nav-container {
-        background-color: rgba(
-            10,
-            15,
-            30,
-            0.85
-        ); /* Slightly darker/bluer base */
+        background-color: rgba(248, 250, 252, 0.92);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border-width: 1px;
-
-        /* Tech border styles */
-        border-color: rgba(6, 182, 212, 0.3); /* Cyan hint */
-        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-
+        border: 1px solid rgba(148, 163, 184, 0.35);
         border-radius: 9999px;
-        padding: 0.75rem 2rem;
-        max-width: 60rem;
+        padding: 0.5rem 1.25rem;
+        max-width: 794px;
         margin-left: auto;
         margin-right: auto;
-
-        /* Animation properties */
-        position: relative;
-        overflow: hidden;
-        animation: tech-pulse 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    }
-
-    /* Scanner/Sheen Effect */
-    nav.floating-nav #nav-container::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -150%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(6, 182, 212, 0.05) 40%,
-            rgba(6, 182, 212, 0.3) 50%,
-            rgba(6, 182, 212, 0.05) 60%,
-            transparent 100%
-        );
-        transform: skewX(-25deg);
-        pointer-events: none;
-        animation: sheen 4s ease-in-out infinite;
-        animation-delay: 0.5s; /* Wait for entry animation */
-    }
-
-    /* Mobile Menu adjustments when floating */
-    nav.floating-nav #navbar-default:not(.hidden) {
-        margin-top: 1.5rem;
-        border-width: 1px;
-        border-color: rgba(255, 255, 255, 0.1);
-        border-radius: 1rem;
-        background-color: rgba(17, 24, 39, 0.95);
-        box-shadow:
-            0 20px 25px -5px rgba(0, 0, 0, 0.1),
-            0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 </style>
 
@@ -185,44 +103,28 @@ const links = [
     const initNavbar = () => {
         const nav = document.getElementById("main-nav");
         const toggleBtn = document.getElementById("navbar-toggle");
-        const navbar = document.getElementById("navbar-default");
-        if (!nav || !toggleBtn || !navbar) return;
+        const mobileMenu = document.getElementById("mobile-menu");
+        if (!nav || !toggleBtn || !mobileMenu) return;
 
         const existingController = (window as any).__navbarController;
-        if (existingController) {
-            existingController.abort();
-        }
+        if (existingController) existingController.abort();
 
         const controller = new AbortController();
         (window as any).__navbarController = controller;
         const { signal } = controller;
 
-        let isMenuOpen = false;
-
         const handleScroll = () => {
-            if (window.scrollY > 50) {
-                nav.classList.add("floating-nav");
-            } else {
-                nav.classList.remove("floating-nav");
-            }
-        };
-
-        const closeMenu = () => {
-            navbar.classList.add("hidden");
-            isMenuOpen = false;
-            toggleBtn.setAttribute("aria-expanded", "false");
+            nav.classList.toggle("floating-nav", window.scrollY > 50);
         };
 
         handleScroll();
-
         window.addEventListener("scroll", handleScroll, { signal });
 
         toggleBtn.addEventListener(
             "click",
             () => {
-                isMenuOpen = !isMenuOpen;
-                navbar.classList.toggle("hidden");
-                toggleBtn.setAttribute("aria-expanded", isMenuOpen.toString());
+                const open = mobileMenu.classList.toggle("hidden");
+                toggleBtn.setAttribute("aria-expanded", String(!open));
             },
             { signal },
         );
@@ -231,33 +133,51 @@ const links = [
             "click",
             (e) => {
                 if (
-                    isMenuOpen &&
-                    !navbar.contains(e.target as Node) &&
+                    !mobileMenu.contains(e.target as Node) &&
                     !toggleBtn.contains(e.target as Node)
                 ) {
-                    closeMenu();
+                    mobileMenu.classList.add("hidden");
+                    toggleBtn.setAttribute("aria-expanded", "false");
                 }
             },
             { signal },
         );
 
-        navbar.querySelectorAll("a").forEach((link) => {
+        mobileMenu.querySelectorAll("a").forEach((link) => {
             link.addEventListener(
                 "click",
                 () => {
-                    closeMenu();
+                    mobileMenu.classList.add("hidden");
                 },
                 { signal },
             );
         });
+
+        // When already on home page, smooth-scroll to anchor instead of full reload.
+        // On other pages, data-astro-reload on the link handles cross-page navigation.
+        document
+            .querySelectorAll<HTMLAnchorElement>('a[href^="/#"]')
+            .forEach((anchor) => {
+                anchor.addEventListener(
+                    "click",
+                    (e) => {
+                        if (window.location.pathname === "/") {
+                            e.preventDefault();
+                            const hash = anchor.getAttribute("href")!.slice(1);
+                            document
+                                .querySelector(hash)
+                                ?.scrollIntoView({ behavior: "smooth" });
+                        }
+                    },
+                    { signal },
+                );
+            });
     };
 
     initNavbar();
     document.addEventListener("astro:page-load", initNavbar);
     document.addEventListener("astro:after-swap", initNavbar);
-    window.addEventListener("pageshow", (event) => {
-        if (event.persisted) {
-            initNavbar();
-        }
+    window.addEventListener("pageshow", (e) => {
+        if (e.persisted) initNavbar();
     });
 </script>
