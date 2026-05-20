@@ -2,19 +2,7 @@
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
 import { Image } from "astro:assets";
 
-const apiUrl = import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1";
-let profile: any = {};
-try {
-  const res = await fetch(`${apiUrl}/owner/profile`, {
-    headers: { Cookie: Astro.request.headers.get("Cookie") ?? "" },
-  });
-  if (res.ok) {
-    const json = await res.json();
-    profile = json.data ?? {};
-  }
-} catch {
-  // API unavailable — client-side hydration will populate the form
-}
+const profile: any = {}; // populated client-side after page load
 ---
 
 <PrivateLayout title="Admin Profile">
