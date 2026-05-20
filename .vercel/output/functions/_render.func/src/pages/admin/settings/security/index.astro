@@ -1,0 +1,81 @@
+---
+import PrivateLayout from "../../../../layouts/PrivateLayout.astro";
+
+const securityOptions = [
+  {
+    title: "Change Password",
+    description: "Update your account password.",
+    href: "/admin/settings/security/password",
+    icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
+  },
+  {
+    title: "Maintenance Mode",
+    description: "Toggle maintenance mode to restrict public access.",
+    href: "/admin/settings/security/maintenance",
+    icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z",
+  },
+];
+---
+
+<PrivateLayout title="Security Settings">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <a
+          href="/admin/settings"
+          class="text-gray-400 hover:text-white transition-colors"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+        </a>
+        <h1 class="text-3xl font-bold text-white tracking-tight">
+          Security Settings
+        </h1>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+      {
+        securityOptions.map((option) => (
+          <a href={option.href} class="block group">
+            <div class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6 hover:bg-gray-800 hover:border-cyan-500/50 transition-all duration-300 h-full">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="p-3 bg-cyan-900/30 rounded-lg text-cyan-400 group-hover:text-cyan-300 group-hover:bg-cyan-900/50 transition-colors">
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d={option.icon}
+                    />
+                  </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors">
+                  {option.title}
+                </h3>
+              </div>
+              <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-300 transition-colors">
+                {option.description}
+              </p>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</PrivateLayout>

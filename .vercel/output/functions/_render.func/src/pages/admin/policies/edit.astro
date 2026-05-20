@@ -1,0 +1,245 @@
+---
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import { TextEditor } from "../../../components/ui/TextEditor";
+---
+
+<PrivateLayout title="Edit Policy">
+  <div class="space-y-6">
+    <div class="flex flex-wrap justify-between items-center gap-4">
+      <h1 class="text-3xl font-bold text-white tracking-tight">
+        Edit Privacy Policy
+      </h1>
+      <a
+        href="/admin/policies"
+        class="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        BACK TO LIST
+      </a>
+    </div>
+
+    <div id="loading-state" class="text-center py-12 text-gray-400">
+      Loading policy...
+    </div>
+
+    <form id="policy-form" class="space-y-6 hidden">
+      <input type="hidden" name="projectId" />
+
+      <div class="space-y-2">
+        <div class="text-sm font-mono text-gray-300">Project</div>
+        <div
+          id="project-title"
+          class="w-full bg-gray-900/40 border border-gray-800 rounded-lg px-4 py-3 text-white font-semibold"
+        >
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex flex-wrap gap-2" role="tablist">
+          <button
+            type="button"
+            id="policy-tab-privacy"
+            role="tab"
+            aria-selected="true"
+            aria-controls="policy-panel-privacy"
+            data-tab="privacy"
+            class="px-4 py-2 text-sm font-mono rounded-lg border transition-colors text-white border-cyan-500/60 bg-cyan-500/10"
+          >
+            Privacy Policy
+          </button>
+          <button
+            type="button"
+            id="policy-tab-terms"
+            role="tab"
+            aria-selected="false"
+            aria-controls="policy-panel-terms"
+            data-tab="terms"
+            class="px-4 py-2 text-sm font-mono rounded-lg border transition-colors text-gray-400 border-gray-800 hover:text-white hover:border-cyan-500/40"
+          >
+            Terms &amp; Conditions
+          </button>
+        </div>
+
+        <div
+          id="policy-panel-privacy"
+          role="tabpanel"
+          aria-labelledby="policy-tab-privacy"
+          data-tab-panel="privacy"
+        >
+          <label class="space-y-2 block">
+            <span class="text-sm font-mono text-gray-300">Privacy Policy</span>
+            <TextEditor name="privacyPolicy" content="" client:load />
+          </label>
+        </div>
+
+        <div
+          id="policy-panel-terms"
+          role="tabpanel"
+          aria-labelledby="policy-tab-terms"
+          data-tab-panel="terms"
+          class="hidden"
+        >
+          <label class="space-y-2 block">
+            <span class="text-sm font-mono text-gray-300"
+              >Terms &amp; Conditions</span
+            >
+            <TextEditor name="termsAndConditions" content="" client:load />
+          </label>
+        </div>
+      </div>
+
+      <button
+        id="submit-btn"
+        type="submit"
+        class="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded-lg font-mono text-sm transition-colors"
+      >
+        UPDATE POLICY
+      </button>
+    </form>
+  </div>
+</PrivateLayout>
+
+<script>
+  import { projectsService } from "../../../lib/projects";
+  import { setupFormGuard } from "../../../lib/form-guard";
+
+  const form = document.getElementById("policy-form") as HTMLFormElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+  const loadingState = document.getElementById("loading-state");
+  const projectTitle = document.getElementById("project-title");
+
+  let formGuard: ReturnType<typeof setupFormGuard> | null = null;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const projectId = Number(urlParams.get("id"));
+  const tabButtons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-tab]"),
+  );
+  const tabPanels = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-tab-panel]"),
+  );
+
+  const setActiveTab = (tabId: string) => {
+    tabButtons.forEach((button) => {
+      const isActive = button.dataset.tab === tabId;
+      button.setAttribute("aria-selected", String(isActive));
+      button.classList.toggle("text-white", isActive);
+      button.classList.toggle("border-cyan-500/60", isActive);
+      button.classList.toggle("bg-cyan-500/10", isActive);
+      button.classList.toggle("text-gray-400", !isActive);
+      button.classList.toggle("border-gray-800", !isActive);
+      button.classList.toggle("hover:text-white", !isActive);
+      button.classList.toggle("hover:border-cyan-500/40", !isActive);
+    });
+    tabPanels.forEach((panel) => {
+      panel.classList.toggle("hidden", panel.dataset.tabPanel !== tabId);
+    });
+  };
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (!button.dataset.tab) return;
+      setActiveTab(button.dataset.tab);
+    });
+  });
+
+  setActiveTab("privacy");
+
+  async function loadPolicy() {
+    try {
+      if (!projectId || Number.isNaN(projectId)) {
+        throw new Error("Invalid project ID");
+      }
+
+      const project = await projectsService.getAdminProjectById(projectId);
+      if (!project) {
+        alert("Project not found");
+        window.location.href = "/admin/policies";
+        return;
+      }
+
+      const policy = await projectsService
+        .getAdminProjectPolicyById(projectId)
+        .catch(() => null);
+
+      if (!form) return;
+
+      (form.elements.namedItem("projectId") as HTMLInputElement).value =
+        String(projectId);
+      const privacyField = form.elements.namedItem("privacyPolicy");
+      const termsField = form.elements.namedItem("termsAndConditions");
+      if (privacyField instanceof HTMLTextAreaElement) {
+        privacyField.value = policy?.privacyPolicy || "";
+        privacyField.dispatchEvent(new Event("change"));
+      }
+      if (termsField instanceof HTMLTextAreaElement) {
+        termsField.value = policy?.termsAndConditions || "";
+        termsField.dispatchEvent(new Event("change"));
+      }
+
+      if (projectTitle) {
+        projectTitle.textContent = `${project.title} (${project.slug})`;
+      }
+
+      loadingState?.classList.add("hidden");
+      form.classList.remove("hidden");
+
+      if (!formGuard) {
+        formGuard = setupFormGuard(form);
+      } else {
+        formGuard.updateInitialState();
+      }
+    } catch (error) {
+      alert("Failed to load policy");
+      window.location.href = "/admin/policies";
+    }
+  }
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!submitBtn) return;
+
+    const originalContent = submitBtn.innerHTML;
+    submitBtn.innerHTML = "SAVING...";
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+    const privacyPolicy = String(formData.get("privacyPolicy") || "").trim();
+    const termsAndConditions = String(
+      formData.get("termsAndConditions") || "",
+    ).trim();
+
+    try {
+      const result = await projectsService.upsertProjectPolicy(projectId, {
+        privacyPolicy: privacyPolicy || null,
+        termsAndConditions: termsAndConditions || null,
+      });
+      if (result) {
+        formGuard?.updateInitialState();
+        alert("Policy updated successfully!");
+        window.location.href = "/admin/policies";
+      } else {
+        throw new Error("Failed to update policy");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update policy. Please try again.");
+    } finally {
+      submitBtn.innerHTML = originalContent;
+      submitBtn.disabled = false;
+    }
+  });
+
+  loadPolicy();
+</script>

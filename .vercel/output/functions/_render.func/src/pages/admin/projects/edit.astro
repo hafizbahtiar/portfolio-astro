@@ -1,0 +1,194 @@
+---
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import ProjectForm from "../../../components/admin/projects/ProjectForm.astro";
+
+const typeOptions = [
+  { value: "personal", label: "Personal" },
+  { value: "business", label: "Business" },
+  { value: "work", label: "Work" },
+];
+
+const statusOptions = [
+  { value: "completed", label: "Completed" },
+  { value: "in-progress", label: "In Progress" },
+  { value: "maintained", label: "Maintained" },
+];
+
+const imageVariantOptions = [
+  { value: "banner", label: "Banner (Default)" },
+  { value: "logo", label: "Logo" },
+  { value: "width-banner", label: "Full Width Banner" },
+];
+---
+
+<PrivateLayout title="Edit Project">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-white tracking-tight">Edit Project</h1>
+      <a
+        href="/admin/projects"
+        class="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        BACK TO LIST
+      </a>
+    </div>
+
+    <div id="loading-state" class="text-center py-12">
+      <div
+        class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500 mb-4"
+      >
+      </div>
+      <p class="text-gray-400">Loading project data...</p>
+    </div>
+
+    <form id="project-form" class="space-y-8 hidden">
+      <input type="hidden" name="id" />
+
+      <ProjectForm
+        submitLabel="UPDATE PROJECT"
+        typeOptions={typeOptions}
+        statusOptions={statusOptions}
+        imageVariantOptions={imageVariantOptions}
+      />
+    </form>
+  </div>
+</PrivateLayout>
+
+<script>
+  import { projectsService } from "../../../lib/projects";
+  import { setupFormGuard } from "../../../lib/form-guard";
+
+  const form = document.getElementById("project-form") as HTMLFormElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+  const loadingState = document.getElementById("loading-state");
+
+  let formGuard: ReturnType<typeof setupFormGuard> | null = null;
+
+  // Get ID from Query Param
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = Number(urlParams.get("id"));
+
+  async function loadProject() {
+    try {
+      if (!id || isNaN(id)) throw new Error("Invalid project ID");
+
+      const project = await projectsService.getAdminProjectById(id);
+
+      if (!project) {
+        alert("Project not found");
+        window.location.href = "/admin/projects";
+        return;
+      }
+
+      // Populate form
+      if (form) {
+        const setInputValue = (name: string, value: any) => {
+          const element = form.elements.namedItem(name) as HTMLInputElement;
+          if (element) {
+            element.value = String(value);
+            // Dispatch change event for custom dropdowns
+            element.dispatchEvent(new Event("change"));
+          }
+        };
+
+        setInputValue("id", project.id);
+        setInputValue("title", project.title);
+        setInputValue("slug", project.slug);
+        setInputValue("description", project.description);
+        setInputValue("fullDescription", project.fullDescription || "");
+        setInputValue("projectType", project.projectType);
+        setInputValue("status", project.status || "in-progress");
+        setInputValue("year", project.year);
+        setInputValue("role", project.role);
+        setInputValue("displayOrder", project.displayOrder);
+        setInputValue("imageUrl", project.imageUrl);
+        setInputValue("imageVariant", project.imageVariant || "banner");
+        setInputValue("liveUrl", project.liveUrl);
+        setInputValue("githubUrl", project.githubUrl);
+        setInputValue("technologies", project.technologies.join(", "));
+        setInputValue("tags", project.tags ? project.tags.join(", ") : "");
+
+        (form.elements.namedItem("featured") as HTMLInputElement).checked =
+          project.featured;
+
+        loadingState?.classList.add("hidden");
+        form.classList.remove("hidden");
+
+        // Initialize form guard with populated data
+        if (!formGuard) {
+          formGuard = setupFormGuard(form);
+        } else {
+          formGuard.updateInitialState();
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to load project data");
+      window.location.href = "/admin/projects";
+    }
+  }
+
+  loadProject();
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!submitBtn) return;
+
+    const originalContent = submitBtn.innerHTML;
+    submitBtn.innerHTML = "SAVING...";
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+    const data: any = {};
+
+    // Process form data
+    formData.forEach((value, key) => {
+      if (key === "technologies" || key === "tags") {
+        data[key] = (value as string)
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      } else if (key === "year" || key === "displayOrder") {
+        data[key] = Number(value);
+      } else if (key === "featured") {
+        data[key] = true;
+      } else if (key !== "id") {
+        data[key] = value;
+      }
+    });
+
+    if (!formData.has("featured")) {
+      data.featured = false;
+    }
+
+    try {
+      const result = await projectsService.updateProject(id, data);
+      if (result) {
+        // Clear guard before redirecting
+        formGuard?.updateInitialState();
+        alert("Project updated successfully!");
+        window.location.href = "/admin/projects";
+      } else {
+        throw new Error("Failed to update project");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update project. Please try again.");
+    } finally {
+      submitBtn.innerHTML = originalContent;
+      submitBtn.disabled = false;
+    }
+  });
+</script>

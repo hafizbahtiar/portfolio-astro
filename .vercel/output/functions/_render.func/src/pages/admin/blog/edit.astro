@@ -1,0 +1,290 @@
+---
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import BlogPostForm from "../../../components/admin/blog/BlogPostForm.astro";
+import AlertToast from "../../../components/ui/AlertToast.astro";
+
+const statusOptions = [
+  { value: "draft", label: "Draft" },
+  { value: "published", label: "Published" },
+  { value: "archived", label: "Archived" },
+];
+---
+
+<PrivateLayout title="Edit Blog Post">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-white tracking-tight">
+        Edit Blog Post
+      </h1>
+      <a
+        href="/admin/blog"
+        class="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        BACK TO LIST
+      </a>
+    </div>
+
+    <div id="loading-state" class="text-center py-12">
+      <div
+        class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500 mb-4"
+      >
+      </div>
+      <p class="text-gray-400">Loading blog post data...</p>
+    </div>
+
+    <form id="blog-form" class="space-y-8 hidden">
+      <BlogPostForm submitLabel="UPDATE POST" statusOptions={statusOptions} />
+    </form>
+  </div>
+  <AlertToast id="blog-alert" />
+</PrivateLayout>
+
+<script>
+  import { blogService } from "../../../lib/blog";
+  import { ApiError } from "../../../lib/api-client";
+  import { setupFormGuard } from "../../../lib/form-guard";
+
+  const form = document.getElementById("blog-form") as HTMLFormElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+  const loadingState = document.getElementById("loading-state");
+
+  let formGuard: ReturnType<typeof setupFormGuard> | null = null;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = Number(urlParams.get("id"));
+
+  const formatDateInput = (value: string | null | undefined) => {
+    if (!value) return "";
+    return String(value).slice(0, 10);
+  };
+
+  const showAlert = (options: {
+    type?: "success" | "error" | "warning" | "info";
+    title?: string;
+    message?: string;
+    duration?: number;
+  }) => {
+    const registry = (window as any).__uiAlerts;
+    registry?.["blog-alert"]?.show(options);
+  };
+
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+
+  const fieldLabels: Record<string, string> = {
+    title: "Title",
+    slug: "Slug",
+    excerpt: "Excerpt",
+    heroText: "Hero Statement",
+    bodyContent: "Body Content",
+    publishedDate: "Published Date",
+    tags: "Tags",
+    category: "Category",
+    status: "Status",
+    sections: "Sections",
+    "sections.heading": "Sections",
+    "sections.body": "Sections",
+    checklist: "Checklist",
+    "checklist.itemText": "Checklist",
+  };
+
+  const getFocusFieldName = (field?: string) => {
+    if (!field) return null;
+    if (field.startsWith("sections") || field.startsWith("checklist")) {
+      return "bodyContent";
+    }
+    return field;
+  };
+
+  const formatErrorMessage = (error: unknown) => {
+    const apiError = error as ApiError & { data?: any };
+    const message =
+      apiError?.data?.error || apiError?.message || "Failed to update post.";
+    const field = apiError?.data?.field;
+    if (field) {
+      const label = fieldLabels[field] || field;
+      return { message: `${message} (Field: ${label})`, field };
+    }
+    return { message, field };
+  };
+
+  let lastGeneratedSlug = "";
+
+  const titleInput = form?.elements.namedItem(
+    "title",
+  ) as HTMLInputElement | null;
+  const slugInput = form?.elements.namedItem("slug") as HTMLInputElement | null;
+
+  if (titleInput && slugInput) {
+    titleInput.addEventListener("input", () => {
+      const nextSlug = slugify(titleInput.value);
+      if (!slugInput.value || slugInput.value === lastGeneratedSlug) {
+        slugInput.value = nextSlug;
+        slugInput.dispatchEvent(new Event("change"));
+      }
+      lastGeneratedSlug = nextSlug;
+    });
+
+    slugInput.addEventListener("input", () => {
+      lastGeneratedSlug = slugify(titleInput.value);
+    });
+  }
+
+  async function loadPost() {
+    try {
+      if (!id || isNaN(id)) throw new Error("Invalid blog ID");
+
+      const post = await blogService.getAdminPostById(id);
+
+      if (!post) {
+        showAlert({
+          type: "error",
+          title: "Not found",
+          message: "Blog post was not found.",
+        });
+        window.setTimeout(() => {
+          window.location.href = "/admin/blog";
+        }, 900);
+        return;
+      }
+
+      if (form) {
+        const setInputValue = (name: string, value: any) => {
+          const element = form.elements.namedItem(name) as HTMLInputElement;
+          if (element) {
+            element.value = value ?? "";
+            element.dispatchEvent(new Event("change"));
+          }
+        };
+
+        setInputValue("title", post.title);
+        setInputValue("slug", post.slug);
+        setInputValue("excerpt", post.excerpt);
+        setInputValue("heroText", post.heroText || "");
+        setInputValue("bodyContent", post.bodyContent || "");
+        setInputValue("status", post.status || "draft");
+        setInputValue("publishedDate", formatDateInput(post.publishedDate));
+        setInputValue("category", post.category || "");
+        setInputValue("tags", post.tags ? post.tags.join(", ") : "");
+
+        (form.elements.namedItem("isFeatured") as HTMLInputElement).checked =
+          post.isFeatured;
+
+        loadingState?.classList.add("hidden");
+        form.classList.remove("hidden");
+
+        lastGeneratedSlug = slugify(post.title);
+
+        if (!formGuard) {
+          formGuard = setupFormGuard(form);
+        } else {
+          formGuard.updateInitialState();
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      showAlert({
+        type: "error",
+        title: "Load failed",
+        message: "Failed to load blog post data.",
+      });
+      window.setTimeout(() => {
+        window.location.href = "/admin/blog";
+      }, 900);
+    }
+  }
+
+  loadPost();
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!submitBtn) return;
+
+    const originalContent = submitBtn.innerHTML;
+    submitBtn.innerHTML = "SAVING...";
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+    const data: any = {};
+
+    formData.forEach((value, key) => {
+      if (key === "tags") {
+        data[key] = (value as string)
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      } else if (key === "isFeatured") {
+        data[key] = true;
+      } else if (key === "publishedDate") {
+        const dateValue = String(value).trim();
+        if (dateValue) {
+          data[key] = dateValue;
+        }
+      } else {
+        const trimmed = typeof value === "string" ? value.trim() : value;
+        if (trimmed !== "") {
+          data[key] = trimmed;
+        }
+      }
+    });
+
+    if (!formData.has("isFeatured")) {
+      data.isFeatured = false;
+    }
+
+    if (data.slug && String(data.slug).trim().length === 0) {
+      delete data.slug;
+    }
+
+    try {
+      const result = await blogService.updatePost(id, { id, ...data });
+      if (result) {
+        formGuard?.updateInitialState();
+        showAlert({
+          type: "success",
+          title: "Post updated",
+          message: "Blog post updated successfully.",
+        });
+        window.setTimeout(() => {
+          window.location.href = "/admin/blog";
+        }, 800);
+      } else {
+        throw new Error("Failed to update post");
+      }
+    } catch (error) {
+      console.error(error);
+      const { message, field } = formatErrorMessage(error);
+      const focusFieldName = getFocusFieldName(field);
+      if (focusFieldName) {
+        const focusElement = form?.elements.namedItem(
+          focusFieldName,
+        ) as HTMLElement | null;
+        focusElement?.focus?.();
+      }
+      showAlert({
+        type: "error",
+        title: "Save failed",
+        message,
+      });
+    } finally {
+      submitBtn.innerHTML = originalContent;
+      submitBtn.disabled = false;
+    }
+  });
+</script>
