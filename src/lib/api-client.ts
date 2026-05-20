@@ -18,6 +18,15 @@ export class ApiError extends Error {
     }
 }
 
+// Module-level token — shared across all ApiClient instances, cleared on page refresh.
+// Kept in memory (not localStorage, not a readable cookie) so it is not accessible to
+// third-party scripts injected into the page.
+let _accessToken: string | null = null;
+
+export const setSharedAccessToken = (token: string | null): void => {
+    _accessToken = token;
+};
+
 export class ApiClient {
     protected baseUrl: string;
     private refreshTokenPromise: Promise<boolean> | null = null;
@@ -26,24 +35,22 @@ export class ApiClient {
         this.baseUrl = baseUrl.replace(/\/$/, '');
     }
 
-    // Auth state is tracked via a non-httpOnly cookie set by the server.
-    // The actual access_token and refresh_token are httpOnly and invisible to JS.
+    // session_active is a non-httpOnly cookie the server sets alongside the real tokens.
+    // It lets JS know a session exists without exposing the actual token value.
     isAuthenticated(): boolean {
         if (typeof document === 'undefined') return false;
-        return document.cookie.split(';').some(c => c.trim() === 'session_active=1');
+        return _accessToken !== null || document.cookie.split(';').some(c => c.trim() === 'session_active=1');
     }
 
-    // Clears the readable session flag. The server clears the httpOnly tokens on logout.
     clearAuthState(): void {
+        _accessToken = null;
         if (typeof document !== 'undefined') {
             document.cookie = 'session_active=; Max-Age=0; path=/';
         }
     }
 
-    /**
-     * Silently attempt to refresh the access token using the httpOnly refresh_token cookie.
-     * The server reads the cookie automatically via credentials: 'include'.
-     */
+    // Silently exchange the httpOnly refresh_token cookie for a new access token.
+    // credentials: 'include' is only needed here — not on every request.
     protected async refreshAccessToken(): Promise<boolean> {
         try {
             const response = await fetch(`${this.baseUrl}/auth/refresh`, {
@@ -51,10 +58,15 @@ export class ApiClient {
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
             });
-            if (!response.ok) {
-                this.clearAuthState();
+            if (response.ok) {
+                const json = await response.json().catch(() => ({}));
+                if (json?.data?.token) {
+                    _accessToken = json.data.token;
+                }
+                return true;
             }
-            return response.ok;
+            this.clearAuthState();
+            return false;
         } catch {
             this.clearAuthState();
             return false;
@@ -65,21 +77,25 @@ export class ApiClient {
         try {
             const url = `${this.baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
-            const headers: HeadersInit = {
+            const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache',
-                ...options?.headers,
+                ...(options?.headers as Record<string, string>),
             };
+
+            // Attach token via header — works cross-origin without needing credentials: include
+            if (_accessToken) {
+                headers['Authorization'] = `Bearer ${_accessToken}`;
+            }
 
             const response = await fetch(url, {
                 ...options,
                 headers,
-                credentials: 'include', // sends httpOnly cookies automatically
                 cache: 'no-store',
             });
 
-            // Token expired — attempt silent refresh then retry once
+            // Token expired — attempt silent refresh via the httpOnly cookie, then retry once
             if (response.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
                 if (!this.refreshTokenPromise) {
                     this.refreshTokenPromise = this.refreshAccessToken().finally(() => {
