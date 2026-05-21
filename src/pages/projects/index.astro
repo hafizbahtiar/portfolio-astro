@@ -31,15 +31,24 @@ const resolvedProjects = projects.map((project) => ({
   description="Explore my portfolio of projects ranging from mobile apps to web applications."
 >
   <div class="mb-12 md:mb-16">
-    <h1 class="text-4xl md:text-5xl font-bold mb-4 text-slate-900 tracking-tight">
+    <h1
+      class="text-4xl md:text-5xl font-bold mb-4 text-slate-900 dark:text-slate-100 tracking-tight"
+    >
       Projects
     </h1>
-    <p class="text-slate-500 text-lg leading-relaxed max-w-xl">
-      A selection of applications and tools I've built - from mobile apps to backend services.
+    <p
+      class="text-slate-500 dark:text-slate-400 text-lg leading-relaxed max-w-xl"
+    >
+      A selection of applications and tools I've built - from mobile apps to
+      backend services.
     </p>
-    {projects.length > 0 && (
-      <p class="text-slate-600 text-sm mt-3">{projects.length} projects</p>
-    )}
+    {
+      projects.length > 0 && (
+        <p class="text-slate-600 dark:text-slate-400 text-sm mt-3">
+          {projects.length} projects
+        </p>
+      )
+    }
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

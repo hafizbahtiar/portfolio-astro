@@ -33,13 +33,13 @@ const PhoneNumberInput = ({
                 value={value}
                 onChange={setValue}
                 defaultCountry={defaultCountry}
-                className="phone-input-clean flex items-center gap-2 w-full bg-slate-100 border border-slate-300 rounded-lg px-3.5 py-2.5 text-slate-900 transition-colors focus-within:ring-2 focus-within:ring-blue-500/40 focus-within:border-blue-500/60"
+                className="phone-input-clean flex items-center gap-2 w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-3.5 py-2.5 text-slate-900 dark:text-slate-100 transition-colors focus-within:ring-2 focus-within:ring-blue-500/40 focus-within:border-blue-500/60"
                 numberInputProps={{
                     name,
                     placeholder,
                     autoComplete: "tel",
                     className:
-                        "flex-1 bg-transparent border-none px-0 py-0 text-sm text-slate-900 placeholder-slate-400 outline-none focus:outline-none",
+                        "flex-1 bg-transparent border-none px-0 py-0 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:outline-none",
                 }}
             />
         </div>
