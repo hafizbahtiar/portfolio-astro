@@ -164,13 +164,13 @@ export const CombinedFamilyExplorer = () => {
   const hasPeople = useMemo(() => (detail?.people?.length || 0) > 0, [detail]);
 
   if (isLoading) {
-    return <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-6 text-gray-400">Loading combined family data...</div>;
+    return <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/40 p-6 text-slate-500 dark:text-gray-400">Loading combined family data...</div>;
   }
   if (error) {
     return <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-6 text-red-300">{error}</div>;
   }
   if (!detail || !hasPeople) {
-    return <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-6 text-gray-400">Combined family data unavailable.</div>;
+    return <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/40 p-6 text-slate-500 dark:text-gray-400">Combined family data unavailable.</div>;
   }
 
   return (

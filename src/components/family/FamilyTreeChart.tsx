@@ -732,14 +732,14 @@ export const FamilyTreeChart = ({
 
   if (chartData.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-5 text-sm text-gray-400">
+      <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/40 p-5 text-sm text-slate-500 dark:text-gray-400">
         No people available to render chart.
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-3 text-cyan-200">
+    <div className="rounded-xl border border-gray-800 bg-[#212121] p-3 text-cyan-200">
       <div ref={containerRef} className="f3 h-[720px] w-full overflow-hidden" />
     </div>
   );
