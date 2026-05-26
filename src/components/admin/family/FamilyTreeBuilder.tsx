@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { familyService } from "../../../lib/family";
-import { TechSelect } from "../../ui/TechSelect";
+import { Select } from "../../ui/Select";
 import type {
   CreateFamilyPersonPayload,
   CreateFamilyTreePayload,
@@ -106,7 +106,7 @@ const TechDateField = ({
   );
 };
 
-const TechCheckboxField = ({
+const CheckboxField = ({
   label,
   checked,
   onChange,
@@ -770,7 +770,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
               }
               className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
             />
-            <TechCheckboxField
+            <CheckboxField
               label="Public tree"
               checked={Boolean(treeForm.isPublic)}
               onChange={(value) =>
@@ -797,7 +797,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   }
                   className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
                 />
-                <TechSelect
+                <Select
                   value={rootPersonForm.gender || "unknown"}
                   onChange={(value) =>
                     setRootPersonForm((prev) => ({
@@ -842,7 +842,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                     }))
                   }
                 />
-                <TechCheckboxField
+                <CheckboxField
                   label="Is Living"
                   checked={Boolean(rootPersonForm.isLiving)}
                   onChange={(value) =>
@@ -985,7 +985,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                 }
                 className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
               />
-              <TechCheckboxField
+              <CheckboxField
                 label="Public tree"
                 checked={Boolean(treeForm.isPublic)}
                 onChange={(value) =>
@@ -1285,7 +1285,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                             />
                           </div>
                           <div className="grid grid-cols-2 gap-3">
-                            <TechSelect
+                            <Select
                               value={personForm.gender || "unknown"}
                               onChange={(value) =>
                                 setPersonForm((prev) => ({
@@ -1296,7 +1296,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                               options={genderSelectOptions}
                               label="Gender"
                             />
-                            <TechCheckboxField
+                            <CheckboxField
                               label="Is Living"
                               checked={Boolean(personForm.isLiving)}
                               onChange={(value) =>
@@ -1419,7 +1419,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                          <TechSelect
+                          <Select
                             value={personForm.gender || "unknown"}
                             onChange={(value) =>
                               setPersonForm((prev) => ({
@@ -1443,7 +1443,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                         </div>
                         {(selectedAction === "son" || selectedAction === "daughter") &&
                           spouseOptions.length > 0 && (
-                            <TechSelect
+                            <Select
                               value={coParentId ?? ""}
                               onChange={(value) =>
                                 setCoParentId(value ? Number(value) : null)

@@ -1,7 +1,7 @@
 ---
 import PrivateLayout from "../../../layouts/PrivateLayout.astro";
 import { TextEditor } from "../../../components/ui/TextEditor";
-import TechDropdown from "../../../components/ui/TechDropdown.astro";
+import Dropdown from "../../../components/ui/Dropdown.astro";
 ---
 
 <PrivateLayout title="New Policy">
@@ -35,7 +35,7 @@ import TechDropdown from "../../../components/ui/TechDropdown.astro";
     </div>
 
     <form id="policy-form" class="space-y-6 hidden">
-      <TechDropdown
+      <Dropdown
         label="Project"
         name="projectId"
         options={[]}
@@ -186,8 +186,8 @@ import TechDropdown from "../../../components/ui/TechDropdown.astro";
       }
 
       (
-        window as Window & { setupTechDropdowns?: () => void }
-      ).setupTechDropdowns?.();
+        window as Window & { setupDropdowns?: () => void }
+      ).setupDropdowns?.();
 
       if (initialProjectId) {
         if (projectInput) {

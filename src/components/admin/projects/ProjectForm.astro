@@ -1,5 +1,5 @@
 ---
-import TechDropdown from "../../ui/TechDropdown.astro";
+import Dropdown from "../../ui/Dropdown.astro";
 import { TextEditor } from "../../ui/TextEditor";
 
 type Props = {
@@ -72,7 +72,7 @@ const inputClass =
           <input type="text" name="imageUrl" class={inputClass} />
         </div>
         <div class="space-y-2">
-          <TechDropdown
+          <Dropdown
             label="Image Variant"
             name="imageVariant"
             options={imageVariantOptions}
@@ -97,7 +97,7 @@ const inputClass =
       <h3 class={titleClass}>Project Details</h3>
       <div class="grid grid-cols-1 gap-6">
         <div class="space-y-2">
-          <TechDropdown
+          <Dropdown
             label="Type"
             name="projectType"
             options={typeOptions}
@@ -105,7 +105,7 @@ const inputClass =
           />
         </div>
         <div class="space-y-2">
-          <TechDropdown
+          <Dropdown
             label="Status"
             name="status"
             options={statusOptions}

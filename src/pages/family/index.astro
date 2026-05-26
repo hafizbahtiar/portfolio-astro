@@ -23,23 +23,29 @@ try {
       </p>
     </div>
 
-    {
-      trees.length > 0 && (
-        <div class="flex flex-wrap gap-2">
-          {trees.map((t) => (
-            <a
-              href={`/family/${t.slug}`}
-              class="inline-flex items-center rounded-md border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:border-cyan-500/50 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
-            >
-              {t.name}
-            </a>
-          ))}
-        </div>
-      )
-    }
-
-    <div class="space-y-6">
-      <CombinedFamilyExplorer client:load />
+    <div class="flex flex-col lg:flex-row gap-4">
+      {
+        trees.length > 0 && (
+          <div class="lg:w-56 shrink-0 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-3">
+            <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Family Trees
+            </h3>
+            <div class="flex flex-col gap-1.5">
+              {trees.map((t) => (
+                <a
+                  href={`/family/${t.slug}`}
+                  class="rounded-md px-3 py-2 text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-cyan-500/50 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                >
+                  {t.name}
+                </a>
+              ))}
+            </div>
+          </div>
+        )
+      }
+      <div class="flex-1 h-[520px] lg:h-[600px]">
+        <CombinedFamilyExplorer client:load />
+      </div>
     </div>
   </section>
 </PublicLayout>

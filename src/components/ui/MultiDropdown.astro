@@ -25,12 +25,15 @@ const {
 } = Astro.props;
 ---
 
-<div class={`tech-multi-dropdown-container space-y-2 ${className}`} data-name={name}>
+<div
+  class={`tech-multi-dropdown-container space-y-2 ${className}`}
+  data-name={name}
+>
   <label
-    class="block text-sm font-medium text-gray-400 font-mono tracking-wide"
+    class="block text-sm font-medium text-slate-500 dark:text-slate-400"
     for={inputId}
   >
-    {`// ${label}`}
+    {label}
   </label>
   <div class="relative">
     <input
@@ -44,20 +47,16 @@ const {
 
     <button
       type="button"
-      class="dropdown-trigger w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-left text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all flex justify-between items-center group hover:border-cyan-500/50"
+      class="dropdown-trigger w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-left text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all flex justify-between items-center group hover:border-cyan-500/50"
     >
       <span
-        class="selected-text font-mono text-sm text-gray-300 group-hover:text-cyan-400 transition-colors truncate"
+        class="selected-text text-sm text-slate-600 dark:text-slate-300 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors truncate"
       >
         {placeholder}
       </span>
       <div
-        class="flex items-center text-gray-500 group-hover:text-cyan-500 transition-colors"
+        class="flex items-center text-slate-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-500 transition-colors"
       >
-        <span
-          class="mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity font-mono hidden sm:inline-block"
-          >[MULTI]</span
-        >
         <svg
           class="w-4 h-4 transform transition-transform duration-200"
           fill="none"
@@ -74,7 +73,7 @@ const {
     </button>
 
     <div
-      class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl transform origin-top transition-all duration-200"
+      class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl transform origin-top transition-all duration-200"
     >
       <ul class="max-h-60 overflow-y-auto py-1 custom-scrollbar">
         {
@@ -82,13 +81,11 @@ const {
             <li>
               <button
                 type="button"
-                class="dropdown-item w-full text-left px-4 py-2 text-sm font-mono text-gray-300 hover:bg-cyan-900/20 hover:text-cyan-400 transition-colors flex items-center justify-between group"
+                class="dropdown-item w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors flex items-center justify-between"
                 data-value={option.value}
               >
                 <span>{option.label}</span>
-                <span class="indicator opacity-0 group-hover:opacity-100 text-cyan-500 font-bold">
-                  _
-                </span>
+                <span class="indicator opacity-0 text-cyan-500">✓</span>
               </button>
             </li>
           ))
@@ -116,7 +113,9 @@ const {
 
 <script>
   function setupMultiDropdowns() {
-    const containers = document.querySelectorAll(".tech-multi-dropdown-container");
+    const containers = document.querySelectorAll(
+      ".tech-multi-dropdown-container",
+    );
 
     const parseValues = (raw: string | null) => {
       if (!raw) return [];
@@ -279,7 +278,8 @@ const {
   }
 
   setupMultiDropdowns();
-  (window as Window & { setupTechMultiDropdowns?: () => void }).setupTechMultiDropdowns =
-    setupMultiDropdowns;
+  (
+    window as Window & { setupMultiDropdowns?: () => void }
+  ).setupMultiDropdowns = setupMultiDropdowns;
   document.addEventListener("astro:page-load", setupMultiDropdowns);
 </script>

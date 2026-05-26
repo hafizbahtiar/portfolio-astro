@@ -6,9 +6,9 @@ import {
   getPublicFamilyTrees,
 } from "../../../lib/family";
 import { FamilyTreeChart } from "../../../components/family/FamilyTreeChart";
-import TechCheckbox from "../../../components/ui/TechCheckbox.astro";
+import Checkbox from "../../../components/ui/Checkbox.astro";
 import type { FamilyTreeDetail } from "../../../types/family";
-import TechDropdown from "../../../components/ui/TechDropdown.astro";
+import Dropdown from "../../../components/ui/Dropdown.astro";
 import { PublicFamilyExplorer } from "../../../components/family/PublicFamilyExplorer";
 
 export async function getStaticPaths() {
@@ -73,21 +73,21 @@ const initialMainId = (() => {
       <aside
         class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-4"
       >
-        <TechDropdown
+        <Dropdown
           label="Choose Family"
           name="choose-family"
           options={familyOptions}
           value={detail?.tree.slug || slug}
           placeholder="Select family"
         />
-        <TechDropdown
+        <Dropdown
           label="Main Person"
           name="main-person"
           options={personOptions}
           value={initialMainId}
           placeholder="Select main person"
         />
-        <TechCheckbox label="No Spouse" name="no-spouse" />
+        <Checkbox label="No Spouse" name="no-spouse" />
         <div class="flex flex-wrap gap-2">
           <button
             id="btn-orient-vertical"
@@ -132,20 +132,21 @@ const initialMainId = (() => {
         <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Family Tree Chart</h2>
         {
           detail && detail.people.length > 0 ? (
-            <FamilyTreeChart
-              client:load
-              detail={detail}
-              currentSlug={detail.tree.slug}
-              sortChildrenBy="metadata.birth_order"
-              sortAscending={true}
-            />
+            <div class="h-[580px]">
+              <FamilyTreeChart
+                client:load
+                detail={detail}
+                currentSlug={detail.tree.slug}
+                sortChildrenBy="metadata.birth_order"
+                sortAscending={true}
+              />
+            </div>
           ) : (
-            <div class="space-y-6">
-              <div class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-300 text-sm">
+            <div class="space-y-3">
+              <div class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-600 dark:text-yellow-300 text-sm">
                 Live data will be loaded in the browser for this family.
               </div>
-              <div>
-                <!-- Client fallback: fetch and render by slug -->
+              <div class="h-[580px]">
                 <PublicFamilyExplorer client:load minimal={true} initialSlug={slug} />
               </div>
             </div>
@@ -211,8 +212,8 @@ const initialMainId = (() => {
         mainInput.value = id;
         mainInput.dispatchEvent(new Event("change", { bubbles: true }));
       });
-      if (window.setupTechDropdowns) {
-        window.setupTechDropdowns();
+      if (window.setupDropdowns) {
+        window.setupDropdowns();
       }
       const zIn = document.getElementById("btn-zoom-in");
       const zOut = document.getElementById("btn-zoom-out");

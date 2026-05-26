@@ -1,7 +1,7 @@
 ---
 import { TextEditor } from "../../ui/TextEditor";
-import TechDateInput from "../../ui/TechDateInput.astro";
-import TechMultiDropdown from "../../ui/TechMultiDropdown.astro";
+import DateInput from "../../ui/DateInput.astro";
+import MultiDropdown from "../../ui/MultiDropdown.astro";
 import { ExperienceMapPicker } from "./ExperienceMapPicker";
 
 type Props = {
@@ -55,8 +55,8 @@ const inputClass =
             class={inputClass}
           />
         </div>
-        <TechDateInput label="Start Date" name="startDate" required />
-        <TechDateInput
+        <DateInput label="Start Date" name="startDate" required />
+        <DateInput
           label="End Date"
           name="endDate"
           id="experience-end-date"
@@ -109,7 +109,7 @@ const inputClass =
           />
         </div>
         <ExperienceMapPicker client:load />
-        <TechMultiDropdown
+        <MultiDropdown
           label="Projects"
           name="projectIds"
           options={projectOptions}
