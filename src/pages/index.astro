@@ -15,18 +15,21 @@ try {
 }
 
 type SkillLevel = "advanced" | "proficient" | "familiar";
-interface Skill { name: string; level: SkillLevel }
+interface Skill {
+	name: string;
+	level: SkillLevel;
+}
 
 const skills: { category: string; items: Skill[] }[] = [
 	{
 		category: "Languages",
 		items: [
-			{ name: "TypeScript", level: "advanced" },
-			{ name: "JavaScript", level: "advanced" },
-			{ name: "Dart", level: "advanced" },
-			{ name: "Kotlin", level: "proficient" },
+			{ name: "TypeScript", level: "proficient" },
+			{ name: "JavaScript", level: "proficient" },
+			{ name: "Dart", level: "proficient" },
+			{ name: "PHP", level: "proficient" },
+			{ name: "Kotlin", level: "familiar" },
 			{ name: "Java", level: "familiar" },
-			{ name: "PHP", level: "familiar" },
 		],
 	},
 	{
@@ -34,58 +37,60 @@ const skills: { category: string; items: Skill[] }[] = [
 		items: [
 			{ name: "Flutter", level: "advanced" },
 			{ name: "React Native", level: "proficient" },
-			{ name: "Kotlin (Android)", level: "proficient" },
+			{ name: "Kotlin (Android)", level: "familiar" },
 		],
 	},
 	{
 		category: "Frontend",
 		items: [
-			{ name: "React", level: "advanced" },
-			{ name: "Astro", level: "advanced" },
-			{ name: "Next.js", level: "proficient" },
+			{ name: "React", level: "familiar" },
+			{ name: "Astro", level: "familiar" },
+			{ name: "Next.js", level: "familiar" },
 		],
 	},
 	{
 		category: "Backend",
 		items: [
 			{ name: "Node.js", level: "advanced" },
-			{ name: "Hono", level: "advanced" },
+			{ name: "Express.js", level: "advanced" },
 			{ name: "Bun", level: "proficient" },
-			{ name: "Express.js", level: "proficient" },
+			{ name: "Hono", level: "proficient" },
 			{ name: "Spring Boot", level: "familiar" },
 		],
 	},
 	{
 		category: "Database",
 		items: [
-			{ name: "PostgreSQL", level: "advanced" },
-			{ name: "SQLite", level: "proficient" },
-			{ name: "MongoDB", level: "proficient" },
+			{ name: "MongoDB", level: "advanced" },
+			{ name: "PostgreSQL", level: "proficient" },
 		],
 	},
 	{
 		category: "Frameworks",
 		items: [
-			{ name: "Laravel", level: "proficient" },
-			{ name: "CodeIgniter", level: "familiar" },
+			{ name: "CodeIgniter", level: "proficient" },
+			{ name: "Laravel", level: "familiar" },
 		],
 	},
 	{
 		category: "Infrastructure",
 		items: [
-			{ name: "Git", level: "advanced" },
-			{ name: "Docker", level: "proficient" },
+			{ name: "Git", level: "proficient" },
 			{ name: "Cloudflare", level: "proficient" },
 			{ name: "Linux", level: "proficient" },
-			{ name: "Caddy", level: "familiar" },
+			{ name: "Caddy", level: "proficient" },
+			{ name: "Docker", level: "familiar" },
 		],
 	},
 ];
 
 const levelStyle: Record<SkillLevel, string> = {
-	advanced: "bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/30",
-	proficient: "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30",
-	familiar: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600",
+	advanced:
+		"bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/30",
+	proficient:
+		"bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30",
+	familiar:
+		"bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600",
 };
 ---
 
@@ -138,7 +143,9 @@ const levelStyle: Record<SkillLevel, string> = {
 
 		<!-- Skills Section -->
 		<section id="skills" class="scroll-offset">
-			<div class="mb-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+			<div
+				class="mb-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3"
+			>
 				<div>
 					<h2
 						class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
@@ -153,20 +160,32 @@ const levelStyle: Record<SkillLevel, string> = {
 				</div>
 				<div class="flex items-center gap-3 shrink-0">
 					<div class="flex items-center gap-1.5">
-						<span class="inline-block w-2 h-2 rounded-full bg-cyan-400 dark:bg-cyan-400"></span>
-						<span class="text-xs text-slate-500 dark:text-slate-400">Advanced</span>
+						<span
+							class="inline-block w-2 h-2 rounded-full bg-cyan-400 dark:bg-cyan-400"
+						></span>
+						<span class="text-xs text-slate-500 dark:text-slate-400"
+							>Advanced</span
+						>
 					</div>
 					<div class="flex items-center gap-1.5">
-						<span class="inline-block w-2 h-2 rounded-full bg-blue-400 dark:bg-blue-400"></span>
-						<span class="text-xs text-slate-500 dark:text-slate-400">Proficient</span>
+						<span
+							class="inline-block w-2 h-2 rounded-full bg-blue-400 dark:bg-blue-400"
+						></span>
+						<span class="text-xs text-slate-500 dark:text-slate-400"
+							>Proficient</span
+						>
 					</div>
 					<div class="flex items-center gap-1.5">
-						<span class="inline-block w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500"></span>
-						<span class="text-xs text-slate-500 dark:text-slate-400">Familiar</span>
+						<span
+							class="inline-block w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500"
+						></span>
+						<span class="text-xs text-slate-500 dark:text-slate-400"
+							>Familiar</span
+						>
 					</div>
 				</div>
 			</div>
-			<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+			<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
 				{
 					skills.map((skillGroup) => (
 						<div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
@@ -175,7 +194,9 @@ const levelStyle: Record<SkillLevel, string> = {
 							</h3>
 							<div class="flex flex-wrap gap-1.5">
 								{skillGroup.items.map((item) => (
-									<span class={`text-xs rounded-md px-2 py-0.5 ${levelStyle[item.level]}`}>
+									<span
+										class={`text-xs rounded-md px-2 py-0.5 ${levelStyle[item.level]}`}
+									>
 										{item.name}
 									</span>
 								))}
@@ -188,7 +209,7 @@ const levelStyle: Record<SkillLevel, string> = {
 
 		<!-- Projects Section -->
 		<section id="projects" class="scroll-offset">
-			<div class="flex items-end justify-between mb-5">
+			<div class="flex flex-wrap items-end justify-between gap-2 mb-5">
 				<div>
 					<h2
 						class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"

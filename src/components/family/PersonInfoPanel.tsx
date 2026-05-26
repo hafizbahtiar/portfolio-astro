@@ -40,16 +40,16 @@ export const PersonInfoPanel = ({ detail }: Props) => {
 
   const relationships: Array<{ label: string; name: string; id: number }> = person
     ? detail.relationships
-        .filter((r) => r.personId === person.id || r.relatedPersonId === person.id)
-        .map((r) => {
-          const isLeft = r.personId === person.id;
-          const otherId = isLeft ? r.relatedPersonId : r.personId;
-          return {
-            label: REL_LABEL[r.relationshipType] ?? r.relationshipType,
-            name: nameMap.get(otherId) ?? String(otherId),
-            id: otherId,
-          };
-        })
+      .filter((r) => r.personId === person.id || r.relatedPersonId === person.id)
+      .map((r) => {
+        const isLeft = r.personId === person.id;
+        const otherId = isLeft ? r.relatedPersonId : r.personId;
+        return {
+          label: REL_LABEL[r.relationshipType] ?? r.relationshipType,
+          name: nameMap.get(otherId) ?? String(otherId),
+          id: otherId,
+        };
+      })
     : [];
 
   if (!person) {
