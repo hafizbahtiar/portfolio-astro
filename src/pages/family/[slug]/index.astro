@@ -56,10 +56,10 @@ const initialMainId = (() => {
       >
         ← Back to Families
       </a>
-      <h1 class="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">
+      <h1 class="text-4xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
         {detail?.tree.name || slug}
       </h1>
-      <p class="text-slate-500 dark:text-gray-400 max-w-3xl">
+      <p class="text-slate-500 dark:text-slate-400 max-w-3xl">
         {
           detail?.tree.description ??
             (detail
@@ -71,7 +71,7 @@ const initialMainId = (() => {
 
     <div class="grid grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
       <aside
-        class="rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900/40 p-4 space-y-4"
+        class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-4"
       >
         <TechDropdown
           label="Choose Family"
@@ -92,44 +92,44 @@ const initialMainId = (() => {
           <button
             id="btn-orient-vertical"
             type="button"
-            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-gray-700 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800"
+            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
             >Vertical</button
           >
           <button
             id="btn-orient-horizontal"
             type="button"
-            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-gray-700 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800"
+            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
             >Horizontal</button
           >
           <button
             id="btn-zoom-out"
             type="button"
-            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-gray-700 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800"
+            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
             >-</button
           >
           <button
             id="btn-zoom-in"
             type="button"
-            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-gray-700 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800"
+            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
             >+</button
           >
           <button
             id="btn-center-main"
             type="button"
-            class="rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20"
+            class="rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-500/20"
             >Center Main</button
           >
           <button
             id="btn-fit"
             type="button"
-            class="rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20"
+            class="rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-500/20"
             >Fit</button
           >
         </div>
       </aside>
 
       <div class="space-y-3">
-        <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Family Tree Chart</h2>
+        <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Family Tree Chart</h2>
         {
           detail && detail.people.length > 0 ? (
             <FamilyTreeChart
@@ -207,6 +207,7 @@ const initialMainId = (() => {
       window.addEventListener("family:on-main-changed", (e) => {
         const id = e?.detail?.id;
         if (!id || !mainInput) return;
+        if (mainInput.value === String(id)) return;
         mainInput.value = id;
         mainInput.dispatchEvent(new Event("change", { bubbles: true }));
       });
@@ -231,22 +232,14 @@ const initialMainId = (() => {
       center?.addEventListener("click", () => {
         window.dispatchEvent(new CustomEvent("family:center-main"));
       });
+      const orientBase =
+        "rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700";
+      const orientActive =
+        "rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-500/20";
       function setOrientUI(vertical) {
         if (!v || !h) return;
-        const active = "bg-cyan-600 text-white";
-        const inactive =
-          "border border-gray-700 text-gray-300 hover:bg-gray-800";
-        const clean = (el) =>
-          el.className.replace(active, "").replace(inactive, "").trim();
-        v.className = clean(v);
-        h.className = clean(h);
-        if (vertical) {
-          v.className += ` ${active}`;
-          h.className += ` ${inactive}`;
-        } else {
-          h.className += ` ${active}`;
-          v.className += ` ${inactive}`;
-        }
+        v.className = vertical ? orientActive : orientBase;
+        h.className = vertical ? orientBase : orientActive;
       }
       v?.addEventListener("click", () => {
         window.dispatchEvent(

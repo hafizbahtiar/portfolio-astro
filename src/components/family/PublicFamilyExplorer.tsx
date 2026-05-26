@@ -63,7 +63,7 @@ export const PublicFamilyExplorer = ({ initialSlug, minimal }: Props) => {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/40 p-6 text-slate-500 dark:text-gray-400">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-6 text-slate-500 dark:text-slate-400">
         Loading public family trees...
       </div>
     );
@@ -79,7 +79,7 @@ export const PublicFamilyExplorer = ({ initialSlug, minimal }: Props) => {
 
   if (trees.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/40 p-6 text-slate-500 dark:text-gray-400">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-6 text-slate-500 dark:text-slate-400">
         No public family trees available yet.
       </div>
     );
@@ -88,19 +88,19 @@ export const PublicFamilyExplorer = ({ initialSlug, minimal }: Props) => {
   return (
     <div className="space-y-5">
       {isLoadingDetail ? (
-        <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/40 p-6 text-slate-500 dark:text-gray-400">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-6 text-slate-500 dark:text-slate-400">
           Loading family details...
         </div>
       ) : !detail ? (
-        <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/40 p-6 text-slate-500 dark:text-gray-400">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-6 text-slate-500 dark:text-slate-400">
           Family details unavailable.
         </div>
       ) : (
         <div className="space-y-5">
           {!minimal && (
-            <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900/40 p-5">
-              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">{detail.tree.name}</h2>
-              <p className="mt-2 text-sm text-slate-500 dark:text-gray-400">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{detail.tree.name}</h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 {detail.tree.description || "No description provided."}
               </p>
             </div>
