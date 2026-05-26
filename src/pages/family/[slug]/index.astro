@@ -69,26 +69,30 @@ const initialMainId = (() => {
       </p>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
-      <aside
-        class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-4"
-      >
-        <Dropdown
-          label="Choose Family"
-          name="choose-family"
-          options={familyOptions}
-          value={detail?.tree.slug || slug}
-          placeholder="Select family"
-        />
-        <Dropdown
-          label="Main Person"
-          name="main-person"
-          options={personOptions}
-          value={initialMainId}
-          placeholder="Select main person"
-        />
-        <Checkbox label="No Spouse" name="no-spouse" />
-        <div class="flex flex-wrap gap-2">
+    <div class="space-y-4">
+      <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex flex-wrap items-end gap-3">
+        <div class="w-48 shrink-0">
+          <Dropdown
+            label="Choose Family"
+            name="choose-family"
+            options={familyOptions}
+            value={detail?.tree.slug || slug}
+            placeholder="Select family"
+          />
+        </div>
+        <div class="w-48 shrink-0">
+          <Dropdown
+            label="Main Person"
+            name="main-person"
+            options={personOptions}
+            value={initialMainId}
+            placeholder="Select main person"
+          />
+        </div>
+        <div class="w-44 shrink-0">
+          <Checkbox label="No Spouse" name="no-spouse" />
+        </div>
+        <div class="flex flex-wrap gap-2 items-end pb-0.5">
           <button
             id="btn-orient-vertical"
             type="button"
@@ -126,21 +130,18 @@ const initialMainId = (() => {
             >Fit</button
           >
         </div>
-      </aside>
+      </div>
 
-      <div class="space-y-3">
-        <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Family Tree Chart</h2>
+      <div class="h-[580px]">
         {
           detail && detail.people.length > 0 ? (
-            <div class="h-[580px]">
-              <FamilyTreeChart
-                client:load
-                detail={detail}
-                currentSlug={detail.tree.slug}
-                sortChildrenBy="metadata.birth_order"
-                sortAscending={true}
-              />
-            </div>
+            <FamilyTreeChart
+              client:load
+              detail={detail}
+              currentSlug={detail.tree.slug}
+              sortChildrenBy="metadata.birth_order"
+              sortAscending={true}
+            />
           ) : (
             <div class="space-y-3">
               <div class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-600 dark:text-yellow-300 text-sm">
