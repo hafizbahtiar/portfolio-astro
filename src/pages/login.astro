@@ -9,21 +9,49 @@ import Background from "../components/layout/Background.astro";
     <div class="w-full max-w-sm">
       <!-- Header -->
       <div class="mb-8 text-center">
-        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        <div
+          class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 mb-4"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-blue-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            ></path>
           </svg>
         </div>
-        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Sign in</h1>
-        <p class="text-sm text-slate-400 dark:text-slate-500 mt-1">Admin dashboard access</p>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          Sign in
+        </h1>
+        <p class="text-sm text-slate-400 dark:text-slate-500 mt-1">
+          Admin dashboard access
+        </p>
       </div>
 
       <!-- Status message -->
       <div id="status-display" class="mb-4 hidden">
-        <div id="status-panel" class="flex items-center gap-3 px-4 py-3 rounded-lg border text-sm border-red-500/30 bg-red-500/8 text-red-300">
+        <div
+          id="status-panel"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg border text-sm border-red-500/30 bg-red-500/8 text-red-300"
+        >
           <div id="status-icon" class="shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clip-rule="evenodd"></path>
             </svg>
           </div>
           <span id="status-text">Invalid email or password.</span>
@@ -31,10 +59,16 @@ import Background from "../components/layout/Background.astro";
       </div>
 
       <!-- Login Form -->
-      <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-xl">
+      <div
+        class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-xl"
+      >
         <form class="space-y-5" id="login-form">
           <div class="space-y-1.5">
-            <label for="username" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
+            <label
+              for="username"
+              class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >Email</label
+            >
             <input
               type="text"
               id="username"
@@ -46,7 +80,11 @@ import Background from "../components/layout/Background.astro";
           </div>
 
           <div class="space-y-1.5">
-            <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+            <label
+              for="password"
+              class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >Password</label
+            >
             <div class="relative">
               <input
                 type="password"
@@ -62,9 +100,24 @@ import Background from "../components/layout/Background.astro";
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
                 aria-label="Toggle password visibility"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  ></path>
                 </svg>
               </button>
             </div>
@@ -100,7 +153,10 @@ import Background from "../components/layout/Background.astro";
   }
 
   @keyframes status-in {
-    to { opacity: 1; transform: translateY(0); }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>
 
@@ -112,7 +168,9 @@ import Background from "../components/layout/Background.astro";
   const statusText = document.getElementById("status-text");
   const statusPanel = document.getElementById("status-panel");
   const statusIcon = document.getElementById("status-icon");
-  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement | null;
+  const submitBtn = document.getElementById(
+    "submit-btn",
+  ) as HTMLButtonElement | null;
 
   let failedAttempts = 0;
   let lockUntil = 0;
@@ -123,7 +181,8 @@ import Background from "../components/layout/Background.astro";
 
   togglePasswordBtn?.addEventListener("click", () => {
     if (passwordInput) {
-      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      const type =
+        passwordInput.getAttribute("type") === "password" ? "text" : "password";
       passwordInput.setAttribute("type", type);
 
       const svg = togglePasswordBtn.querySelector("svg");
@@ -147,7 +206,11 @@ import Background from "../components/layout/Background.astro";
     window.location.href = "/admin";
   }
 
-  const showStatus = (message: string, type: "error" | "success", iconHtml: string) => {
+  const showStatus = (
+    message: string,
+    type: "error" | "success",
+    iconHtml: string,
+  ) => {
     if (!statusDisplay || !statusText || !statusPanel || !statusIcon) return;
     statusText.textContent = message;
     if (type === "success") {
@@ -192,7 +255,11 @@ import Background from "../components/layout/Background.astro";
 
     if (Date.now() < lockUntil) {
       const remaining = Math.ceil((lockUntil - Date.now()) / 1000);
-      showStatus(`Too many attempts. Try again in ${remaining}s.`, "error", errorIcon);
+      showStatus(
+        `Too many attempts. Try again in ${remaining}s.`,
+        "error",
+        errorIcon,
+      );
       return;
     }
 
@@ -223,7 +290,9 @@ import Background from "../components/layout/Background.astro";
           `;
         }
         showStatus("Redirecting to dashboard...", "success", successIcon);
-        setTimeout(() => { window.location.href = "/admin"; }, 1000);
+        setTimeout(() => {
+          window.location.href = "/admin";
+        }, 1000);
       } else {
         throw new Error("Invalid email or password.");
       }
@@ -239,7 +308,11 @@ import Background from "../components/layout/Background.astro";
         submitBtn.disabled = false;
       }
 
-      showStatus(error.message || "Invalid email or password.", "error", errorIcon);
+      showStatus(
+        error.message || "Invalid email or password.",
+        "error",
+        errorIcon,
+      );
     }
   });
 </script>

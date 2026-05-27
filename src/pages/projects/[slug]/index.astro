@@ -1,443 +1,416 @@
 ---
 export const prerender = false;
 import ProjectLayout from "../../../layouts/ProjectLayout.astro";
-import { getProjectBySlug, getProjectPolicyBySlug } from "../../../lib/projects";
-import type { ProjectPolicy } from "../../../types/project";
-import { TextEditor } from "../../../components/ui/TextEditor";
-import { Image } from "astro:assets";
-import jomDapur from "../../../assets/projects/jom-dapur.jpg";
-import jdManagement from "../../../assets/projects/jd-management.png";
-import invois from "../../../assets/projects/invois/invois.png";
 
 const slug = Astro.params.slug ?? "";
-const project = slug ? await getProjectBySlug(slug).catch(() => null) : null;
-if (!project) return Astro.redirect("/404");
-const localImageMap = new Map([
-    ["/images/projects/jom-dapur.jpg", jomDapur],
-    ["/images/projects/jd-management.png", jdManagement],
-    ["/images/projects/invois/invois.png", invois],
-]);
-const resolvedImage = localImageMap.get(project.imageUrl) ?? project.imageUrl ?? undefined;
-const isResolvedString = typeof resolvedImage === "string";
-const resolvedImageUrl = isResolvedString ? resolvedImage : undefined;
-const resolvedImageMeta = isResolvedString ? undefined : resolvedImage;
 
 const formatStatus = (status?: string) => {
-    if (!status) return "Completed";
-    return status
-        .split("-")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(" ");
+  if (!status) return "Completed";
+  return status
+    .split("-")
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 };
-
-const technologies =
-    project.technologies && project.technologies.length > 0
-        ? project.technologies
-        : project.tags || [];
-
-const metaTags = [
-    project.role,
-    project.year?.toString(),
-    project.projectType
-        ? project.projectType.charAt(0).toUpperCase() + project.projectType.slice(1)
-        : null,
-    formatStatus(project.status),
-].filter(Boolean) as string[];
-
-let policy: ProjectPolicy | null = null;
-try {
-    policy = await getProjectPolicyBySlug(project.slug);
-} catch {}
-const hasPolicy = Boolean(policy?.privacyPolicy || policy?.termsAndConditions);
-
-const showBanner =
-    resolvedImage &&
-    (!project.imageVariant ||
-        project.imageVariant === "banner" ||
-        project.imageVariant === "width-banner");
-const showLogo = project.imageVariant === "logo" && resolvedImage;
 ---
 
 <ProjectLayout
-    title={`${project.title} - Hafiz Bahtiar`}
-    description={project.description}
+  title="Project - Hafiz Bahtiar"
+  description="View project details."
 >
-    <!-- Back -->
-    <a
-        href="/projects"
-        data-astro-reload
-        class="inline-flex items-center gap-1.5 text-sm text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors mb-6 group"
+  <!-- Loading state -->
+  <div id="project-loading" class="space-y-6">
+    <div
+      class="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-6"
     >
-        <svg
-            class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-        >
-            <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"></path>
-        </svg>
-        Back to Projects
-    </a>
-
-    <!-- Header -->
-    <div class="mb-6">
-        <h1 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 leading-snug">
-            {project.title}
-        </h1>
-        <p class="text-slate-500 dark:text-slate-400 text-sm md:text-base mt-2 leading-relaxed max-w-2xl">
-            {project.description}
-        </p>
-        <div class="flex flex-wrap gap-2 mt-4">
-            {
-                metaTags.map((tag) => (
-                    <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2.5 py-1">
-                        {tag}
-                    </span>
-                ))
-            }
-        </div>
-        <div class="flex flex-wrap gap-3 mt-4">
-            {
-                project.githubUrl && (
-                    <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-                    >
-                        <svg
-                            class="w-4 h-4"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                        >
-                            <path
-                                fill-rule="evenodd"
-                                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                                clip-rule="evenodd"
-                            />
-                        </svg>
-                        Source Code
-                    </a>
-                )
-            }
-            {
-                project.liveUrl && (
-                    <a
-                        href={project.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 transition-colors"
-                    >
-                        Live Demo
-                        <svg
-                            class="w-3.5 h-3.5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                        </svg>
-                    </a>
-                )
-            }
-        </div>
     </div>
-
-    <!-- Hero image -->
-    {
-        showBanner && (
-            <div class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 mb-6 bg-white dark:bg-slate-800">
-                {resolvedImageUrl ? (
-                    <Image
-                        src={resolvedImageUrl}
-                        alt={project.title}
-                        width={794}
-                        height={360}
-                        loading="eager"
-                        decoding="async"
-                        class="w-full h-44 sm:h-60 object-contain"
-                    />
-                ) : (
-                    <Image
-                        src={resolvedImageMeta!}
-                        alt={project.title}
-                        width={794}
-                        height={360}
-                        loading="eager"
-                        decoding="async"
-                        class="w-full h-44 sm:h-60 object-contain"
-                    />
-                )}
-            </div>
-        )
-    }
-    {
-        showLogo && (
-            <div class="flex justify-center mb-6 p-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-                {resolvedImageUrl ? (
-                    <Image
-                        src={resolvedImageUrl}
-                        alt={`${project.title} logo`}
-                        width={80}
-                        height={80}
-                        loading="eager"
-                        class="h-20 w-auto"
-                    />
-                ) : (
-                    <Image
-                        src={resolvedImageMeta!}
-                        alt={`${project.title} logo`}
-                        width={80}
-                        height={80}
-                        loading="eager"
-                        class="h-20 w-auto"
-                    />
-                )}
-            </div>
-        )
-    }
-
-    <!-- Tabs -->
-    <div class="border-b border-slate-200 dark:border-slate-700 mb-6">
-        <div class="flex -mb-px overflow-x-auto">
-            <button
-                class="tab-btn is-active shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-blue-500 transition-colors"
-                data-tab="overview"
-            >
-                Overview
-            </button>
-            <button
-                class="tab-btn shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-transparent transition-colors"
-                data-tab="case-study"
-            >
-                Case Study
-            </button>
-            <button
-                class="tab-btn shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-transparent transition-colors"
-                data-tab="tech-stack"
-            >
-                Tech Stack
-            </button>
-        </div>
+    <div
+      class="h-8 w-64 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-2"
+    >
     </div>
-
-    <!-- Overview tab -->
-    <div id="overview" class="tab-content">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 space-y-6">
-                <div>
-                    <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                        About this project
-                    </h2>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                        {project.description}
-                    </p>
-                </div>
-
-                {
-                    project.features && project.features.length > 0 && (
-                        <div>
-                            <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">
-                                Features
-                            </h2>
-                            <ul class="space-y-2">
-                                {project.features.map((feature) => (
-                                    <li class="flex items-start gap-2 text-sm text-slate-500 dark:text-slate-400">
-                                        <svg
-                                            class="w-4 h-4 text-blue-500 mt-0.5 shrink-0"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M5 13l4 4L19 7"
-                                            />
-                                        </svg>
-                                        {feature}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )
-                }
-
-                {
-                    hasPolicy && (
-                        <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
-                            <h2 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
-                                Legal
-                            </h2>
-                            <div class="flex flex-wrap gap-3">
-                                {policy?.privacyPolicy && (
-                                    <a
-                                        href={`/projects/${project.slug}/privacy`}
-                                        class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-                                    >
-                                        Privacy Policy
-                                    </a>
-                                )}
-                                {policy?.termsAndConditions && (
-                                    <a
-                                        href={`/projects/${project.slug}/terms`}
-                                        class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-                                    >
-                                        Terms &amp; Conditions
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                    )
-                }
-            </div>
-
-            <!-- Sidebar stats -->
-            <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-5 h-fit">
-                <h3
-                    class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4"
-                >
-                    Project Info
-                </h3>
-                <div class="space-y-3">
-                    {
-                        [
-                            { label: "Role", value: project.role },
-                            { label: "Year", value: project.year?.toString() },
-                            {
-                                label: "Type",
-                                value: project.projectType
-                                    ? project.projectType.charAt(0).toUpperCase() +
-                                      project.projectType.slice(1)
-                                    : null,
-                            },
-                            {
-                                label: "Status",
-                                value: formatStatus(project.status),
-                            },
-                        ]
-                            .filter((s) => s.value)
-                            .map((stat) => (
-                                <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3 last:border-0 last:pb-0">
-                                    <span class="text-xs text-slate-400 dark:text-slate-500">
-                                        {stat.label}
-                                    </span>
-                                    <span class="text-xs text-slate-700 dark:text-slate-300 font-medium">
-                                        {stat.value}
-                                    </span>
-                                </div>
-                            ))
-                    }
-                </div>
-            </div>
-        </div>
+    <div
+      class="h-4 w-full max-w-2xl bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-4"
+    >
     </div>
-
-    <!-- Case study tab -->
-    <div id="case-study" class="tab-content hidden">
-        <div class="space-y-6">
-            <TextEditor
-                content={project.description}
-                editable={false}
-                showToolbar={false}
-                client:load
-            />
-            {
-                project.features && project.features.length > 0 && (
-                    <div>
-                        <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">
-                            Key Features
-                        </h2>
-                        <ul class="space-y-2">
-                            {project.features.map((feature) => (
-                                <li class="flex items-start gap-2 text-sm text-slate-500 dark:text-slate-400">
-                                    <svg
-                                        class="w-4 h-4 text-blue-500 mt-0.5 shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M5 13l4 4L19 7"
-                                        />
-                                    </svg>
-                                    {feature}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )
-            }
-        </div>
+    <div class="flex gap-2 mb-4">
+      <div
+        class="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"
+      >
+      </div>
+      <div
+        class="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"
+      >
+      </div>
+      <div
+        class="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"
+      >
+      </div>
     </div>
-
-    <!-- Tech stack tab -->
-    <div id="tech-stack" class="tab-content hidden">
-        {
-            technologies.length > 0 ? (
-                <div class="flex flex-wrap gap-2">
-                    {technologies.map((tech) => (
-                        <span class="text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5">
-                            {tech}
-                        </span>
-                    ))}
-                </div>
-            ) : (
-                <p class="text-slate-400 dark:text-slate-500 text-sm">No technologies listed.</p>
-            )
-        }
+    <div
+      class="h-44 sm:h-60 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse mb-6"
+    >
     </div>
+    <div
+      class="flex gap-0 border-b border-slate-200 dark:border-slate-700 mb-6"
+    >
+      <div
+        class="h-10 w-20 bg-slate-200 dark:bg-slate-700 rounded-t animate-pulse"
+      >
+      </div>
+      <div
+        class="h-10 w-24 bg-slate-200 dark:bg-slate-700 rounded-t animate-pulse ml-1"
+      >
+      </div>
+      <div
+        class="h-10 w-24 bg-slate-200 dark:bg-slate-700 rounded-t animate-pulse ml-1"
+      >
+      </div>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div
+    id="project-error"
+    class="hidden text-center py-10 rounded-xl border border-red-200 dark:border-red-900/20 bg-red-50 dark:bg-red-900/5"
+  >
+    <p class="text-red-600 dark:text-red-400 text-sm">
+      Failed to load project. Please try again later.
+    </p>
+    <a
+      href="/projects"
+      class="inline-block mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+      >Back to Projects</a
+    >
+  </div>
+
+  <!-- Content container (filled by script) -->
+  <div id="project-content" class="hidden"></div>
 </ProjectLayout>
 
 <style>
-    .tab-btn { color: #94a3b8; }
-    .tab-btn:hover { color: #475569; }
-    .tab-btn.is-active { color: #0f172a; }
+  .tab-btn {
+    color: #94a3b8;
+  }
+  .tab-btn:hover {
+    color: #475569;
+  }
+  .tab-btn.is-active {
+    color: #0f172a;
+  }
 
-    html.dark .tab-btn { color: #64748b; }
-    html.dark .tab-btn:hover { color: #cbd5e1; }
-    html.dark .tab-btn.is-active { color: #f1f5f9; }
+  html.dark .tab-btn {
+    color: #64748b;
+  }
+  html.dark .tab-btn:hover {
+    color: #cbd5e1;
+  }
+  html.dark .tab-btn.is-active {
+    color: #f1f5f9;
+  }
 </style>
 
 <script>
-    function setupTabs() {
-        const tabBtns =
-            document.querySelectorAll<HTMLButtonElement>(".tab-btn");
-        const tabContents =
-            document.querySelectorAll<HTMLElement>(".tab-content");
-        if (!tabBtns.length) return;
+  function escapeHtml(str: string) {
+    const div = document.createElement("div");
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
 
-        tabBtns.forEach((btn) => {
-            btn.addEventListener("click", () => {
-                const tabId = btn.dataset.tab!;
+  function formatStatus(status: string | undefined) {
+    if (!status) return "Completed";
+    return status
+      .split("-")
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  }
 
-                tabBtns.forEach((b) => {
-                    b.classList.remove("border-blue-500", "is-active");
-                    b.classList.add("border-transparent");
-                });
-                btn.classList.add("border-blue-500", "is-active");
-                btn.classList.remove("border-transparent");
+  function buildMetaTags(project: any) {
+    const tags = [
+      project.role,
+      project.year?.toString(),
+      project.projectType
+        ? project.projectType.charAt(0).toUpperCase() +
+          project.projectType.slice(1)
+        : null,
+      formatStatus(project.status),
+    ].filter(Boolean);
+    return tags
+      .map(
+        (tag) =>
+          `<span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2.5 py-1">${escapeHtml(tag)}</span>`,
+      )
+      .join("");
+  }
 
-                tabContents.forEach((c) => c.classList.add("hidden"));
-                document.getElementById(tabId)?.classList.remove("hidden");
-            });
-        });
+  function buildHeroImage(project: any) {
+    const imageVariant = project.imageVariant || "banner";
+    const showBanner =
+      project.imageUrl &&
+      (!project.imageVariant ||
+        project.imageVariant === "banner" ||
+        project.imageVariant === "width-banner");
+    const showLogo = project.imageVariant === "logo" && project.imageUrl;
+
+    if (showBanner) {
+      return `
+        <div class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 mb-6 bg-white dark:bg-slate-800">
+          <img src="${escapeHtml(project.imageUrl)}" alt="${escapeHtml(project.title)}" class="w-full h-44 sm:h-60 object-contain" loading="eager" decoding="async" />
+        </div>`;
     }
+    if (showLogo) {
+      return `
+        <div class="flex justify-center mb-6 p-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+          <img src="${escapeHtml(project.imageUrl)}" alt="${escapeHtml(project.title)} logo" class="h-20 w-auto" loading="eager" />
+        </div>`;
+    }
+    return "";
+  }
 
-    setupTabs();
-    document.addEventListener("astro:page-load", setupTabs);
+  function buildLinks(project: any) {
+    let html = "";
+    if (project.githubUrl) {
+      html += `
+        <a href="${escapeHtml(project.githubUrl)}" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+          </svg>
+          Source Code
+        </a>`;
+    }
+    if (project.liveUrl) {
+      html += `
+        <a href="${escapeHtml(project.liveUrl)}" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 transition-colors">
+          Live Demo
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>`;
+    }
+    return html ? `<div class="flex flex-wrap gap-3 mt-4">${html}</div>` : "";
+  }
+
+  function buildFeaturesList(features: any[]) {
+    if (!features || features.length === 0) return "";
+    return `
+      <div>
+        <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100 mb-3">Features</h2>
+        <ul class="space-y-2">
+          ${features
+            .map(
+              (feature) => `
+            <li class="flex items-start gap-2 text-sm text-slate-500 dark:text-slate-400">
+              <svg class="w-4 h-4 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              ${escapeHtml(feature)}
+            </li>
+          `,
+            )
+            .join("")}
+        </ul>
+      </div>`;
+  }
+
+  function buildSidebar(project: any) {
+    const stats = [
+      { label: "Role", value: project.role },
+      { label: "Year", value: project.year?.toString() },
+      {
+        label: "Type",
+        value: project.projectType
+          ? project.projectType.charAt(0).toUpperCase() +
+            project.projectType.slice(1)
+          : null,
+      },
+      { label: "Status", value: formatStatus(project.status) },
+    ].filter((s: any) => s.value);
+
+    return `
+      <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-5 h-fit">
+        <h3 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Project Info</h3>
+        <div class="space-y-3">
+          ${stats
+            .map(
+              (stat) => `
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3 last:border-0 last:pb-0">
+              <span class="text-xs text-slate-400 dark:text-slate-500">${escapeHtml(stat.label)}</span>
+              <span class="text-xs text-slate-700 dark:text-slate-300 font-medium">${escapeHtml(stat.value)}</span>
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
+      </div>`;
+  }
+
+  function buildLegalLinks(project: any, policy: any | null) {
+    if (!policy?.privacyPolicy && !policy?.termsAndConditions) return "";
+    let html =
+      '<div class="pt-4 border-t border-slate-200 dark:border-slate-700"><h2 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Legal</h2><div class="flex flex-wrap gap-3">';
+    if (policy.privacyPolicy) {
+      html += `<a href="/projects/${escapeHtml(project.slug)}/privacy" class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">Privacy Policy</a>`;
+    }
+    if (policy.termsAndConditions) {
+      html += `<a href="/projects/${escapeHtml(project.slug)}/terms" class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">Terms &amp; Conditions</a>`;
+    }
+    html += "</div></div>";
+    return html;
+  }
+
+  function buildTechStack(technologies: any[]) {
+    if (!technologies || technologies.length === 0) {
+      return '<p class="text-slate-400 dark:text-slate-500 text-sm">No technologies listed.</p>';
+    }
+    return `<div class="flex flex-wrap gap-2">${technologies
+      .map(
+        (tech) =>
+          `<span class="text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5">${escapeHtml(tech)}</span>`,
+      )
+      .join("")}</div>`;
+  }
+
+  function buildContent(project: any, policy: any) {
+    const technologies =
+      project.technologies && project.technologies.length > 0
+        ? project.technologies
+        : project.tags || [];
+
+    return `
+      <!-- Back -->
+      <a href="/projects" data-astro-reload
+         class="inline-flex items-center gap-1.5 text-sm text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors mb-6 group">
+        <svg class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Projects
+      </a>
+
+      <!-- Header -->
+      <div class="mb-6">
+        <h1 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 leading-snug">${escapeHtml(project.title)}</h1>
+        <p class="text-slate-500 dark:text-slate-400 text-sm md:text-base mt-2 leading-relaxed max-w-2xl">${escapeHtml(project.description)}</p>
+        <div class="flex flex-wrap gap-2 mt-4">${buildMetaTags(project)}</div>
+        ${buildLinks(project)}
+      </div>
+
+      ${buildHeroImage(project)}
+
+      <!-- Tabs -->
+      <div class="border-b border-slate-200 dark:border-slate-700 mb-6">
+        <div class="flex -mb-px overflow-x-auto">
+          <button class="tab-btn is-active shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-blue-500 transition-colors" data-tab="overview">Overview</button>
+          <button class="tab-btn shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-transparent transition-colors" data-tab="case-study">Case Study</button>
+          <button class="tab-btn shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-transparent transition-colors" data-tab="tech-stack">Tech Stack</button>
+        </div>
+      </div>
+
+      <!-- Overview tab -->
+      <div id="overview" class="tab-content">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-2 space-y-6">
+            <div>
+              <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100 mb-2">About this project</h2>
+              <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">${escapeHtml(project.description)}</p>
+            </div>
+            ${buildFeaturesList(project.features)}
+            ${buildLegalLinks(project, policy)}
+          </div>
+          ${buildSidebar(project)}
+        </div>
+      </div>
+
+      <!-- Case study tab -->
+      <div id="case-study" class="tab-content hidden">
+        <div class="space-y-6">
+          <div class="prose prose-sm dark:prose-invert max-w-none">
+            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">${escapeHtml(project.description)}</p>
+          </div>
+          ${buildFeaturesList(project.features)}
+        </div>
+      </div>
+
+      <!-- Tech stack tab -->
+      <div id="tech-stack" class="tab-content hidden">
+        ${buildTechStack(technologies)}
+      </div>`;
+  }
+
+  function setupTabs() {
+    const tabBtns = document.querySelectorAll<HTMLButtonElement>(".tab-btn");
+    const tabContents = document.querySelectorAll<HTMLElement>(".tab-content");
+    if (!tabBtns.length) return;
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tabId = btn.dataset.tab!;
+
+        tabBtns.forEach((b) => {
+          b.classList.remove("border-blue-500", "is-active");
+          b.classList.add("border-transparent");
+        });
+        btn.classList.add("border-blue-500", "is-active");
+        btn.classList.remove("border-transparent");
+
+        tabContents.forEach((c) => c.classList.add("hidden"));
+        document.getElementById(tabId)?.classList.remove("hidden");
+      });
+    });
+  }
+
+  async function loadProject() {
+    const loadingEl = document.getElementById("project-loading");
+    const errorEl = document.getElementById("project-error");
+    const contentEl = document.getElementById("project-content");
+
+    try {
+      const slug =
+        window.location.pathname.split("/").filter(Boolean).pop() || "";
+      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1"}`;
+
+      const [projectRes, policyRes] = await Promise.all([
+        fetch(`${apiUrl}/projects/${slug}`),
+        fetch(`${apiUrl}/projects/${slug}/policy`).catch(() => null),
+      ]);
+
+      if (!projectRes.ok) {
+        if (projectRes.status === 404) {
+          window.location.href = "/404";
+          return;
+        }
+        throw new Error(`HTTP ${projectRes.status}`);
+      }
+
+      const projectJson = await projectRes.json();
+      const project = projectJson?.data;
+      if (!project) {
+        window.location.href = "/404";
+        return;
+      }
+
+      let policy = null;
+      if (policyRes && policyRes.ok) {
+        const policyJson = await policyRes.json();
+        policy = policyJson?.data || null;
+      }
+
+      if (loadingEl) loadingEl.classList.add("hidden");
+      if (contentEl) {
+        contentEl.innerHTML = buildContent(project, policy);
+        contentEl.classList.remove("hidden");
+
+        // Update document title
+        document.title = `${project.title} - Hafiz Bahtiar`;
+
+        // Set up tabs after content is injected
+        setupTabs();
+      }
+    } catch {
+      if (loadingEl) loadingEl.classList.add("hidden");
+      if (errorEl) errorEl.classList.remove("hidden");
+    }
+  }
+
+  loadProject();
+  document.addEventListener("astro:page-load", loadProject);
 </script>

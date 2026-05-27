@@ -134,6 +134,8 @@ const MapCanvas = ({
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(
     markers[0]?.id ?? null,
   );
+  const [markersState, setMarkersState] = useState<MapMarkerData[]>(markers);
+  const [centerState, setCenterState] = useState<[number, number]>(center);
   const { resolvedTheme, preference, setPreference } = useMapTheme();
 
   const handleMapLoad = () => {
@@ -151,16 +153,16 @@ const MapCanvas = ({
   const markerCoordinates = useMemo(
     () =>
       new Map(
-        markers.map((m) => [m.id, [m.longitude, m.latitude] as [number, number]]),
+        markersState.map((m) => [m.id, [m.longitude, m.latitude] as [number, number]]),
       ),
-    [markers],
+    [markersState],
   );
 
   useEffect(() => {
-    if (!markers.some((m) => m.id === activeMarkerId)) {
-      setActiveMarkerId(markers[0]?.id ?? null);
+    if (!markersState.some((m) => m.id === activeMarkerId)) {
+      setActiveMarkerId(markersState[0]?.id ?? null);
     }
-  }, [activeMarkerId, markers]);
+  }, [activeMarkerId, markersState]);
 
   useEffect(() => {
     const handleFocusMarker = (event: Event) => {
@@ -189,6 +191,24 @@ const MapCanvas = ({
     return () => window.removeEventListener("map-focus-marker", handleFocusMarker);
   }, [markerCoordinates]);
 
+  // Listen for client-side marker/center updates (populated after fetch)
+  useEffect(() => {
+    const handleSetMarkers = (e: Event) => {
+      const detail = (e as CustomEvent<{ markers: MapMarkerData[] }>).detail;
+      if (detail?.markers) setMarkersState(detail.markers);
+    };
+    const handleSetCenter = (e: Event) => {
+      const detail = (e as CustomEvent<{ center: [number, number] }>).detail;
+      if (detail?.center) setCenterState(detail.center);
+    };
+    window.addEventListener("map:set-markers", handleSetMarkers);
+    window.addEventListener("map:set-center", handleSetCenter);
+    return () => {
+      window.removeEventListener("map:set-markers", handleSetMarkers);
+      window.removeEventListener("map:set-center", handleSetCenter);
+    };
+  }, []);
+
   const cyclePreference = () => {
     const next =
       PREFERENCE_CYCLE[
@@ -202,7 +222,7 @@ const MapCanvas = ({
       <MapComponent
         ref={mapRef}
         theme={resolvedTheme}
-        center={center}
+        center={centerState}
         zoom={zoom}
         className="h-full w-full"
         onLoad={handleMapLoad}
@@ -219,7 +239,7 @@ const MapCanvas = ({
           interactive={false}
         />
 
-        {markers.map((marker) => {
+        {markersState.map((marker) => {
           const isActive = marker.id === activeMarkerId;
           return (
             <MapMarker

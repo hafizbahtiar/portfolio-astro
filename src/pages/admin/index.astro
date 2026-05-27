@@ -31,17 +31,27 @@ const stats = [
 
 <PrivateLayout title="Dashboard | Hafiz.dev">
   <div class="mb-6">
-    <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
-    <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">Overview of your admin activity</p>
+    <h1
+      class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
+    >
+      Dashboard
+    </h1>
+    <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
+      Overview of your admin activity
+    </p>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     {
       stats.map((stat) => (
         <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-          <h3 class="text-slate-500 dark:text-slate-400 text-sm font-medium">{stat.label}</h3>
+          <h3 class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+            {stat.label}
+          </h3>
           <div class="mt-2 flex items-baseline justify-between">
-            <span class="text-2xl font-bold text-slate-900 dark:text-slate-100">{stat.value}</span>
+            <span class="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              {stat.value}
+            </span>
             <span
               class={`text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-900 ${stat.color}`}
             >
@@ -64,7 +74,9 @@ const stats = [
       class="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5 min-h-[400px]"
     >
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Traffic Overview</h2>
+        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">
+          Traffic Overview
+        </h2>
         <select
           class="border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400/50 focus:border-slate-400 outline-none transition-all bg-white dark:bg-slate-900/50 text-sm"
         >
@@ -106,7 +118,9 @@ const stats = [
     <div
       class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5"
     >
-      <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Quick Actions</h3>
+      <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">
+        Quick Actions
+      </h3>
       <div class="grid grid-cols-2 gap-4">
         <a
           href="/admin/projects/new"
@@ -124,7 +138,8 @@ const stats = [
               stroke-width="2"
               d="M12 4v16m8-8H4"></path>
           </svg>
-          <span class="text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-100"
+          <span
+            class="text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-100"
             >New Project</span
           >
         </a>
@@ -145,7 +160,8 @@ const stats = [
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             ></path>
           </svg>
-          <span class="text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-100"
+          <span
+            class="text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-100"
             >System Logs</span
           >
         </a>
@@ -157,7 +173,9 @@ const stats = [
       class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5 lg:col-span-3"
     >
       <div class="flex items-center justify-between mb-6">
-        <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Recent System Logs</h3>
+        <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">
+          Recent System Logs
+        </h3>
         <a
           href="/admin/system"
           class="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
@@ -186,7 +204,9 @@ const stats = [
                     {new Date(log.timestamp).toLocaleString()}
                   </span>
                 </div>
-                <p class="text-sm text-slate-700 dark:text-slate-300 truncate">{log.message}</p>
+                <p class="text-sm text-slate-700 dark:text-slate-300 truncate">
+                  {log.message}
+                </p>
               </div>
             </div>
           ))

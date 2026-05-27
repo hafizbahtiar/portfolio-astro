@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { FamilyPerson, FamilyTreeDetail } from "../../types/family";
 
 interface Props {
-  detail: FamilyTreeDetail;
+  detail?: FamilyTreeDetail;
 }
 
 const REL_LABEL: Record<string, string> = {
@@ -23,6 +23,12 @@ function formatDate(iso: string | null): string {
 export const PersonInfoPanel = ({ detail }: Props) => {
   const [personId, setPersonId] = useState<string | null>(null);
 
+  const resolvedDetail = useMemo(() => {
+    if (detail && detail.people.length > 0) return detail;
+    const win = typeof window !== "undefined" ? (window as any) : null;
+    return win?.__familyDetail || detail || null;
+  }, [detail]);
+
   useEffect(() => {
     const handler = (e: Event) => {
       const id = (e as CustomEvent<{ id: string }>).detail?.id;
@@ -32,14 +38,16 @@ export const PersonInfoPanel = ({ detail }: Props) => {
     return () => window.removeEventListener("family:on-main-changed", handler);
   }, []);
 
-  const person: FamilyPerson | undefined = personId
-    ? detail.people.find((p) => String(p.id) === personId)
+  const person: FamilyPerson | undefined = personId && resolvedDetail
+    ? resolvedDetail.people.find((p) => String(p.id) === personId)
     : undefined;
 
-  const nameMap = new Map(detail.people.map((p) => [p.id, p.displayName]));
+  const nameMap = resolvedDetail
+    ? new Map(resolvedDetail.people.map((p) => [p.id, p.displayName]))
+    : new Map();
 
-  const relationships: Array<{ label: string; name: string; id: number }> = person
-    ? detail.relationships
+  const relationships: Array<{ label: string; name: string; id: number }> = person && resolvedDetail
+    ? resolvedDetail.relationships
       .filter((r) => r.personId === person.id || r.relatedPersonId === person.id)
       .map((r) => {
         const isLeft = r.personId === person.id;

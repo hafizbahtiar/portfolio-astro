@@ -2,183 +2,27 @@
 export const prerender = false;
 import PublicLayout from "../../layouts/PublicLayout.astro";
 import { FamilyTreeChart } from "../../components/family/FamilyTreeChart";
-import {
-  getPublicFamilyTrees,
-  getPublicFamilyTreeBySlug,
-} from "../../lib/family";
-import type {
-  FamilyPerson,
-  FamilyRelationship,
-  FamilyTreeDetail,
-} from "../../types/family";
+import type { FamilyTreeDetail } from "../../types/family";
 
-let trees: Array<{ slug: string; name: string }> = [];
-try {
-  trees = await getPublicFamilyTrees();
-} catch {}
-
-const peopleKey = (p: FamilyPerson) => {
-  const gk = (p.globalKey || "").trim().toLowerCase();
-  if (gk.length > 0) return gk;
-  return p.displayName.trim().toLowerCase();
-};
-
-const slugs = trees.map((t) => t.slug);
-const details = (
-  await Promise.all(slugs.map((slug) => getPublicFamilyTreeBySlug(slug)))
-).filter(Boolean) as FamilyTreeDetail[];
-
-const personByKey = new Map<string, FamilyPerson>();
-const keyToNewId = new Map<string, number>();
-let nextId = 1;
-
-for (const d of details) {
-  for (const p of d.people) {
-    const key = peopleKey(p);
-    const existing = personByKey.get(key);
-    if (!existing) {
-      const merged: FamilyPerson = {
-        id: nextId,
-        treeId: 0,
-        firstName: p.firstName,
-        lastName: p.lastName,
-        displayName: p.displayName,
-        globalKey: p.globalKey ?? null,
-        gender: p.gender,
-        birthDate: p.birthDate,
-        deathDate: p.deathDate,
-        isLiving: p.isLiving,
-        photoUrl: p.photoUrl,
-        notes: p.notes,
-        metadata: p.metadata,
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
-      };
-      personByKey.set(key, merged);
-      keyToNewId.set(key, nextId);
-      nextId += 1;
-    } else {
-      existing.firstName = existing.firstName ?? p.firstName ?? null;
-      existing.lastName = existing.lastName ?? p.lastName ?? null;
-      existing.photoUrl = existing.photoUrl ?? p.photoUrl ?? null;
-      existing.notes = existing.notes ?? p.notes ?? null;
-      existing.gender =
-        existing.gender === "unknown" ? p.gender : existing.gender;
-      existing.birthDate = existing.birthDate ?? p.birthDate ?? null;
-      existing.deathDate = existing.deathDate ?? p.deathDate ?? null;
-      existing.isLiving = existing.isLiving || p.isLiving;
-    }
-  }
-}
-
-const combinedPeople = Array.from(personByKey.values());
-
-const relKey = (r: FamilyRelationship) =>
-  `${r.relationshipType}:${r.personId}->${r.relatedPersonId}`;
-const relSet = new Set<string>();
-const combinedRelationships: FamilyRelationship[] = [];
-
-for (const d of details) {
-  for (const r of d.relationships) {
-    const left = d.people.find((p) => p.id === r.personId);
-    const right = d.people.find((p) => p.id === r.relatedPersonId);
-    if (!left || !right) continue;
-    const leftKey = peopleKey(left);
-    const rightKey = peopleKey(right);
-    const newLeftId = keyToNewId.get(leftKey);
-    const newRightId = keyToNewId.get(rightKey);
-    if (!newLeftId || !newRightId) continue;
-    const newRel: FamilyRelationship = {
-      id: combinedRelationships.length + 1,
-      treeId: 0,
-      personId: newLeftId,
-      relatedPersonId: newRightId,
-      relationshipType: r.relationshipType,
-      isPrimary: r.isPrimary,
-      startDate: r.startDate,
-      endDate: r.endDate,
-      notes: r.notes,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-    };
-    const k = relKey(newRel);
-    if (!relSet.has(k)) {
-      relSet.add(k);
-      combinedRelationships.push(newRel);
-    }
-  }
-}
-
-const addParentRelIfMissing = (parentName: string, childName: string) => {
-  const parent = combinedPeople.find(
-    (p) =>
-      p.displayName.trim().toLowerCase() === parentName.trim().toLowerCase(),
-  );
-  const child = combinedPeople.find(
-    (p) =>
-      p.displayName.trim().toLowerCase() === childName.trim().toLowerCase(),
-  );
-  if (!parent || !child) return;
-  const candidate: FamilyRelationship = {
-    id: combinedRelationships.length + 1,
-    treeId: 0,
-    personId: parent.id,
-    relatedPersonId: child.id,
-    relationshipType: "parent",
-    isPrimary: true,
-    startDate: null,
-    endDate: null,
-    notes: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  const k = relKey(candidate);
-  if (!relSet.has(k)) {
-    relSet.add(k);
-    combinedRelationships.push(candidate);
-  }
-};
-
-addParentRelIfMissing("Mohd Bahtiar", "Muhamad Nurhafiz");
-addParentRelIfMissing("Zarina", "Muhamad Nurhafiz");
-
-const meIndex = combinedPeople.findIndex(
-  (p) => p.displayName.trim().toLowerCase() === "muhamad nurhafiz",
-);
-if (meIndex > 0) {
-  const me = combinedPeople.splice(meIndex, 1)[0];
-  combinedPeople.unshift(me);
-}
-
-const me =
-  combinedPeople.find(
-    (p) => p.displayName.trim().toLowerCase() === "muhamad nurhafiz",
-  ) ||
-  combinedPeople[0] ||
-  null;
-
-const combinedDetail: FamilyTreeDetail = {
+const emptyDetail: FamilyTreeDetail = {
   tree: {
     id: 0,
     slug: "combined-family",
     name: "Combined Family",
-    description:
-      "Combined view of Hafiz, Bahtiar, and Azhari families, centered for full ancestry.",
+    description: "",
     isPublic: true,
     createdByUserId: null,
-    defaultMainPersonId: me ? me.id : null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    defaultMainPersonId: null,
+    createdAt: "",
+    updatedAt: "",
   },
-  people: combinedPeople,
-  relationships: combinedRelationships,
+  people: [],
+  relationships: [],
 };
-
-const hasPeople = combinedPeople.length > 0;
 ---
 
 <PublicLayout title="Family">
-  <section class="container-main py-24 space-y-8">
+  <section class="container-main py-24 space-y-8" id="family-combined-page">
     <div class="space-y-3">
       <h1
         class="text-4xl font-bold text-slate-900 dark:text-slate-100 tracking-tight"
@@ -192,41 +36,327 @@ const hasPeople = combinedPeople.length > 0;
     </div>
 
     <div class="space-y-4">
-      {
-        trees.length > 0 && (
-          <div class="flex flex-wrap gap-2">
-            {trees.map((t) => (
-              <a
-                href={`/family/${t.slug}`}
-                class="rounded-md px-3 py-2 text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-cyan-500/50 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-              >
-                {t.name}
-              </a>
-            ))}
+      <!-- Loading state -->
+      <div id="family-trees-nav-loading" class="flex flex-wrap gap-2">
+        <div
+          class="h-9 w-28 rounded-md bg-slate-100 dark:bg-slate-800 animate-pulse"
+        >
+        </div>
+        <div
+          class="h-9 w-28 rounded-md bg-slate-100 dark:bg-slate-800 animate-pulse"
+        >
+        </div>
+        <div
+          class="h-9 w-28 rounded-md bg-slate-100 dark:bg-slate-800 animate-pulse"
+        >
+        </div>
+      </div>
+
+      <!-- Trees navigation (populated by script) -->
+      <div id="family-trees-nav" class="hidden flex flex-wrap gap-2"></div>
+
+      <!-- Error state -->
+      <div
+        id="family-combined-error"
+        class="hidden rounded-xl border border-red-200 dark:border-red-900/20 bg-red-50 dark:bg-red-900/5 p-4 text-sm text-red-600 dark:text-red-400"
+      >
+        Failed to load family data. Please try again later.
+      </div>
+
+      <!-- Empty state -->
+      <div
+        id="family-combined-empty"
+        class="hidden h-[580px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm"
+      >
+        Family data unavailable.
+      </div>
+
+      <!-- Chart loading skeleton -->
+      <div
+        id="family-chart-loading"
+        class="h-[580px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center"
+      >
+        <div class="flex flex-col items-center gap-3">
+          <div
+            class="w-8 h-8 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"
+          >
           </div>
-        )
-      }
-      <div class="h-[580px]">
-        {
-          hasPeople ? (
-            <FamilyTreeChart
-              client:load
-              detail={combinedDetail}
-              currentSlug="combined-family"
-              useLabelOnly={true}
-              ancestryDepth={6}
-              progenyDepth={5}
-              showSiblings={true}
-              sortChildrenBy="metadata.birth_order"
-              sortAscending={true}
-            />
-          ) : (
-            <div class="h-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm">
-              Family data unavailable.
-            </div>
-          )
-        }
+          <span class="text-sm text-slate-400 dark:text-slate-500"
+            >Loading family tree...</span
+          >
+        </div>
+      </div>
+
+      <!-- Chart container (initially hidden, shown when data is ready) -->
+      <div id="family-chart-container" class="hidden h-[580px]">
+        <FamilyTreeChart
+          client:load
+          detail={emptyDetail}
+          currentSlug="combined-family"
+          useLabelOnly={true}
+          ancestryDepth={6}
+          progenyDepth={5}
+          showSiblings={true}
+          sortChildrenBy="metadata.birth_order"
+          sortAscending={true}
+        />
       </div>
     </div>
   </section>
 </PublicLayout>
+
+<script>
+  function escapeHtml(str: string) {
+    const div = document.createElement("div");
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  async function loadCombinedFamily() {
+    const loadingNavEl = document.getElementById("family-trees-nav-loading");
+    const navEl = document.getElementById("family-trees-nav");
+    const errorEl = document.getElementById("family-combined-error");
+    const emptyEl = document.getElementById("family-combined-empty");
+    const chartLoadingEl = document.getElementById("family-chart-loading");
+    const chartContainerEl = document.getElementById("family-chart-container");
+
+    try {
+      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1"}`;
+
+      // Fetch all family trees
+      const treesRes = await fetch(
+        `${apiUrl}/family?noCache=1&_=${Date.now()}`,
+      );
+      if (!treesRes.ok) throw new Error(`HTTP ${treesRes.status}`);
+      const treesJson = await treesRes.json();
+      const trees = treesJson?.data || [];
+
+      // Hide tree nav loading
+      if (loadingNavEl) loadingNavEl.classList.add("hidden");
+
+      if (trees.length === 0) {
+        if (emptyEl) emptyEl.classList.remove("hidden");
+        if (chartLoadingEl) chartLoadingEl.classList.add("hidden");
+        return;
+      }
+
+      // Build tree navigation links
+      if (navEl) {
+        navEl.innerHTML = trees
+          .map(
+            (t: any) =>
+              `<a href="/family/${escapeHtml(t.slug)}" class="rounded-md px-3 py-2 text-sm text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-cyan-500/50 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">${escapeHtml(t.name)}</a>`,
+          )
+          .join("");
+        navEl.classList.remove("hidden");
+      }
+
+      // Fetch each tree detail
+      const slugs = trees.map((t: any) => t.slug);
+      const details = (
+        await Promise.all(
+          slugs.map(async (slug: string) => {
+            try {
+              const res = await fetch(
+                `${apiUrl}/family/${slug}?noCache=1&_=${Date.now()}`,
+              );
+              if (!res.ok) return null;
+              const json = await res.json();
+              return json?.data || null;
+            } catch {
+              return null;
+            }
+          }),
+        )
+      ).filter(Boolean);
+
+      if (details.length === 0) {
+        if (emptyEl) emptyEl.classList.remove("hidden");
+        if (chartLoadingEl) chartLoadingEl.classList.add("hidden");
+        return;
+      }
+
+      // --- Data merging logic (ported from SSR frontmatter) ---
+
+      const peopleKey = (p: any) => {
+        const gk = (p.globalKey || "").trim().toLowerCase();
+        if (gk.length > 0) return gk;
+        return p.displayName.trim().toLowerCase();
+      };
+
+      const personByKey = new Map();
+      const keyToNewId = new Map();
+      let nextId = 1;
+
+      for (const d of details) {
+        for (const p of d.people) {
+          const key = peopleKey(p);
+          const existing = personByKey.get(key);
+          if (!existing) {
+            const merged = {
+              id: nextId,
+              treeId: 0,
+              firstName: p.firstName,
+              lastName: p.lastName,
+              displayName: p.displayName,
+              globalKey: p.globalKey ?? null,
+              gender: p.gender,
+              birthDate: p.birthDate,
+              deathDate: p.deathDate,
+              isLiving: p.isLiving,
+              photoUrl: p.photoUrl,
+              notes: p.notes,
+              metadata: p.metadata,
+              createdAt: p.createdAt,
+              updatedAt: p.updatedAt,
+            };
+            personByKey.set(key, merged);
+            keyToNewId.set(key, nextId);
+            nextId += 1;
+          } else {
+            existing.firstName = existing.firstName ?? p.firstName ?? null;
+            existing.lastName = existing.lastName ?? p.lastName ?? null;
+            existing.photoUrl = existing.photoUrl ?? p.photoUrl ?? null;
+            existing.notes = existing.notes ?? p.notes ?? null;
+            existing.gender =
+              existing.gender === "unknown" ? p.gender : existing.gender;
+            existing.birthDate = existing.birthDate ?? p.birthDate ?? null;
+            existing.deathDate = existing.deathDate ?? p.deathDate ?? null;
+            existing.isLiving = existing.isLiving || p.isLiving;
+          }
+        }
+      }
+
+      const combinedPeople = Array.from(personByKey.values());
+
+      const relKey = (r: any) =>
+        `${r.relationshipType}:${r.personId}->${r.relatedPersonId}`;
+      const relSet = new Set();
+      const combinedRelationships = [];
+
+      for (const d of details) {
+        for (const r of d.relationships) {
+          const left = d.people.find((p: any) => p.id === r.personId);
+          const right = d.people.find((p: any) => p.id === r.relatedPersonId);
+          if (!left || !right) continue;
+          const leftKey = peopleKey(left);
+          const rightKey = peopleKey(right);
+          const newLeftId = keyToNewId.get(leftKey);
+          const newRightId = keyToNewId.get(rightKey);
+          if (!newLeftId || !newRightId) continue;
+          const newRel: any = {
+            id: combinedRelationships.length + 1,
+            treeId: 0,
+            personId: newLeftId,
+            relatedPersonId: newRightId,
+            relationshipType: r.relationshipType,
+            isPrimary: r.isPrimary,
+            startDate: r.startDate,
+            endDate: r.endDate,
+            notes: r.notes,
+            createdAt: r.createdAt,
+            updatedAt: r.updatedAt,
+          };
+          const k = relKey(newRel);
+          if (!relSet.has(k)) {
+            relSet.add(k);
+            combinedRelationships.push(newRel);
+          }
+        }
+      }
+
+      const addParentRelIfMissing = (parentName: string, childName: string) => {
+        const parent = combinedPeople.find(
+          (p: any) =>
+            p.displayName.trim().toLowerCase() ===
+            parentName.trim().toLowerCase(),
+        );
+        const child = combinedPeople.find(
+          (p: any) =>
+            p.displayName.trim().toLowerCase() ===
+            childName.trim().toLowerCase(),
+        );
+        if (!parent || !child) return;
+        const candidate = {
+          id: combinedRelationships.length + 1,
+          treeId: 0,
+          personId: parent.id,
+          relatedPersonId: child.id,
+          relationshipType: "parent",
+          isPrimary: true,
+          startDate: null,
+          endDate: null,
+          notes: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        const k = relKey(candidate);
+        if (!relSet.has(k)) {
+          relSet.add(k);
+          combinedRelationships.push(candidate);
+        }
+      };
+
+      addParentRelIfMissing("Mohd Bahtiar", "Muhamad Nurhafiz");
+      addParentRelIfMissing("Zarina", "Muhamad Nurhafiz");
+
+      const meIndex = combinedPeople.findIndex(
+        (p: any) => p.displayName.trim().toLowerCase() === "muhamad nurhafiz",
+      );
+      if (meIndex > 0) {
+        const me = combinedPeople.splice(meIndex, 1)[0];
+        combinedPeople.unshift(me);
+      }
+
+      const me =
+        combinedPeople.find(
+          (p: any) => p.displayName.trim().toLowerCase() === "muhamad nurhafiz",
+        ) ||
+        combinedPeople[0] ||
+        null;
+
+      const combinedDetail = {
+        tree: {
+          id: 0,
+          slug: "combined-family",
+          name: "Combined Family",
+          description:
+            "Combined view of Hafiz, Bahtiar, and Azhari families, centered for full ancestry.",
+          isPublic: true,
+          createdByUserId: null,
+          defaultMainPersonId: me ? me.id : null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        people: combinedPeople,
+        relationships: combinedRelationships,
+      };
+
+      if (combinedPeople.length === 0) {
+        if (chartLoadingEl) chartLoadingEl.classList.add("hidden");
+        if (emptyEl) emptyEl.classList.remove("hidden");
+        return;
+      }
+
+      // Store on window for FamilyTreeChart to pick up
+      (window as any).__combinedFamilyDetail = combinedDetail;
+
+      // Show chart container and hide loading
+      if (chartLoadingEl) chartLoadingEl.classList.add("hidden");
+      if (chartContainerEl) chartContainerEl.classList.remove("hidden");
+
+      // Dispatch event so FamilyTreeChart re-renders with the data
+      window.dispatchEvent(
+        new CustomEvent("family:set-data", { detail: combinedDetail }),
+      );
+    } catch (err) {
+      console.error("Failed to load combined family:", err);
+      if (loadingNavEl) loadingNavEl.classList.add("hidden");
+      if (chartLoadingEl) chartLoadingEl.classList.add("hidden");
+      if (errorEl) errorEl.classList.remove("hidden");
+    }
+  }
+
+  loadCombinedFamily();
+  document.addEventListener("astro:page-load", loadCombinedFamily);
+</script>

@@ -4,16 +4,6 @@ import Hero from "../components/home/Hero.astro";
 import ContactSection from "../components/home/ContactSection.astro";
 import FeaturedProjects from "../components/home/FeaturedProjects.astro";
 import MapSection from "../components/home/MapSection.astro";
-import { getProjects } from "../lib/projects";
-import type { Project } from "../types/project";
-
-let allProjects: Project[] = [];
-try {
-	allProjects = await getProjects();
-} catch (error) {
-	console.error("Failed to fetch projects:", error);
-}
-
 type SkillLevel = "advanced" | "proficient" | "familiar";
 interface Skill {
 	name: string;
@@ -95,7 +85,7 @@ const levelStyle: Record<SkillLevel, string> = {
 ---
 
 <PublicLayout>
-	<Hero projectCount={allProjects.length} />
+	<Hero />
 
 	<div class="container-main space-y-10 md:space-y-14 pb-10 md:pb-14">
 		<!-- GitHub Activity -->
@@ -269,4 +259,10 @@ const levelStyle: Record<SkillLevel, string> = {
 	// Re-apply when theme toggles (mutation observer on html class)
 	const observer = new MutationObserver(applyChartFilter);
 	observer.observe(document.documentElement, { attributeFilter: ["class"] });
+
+	// Update Hero project count when featured projects load
+	window.addEventListener("projects:count", ((e: CustomEvent) => {
+		const el = document.getElementById("hero-project-count");
+		if (el) el.textContent = `${e.detail}+`;
+	}) as EventListener);
 </script>

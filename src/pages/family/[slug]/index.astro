@@ -1,35 +1,16 @@
 ---
 export const prerender = false;
 import PublicLayout from "../../../layouts/PublicLayout.astro";
-import {
-  getPublicFamilyTreeBySlug,
-  getPublicFamilyTrees,
-} from "../../../lib/family";
-import { FamilyTreeChart } from "../../../components/family/FamilyTreeChart";
 import { PersonInfoPanel } from "../../../components/family/PersonInfoPanel";
 import Checkbox from "../../../components/ui/Checkbox.astro";
 import Dropdown from "../../../components/ui/Dropdown.astro";
 import { PublicFamilyExplorer } from "../../../components/family/PublicFamilyExplorer";
 
 const slug = Astro.params.slug ?? "";
-const [families, detail] = await Promise.all([
-  getPublicFamilyTrees().catch(() => [] as Array<{ slug: string; name: string }>),
-  slug ? getPublicFamilyTreeBySlug(slug).catch(() => null) : Promise.resolve(null),
-]);
-const familyOptions = families.map((t) => ({ value: t.slug, label: t.name }));
-const personOptions = (detail?.people || []).map((p) => ({
-  value: String(p.id),
-  label: p.displayName,
-}));
-const initialMainId = (() => {
-  const defId = detail?.tree.defaultMainPersonId ?? null;
-  if (defId) return String(defId);
-  return String(detail?.people[0]?.id || "");
-})();
 ---
 
-<PublicLayout title={`${detail?.tree.name || "Family"} Family`}>
-  <section class="container-main py-24 space-y-8">
+<PublicLayout title="Family">
+  <section class="container-main py-24 space-y-8" id="family-slug-page">
     <div class="space-y-3">
       <a
         href="/family"
@@ -50,17 +31,16 @@ const initialMainId = (() => {
         Back to Families
       </a>
       <h1
+        id="family-slug-title"
         class="text-4xl font-bold text-slate-900 dark:text-slate-100 tracking-tight"
       >
-        {detail?.tree.name || slug}
+        {slug}
       </h1>
-      <p class="text-slate-500 dark:text-slate-400 max-w-3xl">
-        {
-          detail?.tree.description ??
-            (detail
-              ? "No description provided for this family tree."
-              : "Family tree not found.")
-        }
+      <p
+        id="family-slug-desc"
+        class="text-slate-500 dark:text-slate-400 max-w-3xl"
+      >
+        Loading family details...
       </p>
     </div>
 
@@ -72,8 +52,8 @@ const initialMainId = (() => {
           <Dropdown
             label="Choose Family"
             name="choose-family"
-            options={familyOptions}
-            value={detail?.tree.slug || slug}
+            options={[]}
+            value={slug}
             placeholder="Select family"
           />
         </div>
@@ -81,9 +61,9 @@ const initialMainId = (() => {
           <Dropdown
             label="Main Person"
             name="main-person"
-            options={personOptions}
-            value={initialMainId}
-            placeholder="Select main person"
+            options={[]}
+            value=""
+            placeholder="Loading..."
           />
         </div>
         <div class="w-44 shrink-0">
@@ -129,46 +109,39 @@ const initialMainId = (() => {
         </div>
       </div>
 
+      <div
+        id="family-slug-error"
+        class="hidden rounded-xl border border-red-200 dark:border-red-900/20 bg-red-50 dark:bg-red-900/5 p-4 text-sm text-red-600 dark:text-red-400"
+      >
+        Failed to load family data. Please try again later.
+      </div>
+
       <div class="flex gap-4 h-[580px]">
         <div class="flex-1 min-w-0">
-          {
-            detail && detail.people.length > 0 ? (
-              <FamilyTreeChart
-                client:load
-                detail={detail}
-                currentSlug={detail.tree.slug}
-                sortChildrenBy="metadata.birth_order"
-                sortAscending={true}
-              />
-            ) : (
-              <div class="space-y-3 h-full">
-                <div class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-600 dark:text-yellow-300 text-sm">
-                  Live data will be loaded in the browser for this family.
-                </div>
-                <div class="h-full">
-                  <PublicFamilyExplorer
-                    client:load
-                    minimal={true}
-                    initialSlug={slug}
-                  />
-                </div>
-              </div>
-            )
-          }
-        </div>
-        {
-          detail && (
-            <div class="w-64 shrink-0">
-              <PersonInfoPanel client:load detail={detail} />
+          <div class="space-y-3 h-full">
+            <div
+              class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-600 dark:text-yellow-300 text-sm"
+            >
+              Live data will be loaded in the browser for this family.
             </div>
-          )
-        }
+            <div class="h-full">
+              <PublicFamilyExplorer
+                client:load
+                minimal={true}
+                initialSlug={slug}
+              />
+            </div>
+          </div>
+        </div>
+        <div class="w-64 shrink-0">
+          <PersonInfoPanel client:load />
+        </div>
       </div>
     </div>
 
     <script is:inline>
-      const chooseInput = document.querySelector('input[name="choose-family"]');
-      const mainInput = document.querySelector('input[name="main-person"]');
+      const chooseInput = document.querySelector('input[name="choose-family"]') as HTMLInputElement | null;
+      const mainInput = document.querySelector('input[name="main-person"]') as HTMLInputElement | null;
       const noSpouseInput = document.querySelector('input[name="no-spouse"]');
       function onChooseChange() {
         const slug = chooseInput?.value || "";
@@ -276,3 +249,156 @@ const initialMainId = (() => {
     </script>
   </section>
 </PublicLayout>
+
+<script>
+  function escapeHtml(str: string) {
+    const div = document.createElement("div");
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  function buildDropdownItemHtml(value: string, label: string) {
+    return `<li><button type="button" role="option" class="dropdown-item w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors" data-value="${escapeHtml(value)}"><span>${escapeHtml(label)}</span></button></li>`;
+  }
+
+  function populateDropdown(
+    dataName: string,
+    options: any[],
+    selectedValue: string,
+  ) {
+    const container = document.querySelector(
+      `.tech-dropdown-container[data-name="${dataName}"]`,
+    );
+    if (!container) return;
+    const list = container.querySelector('ul[role="listbox"]');
+    const input = container.querySelector(".dropdown-input") as HTMLInputElement | null;
+    const selectedText = container.querySelector(".selected-text");
+    if (!list || !input) return;
+
+    // Clear existing items
+    list.innerHTML = options
+      .map((o: any) => buildDropdownItemHtml(o.value, o.label))
+      .join("");
+
+    // Reset data-bound on items so setupDropdowns rebinds them
+    list.querySelectorAll(".dropdown-item").forEach((item: any) => {
+      item.removeAttribute("data-bound");
+    });
+
+    // Re-initialize dropdown
+    if (window.setupDropdowns) {
+      window.setupDropdowns();
+    }
+
+    // Set selected value
+    if (selectedValue && options.some((o: any) => o.value === selectedValue)) {
+      input.value = selectedValue;
+      const match = options.find((o: any) => o.value === selectedValue);
+      if (selectedText && match) {
+        selectedText.textContent = match.label;
+        selectedText.classList.add("text-cyan-400");
+      }
+    }
+  }
+
+  async function loadFamilySlugData() {
+    const slug =
+      window.location.pathname.split("/family/")[1]?.replace(/\/$/, "") || "";
+    if (!slug) return;
+
+    const titleEl = document.getElementById("family-slug-title");
+    const descEl = document.getElementById("family-slug-desc");
+    const errorEl = document.getElementById("family-slug-error");
+
+    try {
+      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1"}`;
+
+      // Fetch families list and tree detail in parallel
+      const [familiesRes, detailRes] = await Promise.all([
+        fetch(`${apiUrl}/family?noCache=1&_=${Date.now()}`),
+        fetch(`${apiUrl}/family/${slug}?noCache=1&_=${Date.now()}`),
+      ]);
+
+      if (!familiesRes.ok && !detailRes.ok) {
+        throw new Error("Failed to fetch family data");
+      }
+
+      const familiesJson = familiesRes.ok
+        ? await familiesRes.json()
+        : { data: [] };
+      const families = familiesJson?.data || [];
+
+      const detailJson = detailRes.ok ? await detailRes.json() : { data: null };
+      const detail = detailJson?.data || null;
+
+      // Populate family dropdown
+      const familyOptions = families.map((t: any) => ({
+        value: t.slug,
+        label: t.name,
+      }));
+      populateDropdown(
+        "choose-family",
+        familyOptions,
+        detail?.tree?.slug || slug,
+      );
+
+      // Populate person dropdown
+      if (detail && detail.people.length > 0) {
+        const personOptions = detail.people.map((p: any) => ({
+          value: String(p.id),
+          label: p.displayName,
+        }));
+
+        const defId = detail.tree.defaultMainPersonId ?? null;
+        const initialMainId = defId
+          ? String(defId)
+          : String(detail.people[0]?.id || "");
+
+        populateDropdown("main-person", personOptions, initialMainId);
+
+        // Trigger main person change event
+        if (initialMainId) {
+          const mainInput = document.querySelector('input[name="main-person"]') as HTMLInputElement | null;
+          if (mainInput) {
+            mainInput.value = initialMainId;
+            mainInput.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+      } else {
+        // No people in this tree
+        populateDropdown("main-person", [], "");
+        const mainInput = document.querySelector('input[name="main-person"]') as HTMLInputElement | null;
+        if (mainInput) {
+          mainInput.value = "";
+        }
+        const placeholder = document.querySelector(
+          '.tech-dropdown-container[data-name="main-person"] .selected-text',
+        );
+        if (placeholder) {
+          placeholder.textContent = "No people found";
+        }
+      }
+
+      // Update title and description
+      if (detail) {
+        if (titleEl) titleEl.textContent = detail.tree.name || slug;
+        if (descEl)
+          descEl.textContent =
+            detail.tree.description ||
+            "No description provided for this family tree.";
+      } else {
+        if (descEl) descEl.textContent = "Family tree not found.";
+      }
+
+      // Store detail on window for PersonInfoPanel
+      (window as any).__familyDetail = detail;
+    } catch (err) {
+      console.error("Failed to load family data:", err);
+      if (errorEl) errorEl.classList.remove("hidden");
+      if (descEl) descEl.textContent = "Failed to load family details.";
+    }
+  }
+
+  loadFamilySlugData();
+  document.addEventListener("astro:page-load", loadFamilySlugData);
+</script>

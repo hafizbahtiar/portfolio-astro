@@ -143,6 +143,7 @@ export const FamilyTreeChart = ({
   const selectedFamilySlugRef = useRef(currentSlug);
   const enableCrossTreeNavigationRef = useRef(enableCrossTreeNavigation);
   const [selectedMainId, setSelectedMainId] = useState<string>("");
+  const [dynamicDetail, setDynamicDetail] = useState<FamilyTreeDetail | null>(null);
   const spacingRef = useRef<{ x: number; y: number }>({ x: 250, y: 150 });
   const dataRef = useRef<Data>([]);
   const baselineRef = useRef<Data>([]);
@@ -175,6 +176,21 @@ export const FamilyTreeChart = ({
   };
 
   useEffect(() => {
+    // Support late-arriving data from window global (combined family page) or custom event
+    const win = window as any;
+    if ((!detail || detail.people.length === 0) && win.__combinedFamilyDetail) {
+      setDynamicDetail(win.__combinedFamilyDetail);
+    }
+    const handler = (e: CustomEvent<FamilyTreeDetail>) => {
+      if (e.detail) setDynamicDetail(e.detail);
+    };
+    window.addEventListener("family:set-data", handler as EventListener);
+    return () => window.removeEventListener("family:set-data", handler as EventListener);
+  }, []);
+
+  const effectiveDetail = dynamicDetail || detail;
+
+  useEffect(() => {
     selectedFamilySlugRef.current = currentSlug;
   }, [currentSlug]);
 
@@ -195,7 +211,7 @@ export const FamilyTreeChart = ({
   }, [enableCrossTreeNavigation]);
 
 
-  const chartData = useMemo(() => buildChartData(detail), [detail]);
+  const chartData = useMemo(() => buildChartData(effectiveDetail), [effectiveDetail]);
 
   const applyZoom = (chart: Chart, treePosition: "fit" | "inherit" = "inherit") => {
     chart.updateTree({
@@ -526,7 +542,7 @@ export const FamilyTreeChart = ({
       chart.setOrientationVertical();
       applyZoom(chart, "fit");
       let initialMainId = chartData[0]?.id || "";
-      const defaultId = (detail as any)?.tree?.defaultMainPersonId ?? null;
+      const defaultId = (effectiveDetail as any)?.tree?.defaultMainPersonId ?? null;
       if (defaultId) {
         const defNode = chartData.find((n) => n.id === String(defaultId));
         if (defNode) initialMainId = defNode.id;
@@ -558,7 +574,7 @@ export const FamilyTreeChart = ({
     render().catch((error) => {
       console.error("Failed to render family chart:", error);
     });
-  }, [chartData, detail]);
+  }, [chartData, effectiveDetail]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -573,7 +589,7 @@ export const FamilyTreeChart = ({
     const hasCurrentMain = currentMainId
       ? out.some((node) => node.id === currentMainId)
       : false;
-    const defaultId = (detail as any)?.tree?.defaultMainPersonId ?? null;
+    const defaultId = (effectiveDetail as any)?.tree?.defaultMainPersonId ?? null;
     const defaultMainId =
       defaultId && out.some((node) => node.id === String(defaultId))
         ? String(defaultId)
@@ -621,7 +637,7 @@ export const FamilyTreeChart = ({
     window.dispatchEvent(
       new CustomEvent("family:on-spouses", { detail: { options: spouseOptions } }),
     );
-  }, [chartData, currentSlug, detail]);
+  }, [chartData, currentSlug, effectiveDetail]);
 
   useEffect(() => {
     return () => {

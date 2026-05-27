@@ -8,10 +8,14 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
   <div class="space-y-6">
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">
+        <h1
+          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
+        >
           New Experience
         </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">Add a new work experience</p>
+        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
+          Add a new work experience
+        </p>
       </div>
       <a
         href="/admin/experiences"
@@ -112,7 +116,10 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
     } catch {
-      return raw.split(",").map((item) => item.trim()).filter(Boolean);
+      return raw
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
     }
   };
 

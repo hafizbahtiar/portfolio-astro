@@ -8,10 +8,14 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
   <div class="space-y-6">
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">
+        <h1
+          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
+        >
           Edit Experience
         </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">Edit work experience</p>
+        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
+          Edit work experience
+        </p>
       </div>
       <a
         href="/admin/experiences"
@@ -38,7 +42,9 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
         class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-500 mb-4"
       >
       </div>
-      <p class="text-slate-500 dark:text-slate-400">Loading experience data...</p>
+      <p class="text-slate-500 dark:text-slate-400">
+        Loading experience data...
+      </p>
     </div>
 
     <form id="experience-form" class="space-y-8 hidden">
@@ -120,7 +126,10 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
     } catch {
-      return raw.split(",").map((item) => item.trim()).filter(Boolean);
+      return raw
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
     }
   };
 
