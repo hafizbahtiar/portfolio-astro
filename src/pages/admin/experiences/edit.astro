@@ -7,12 +7,15 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
 <PrivateLayout title="Edit Experience">
   <div class="space-y-6">
     <div class="flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-white tracking-tight">
-        Edit Experience
-      </h1>
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">
+          Edit Experience
+        </h1>
+        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">Edit work experience</p>
+      </div>
       <a
         href="/admin/experiences"
-        class="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 transition-colors hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
       >
         <svg
           class="w-4 h-4"
@@ -26,16 +29,16 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
             stroke-width="2"
             d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
-        BACK TO LIST
+        Back to list
       </a>
     </div>
 
     <div id="loading-state" class="text-center py-12">
       <div
-        class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500 mb-4"
+        class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-500 mb-4"
       >
       </div>
-      <p class="text-gray-400">Loading experience data...</p>
+      <p class="text-slate-500 dark:text-slate-400">Loading experience data...</p>
     </div>
 
     <form id="experience-form" class="space-y-8 hidden">

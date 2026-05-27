@@ -20,16 +20,19 @@ const settingGroups = [
 <PrivateLayout title="Settings">
   <div class="space-y-6">
     <div class="flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-white tracking-tight">Settings</h1>
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">Settings</h1>
+        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">Configure your site settings</p>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {
         settingGroups.map((group) => (
           <a href={group.href} class="block group">
-            <div class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6 hover:bg-gray-800 hover:border-cyan-500/50 transition-all duration-300 h-full">
+            <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 h-full">
               <div class="flex items-center gap-4 mb-4">
-                <div class="p-3 bg-cyan-900/30 rounded-lg text-cyan-400 group-hover:text-cyan-300 group-hover:bg-cyan-900/50 transition-colors">
+                <div class="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
                   <svg
                     class="w-6 h-6"
                     fill="none"
@@ -44,11 +47,11 @@ const settingGroups = [
                     />
                   </svg>
                 </div>
-                <h3 class="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
                   {group.title}
                 </h3>
               </div>
-              <p class="text-gray-400 text-sm leading-relaxed group-hover:text-gray-300 transition-colors">
+              <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
                 {group.description}
               </p>
             </div>

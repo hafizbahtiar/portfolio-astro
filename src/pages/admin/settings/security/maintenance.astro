@@ -12,7 +12,7 @@ const settings = {
       <div class="flex items-center gap-4">
         <a
           href="/admin/settings/security"
-          class="text-gray-400 hover:text-white transition-colors"
+          class="text-slate-400 hover:text-slate-100 transition-colors"
         >
           <svg
             class="w-6 h-6"
@@ -27,13 +27,16 @@ const settings = {
               d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
         </a>
-        <h1 class="text-3xl font-bold text-white tracking-tight">
-          Maintenance Mode
-        </h1>
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">
+            Maintenance Mode
+          </h1>
+          <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">Maintenance mode and site availability</p>
+        </div>
       </div>
       <button
         id="save-maintenance-btn"
-        class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg font-mono text-sm transition-colors flex items-center gap-2"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-400 dark:border-slate-500 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 transition-colors hover:border-slate-500 dark:hover:border-slate-400 hover:text-slate-800 dark:hover:text-slate-100"
       >
         <svg
           class="w-4 h-4"
@@ -48,19 +51,19 @@ const settings = {
             d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
           ></path>
         </svg>
-        SAVE CHANGES
+        Save Changes
       </button>
     </div>
 
     <div
-      class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6 max-w-2xl"
+      class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5 max-w-2xl"
     >
       <div
-        class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-700"
+        class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700"
       >
         <div>
-          <h4 class="text-white font-medium">Enable Maintenance Mode</h4>
-          <p class="text-sm text-gray-400 mt-1">
+          <h4 class="text-slate-900 dark:text-slate-100 font-medium">Enable Maintenance Mode</h4>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Temporarily disable public access to the site. Only admins will be
             able to access the dashboard.
           </p>
@@ -74,7 +77,7 @@ const settings = {
             checked={settings.maintenanceMode}
           />
           <div
-            class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"
+            class="w-11 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-slate-400/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-500"
           >
           </div>
         </label>

@@ -14,7 +14,7 @@ const settings = {
       <div class="flex items-center gap-4">
         <a
           href="/admin/settings"
-          class="text-gray-400 hover:text-white transition-colors"
+          class="text-slate-400 hover:text-slate-100 transition-colors"
         >
           <svg
             class="w-6 h-6"
@@ -29,13 +29,16 @@ const settings = {
               d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
         </a>
-        <h1 class="text-3xl font-bold text-white tracking-tight">
-          General Settings
-        </h1>
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">
+            General Settings
+          </h1>
+          <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">General site configuration</p>
+        </div>
       </div>
       <button
         id="save-settings-btn"
-        class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg font-mono text-sm transition-colors flex items-center gap-2"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-400 dark:border-slate-500 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 transition-colors hover:border-slate-500 dark:hover:border-slate-400 hover:text-slate-800 dark:hover:text-slate-100"
       >
         <svg
           class="w-4 h-4"
@@ -50,18 +53,18 @@ const settings = {
             d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
           ></path>
         </svg>
-        SAVE CHANGES
+        Save Changes
       </button>
     </div>
 
     <div
-      class="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6 max-w-2xl"
+      class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5 max-w-2xl"
     >
       <form id="general-settings-form" class="space-y-6">
         <div class="space-y-2">
           <label
             for="settings-site-name"
-            class="block text-sm font-medium text-gray-400"
+            class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest"
           >
             Site Name
           </label>
@@ -70,13 +73,13 @@ const settings = {
             id="settings-site-name"
             name="siteName"
             value={settings.siteName}
-            class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
+            class="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400/50 focus:border-slate-400 outline-none transition-all bg-white dark:bg-slate-900/50"
           />
         </div>
         <div class="space-y-2">
           <label
             for="settings-site-description"
-            class="block text-sm font-medium text-gray-400"
+            class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest"
           >
             Site Description
           </label>
@@ -84,7 +87,7 @@ const settings = {
             id="settings-site-description"
             name="siteDescription"
             rows="3"
-            class="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all resize-none"
+            class="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400/50 focus:border-slate-400 outline-none transition-all bg-white dark:bg-slate-900/50 resize-none"
             >{settings.siteDescription}</textarea
           >
         </div>
