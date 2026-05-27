@@ -60,10 +60,10 @@ const fileSlug = post?.slug ?? slug ?? "post";
       <a
         href="/blog"
         id="back-to-blog"
-        class="btn-text mb-8 inline-flex items-center gap-2 group text-sm font-mono text-slate-500 hover:text-blue-400 transition-colors"
+        class="btn-text mb-8 inline-flex items-center gap-1.5 group text-sm text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
       >
         <svg
-          class="w-4 h-4 group-hover:-translate-x-1 transition-transform"
+          class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -72,7 +72,7 @@ const fileSlug = post?.slug ?? slug ?? "post";
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            d="M15 19l-7-7 7-7"></path>
         </svg>
         <span class="opacity-70 group-hover:opacity-100">cd ..</span>
       </a>

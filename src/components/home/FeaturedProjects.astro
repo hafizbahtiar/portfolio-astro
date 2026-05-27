@@ -26,7 +26,7 @@ try {
   hasError = true;
 }
 
-const visibleProjects = projects.slice(0, 6).map((project) => ({
+const visibleProjects = projects.slice(0, 4).map((project) => ({
   ...project,
   imageUrl: resolveImage(project.imageUrl),
 }));
@@ -42,139 +42,19 @@ const visibleProjects = projects.slice(0, 6).map((project) => ({
       <p class="text-slate-400 dark:text-slate-500 text-sm">No projects yet. Check back soon.</p>
     </div>
   ) : (
-    <div class="relative">
-      <!-- Navigation row -->
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs text-slate-400 dark:text-slate-500">{visibleProjects.length} projects</span>
-        <div class="flex items-center gap-2">
-          <button
-            id="proj-prev"
-            aria-label="Previous projects"
-            class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            id="proj-next"
-            aria-label="Next projects"
-            class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Slider box -->
-      <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 overflow-hidden">
-        <div
-          id="proj-track"
-          class="flex gap-3 overflow-x-auto snap-x snap-mandatory proj-scrollbar"
-          style="scroll-behavior: smooth;"
-        >
-          {visibleProjects.map((project) => (
-            <div class="snap-start shrink-0 w-[calc(100%-1.5rem)] sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-8px)]">
-              <ProjectCard
-                title={project.title}
-                description={project.description}
-                imageUrl={project.imageUrl}
-                imageVariant={project.imageVariant}
-                tags={project.tags || []}
-                link={`/projects/${project.slug}`}
-                imageLoading="lazy"
-                imageFetchPriority="low"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <!-- Dots indicator -->
-      <div class="flex justify-center gap-1.5 mt-3" id="proj-dots"></div>
+    <div class="grid grid-cols-2 gap-4">
+      {visibleProjects.map((project, index) => (
+        <ProjectCard
+          title={project.title}
+          description={project.description}
+          imageUrl={project.imageUrl}
+          imageVariant={project.imageVariant}
+          tags={project.tags || []}
+          link={`/projects/${project.slug}`}
+          imageLoading={index < 2 ? "eager" : "lazy"}
+          imageFetchPriority={index < 2 ? "high" : "low"}
+        />
+      ))}
     </div>
   )
 }
-
-<style>
-  .proj-scrollbar {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .proj-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-</style>
-
-<script>
-  const initSlider = () => {
-    const track = document.getElementById("proj-track") as HTMLElement | null;
-    const prevBtn = document.getElementById("proj-prev") as HTMLButtonElement | null;
-    const nextBtn = document.getElementById("proj-next") as HTMLButtonElement | null;
-    const dotsContainer = document.getElementById("proj-dots") as HTMLElement | null;
-
-    if (!track || !prevBtn || !nextBtn) return;
-
-    const cards = Array.from(track.children) as HTMLElement[];
-    if (cards.length === 0) return;
-
-    const getCardWidth = () => cards[0].offsetWidth + 12; // width + gap
-
-    const getVisibleCount = () => Math.round(track.offsetWidth / getCardWidth());
-
-    const pageCount = () => Math.ceil(cards.length / getVisibleCount());
-
-    // Build dots
-    if (dotsContainer) {
-      dotsContainer.innerHTML = "";
-      const count = pageCount();
-      for (let i = 0; i < count; i++) {
-        const dot = document.createElement("button");
-        dot.className = "w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 transition-colors";
-        dot.setAttribute("aria-label", `Go to page ${i + 1}`);
-        dot.addEventListener("click", () => scrollToPage(i));
-        dotsContainer.appendChild(dot);
-      }
-    }
-
-    const updateDots = () => {
-      if (!dotsContainer) return;
-      const currentPage = Math.round(track.scrollLeft / (getCardWidth() * getVisibleCount()));
-      Array.from(dotsContainer.children).forEach((dot, i) => {
-        (dot as HTMLElement).className = `w-1.5 h-1.5 rounded-full transition-colors ${i === currentPage ? "bg-blue-500" : "bg-slate-300 dark:bg-slate-600"}`;
-      });
-    };
-
-    const updateButtons = () => {
-      prevBtn.disabled = track.scrollLeft <= 4;
-      nextBtn.disabled = track.scrollLeft >= track.scrollWidth - track.offsetWidth - 4;
-    };
-
-    const scrollToPage = (page: number) => {
-      track.scrollTo({ left: page * getCardWidth() * getVisibleCount(), behavior: "smooth" });
-    };
-
-    prevBtn.addEventListener("click", () => {
-      track.scrollBy({ left: -getCardWidth() * getVisibleCount(), behavior: "smooth" });
-    });
-
-    nextBtn.addEventListener("click", () => {
-      track.scrollBy({ left: getCardWidth() * getVisibleCount(), behavior: "smooth" });
-    });
-
-    track.addEventListener("scroll", () => {
-      updateButtons();
-      updateDots();
-    });
-
-    // Init state
-    updateButtons();
-    updateDots();
-  };
-
-  initSlider();
-  document.addEventListener("astro:page-load", initSlider);
-  document.addEventListener("astro:after-swap", initSlider);
-</script>

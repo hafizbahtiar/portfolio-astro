@@ -27,14 +27,24 @@ const formatReadTime = (minutes?: number) => {
 >
   <div class="container-main space-y-12 md:space-y-16 pb-16 md:pb-24">
     <section class="scroll-offset relative py-12 md:py-16">
-      <div
-        class="flex items-center gap-2 text-sm font-mono text-blue-400 mb-6 bg-white w-fit px-4 py-2 rounded-lg border border-slate-200"
+      <a
+        href="/"
+        class="inline-flex items-center gap-1.5 text-sm text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors mb-6 group"
       >
-        <span class="text-slate-400">root</span>
-        <span class="text-slate-600">/</span>
-        <span class="text-blue-400 font-bold">blog</span>
-        <span class="animate-pulse">_</span>
-      </div>
+        <svg
+          class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Home
+      </a>
 
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div class="max-w-2xl">
@@ -51,12 +61,16 @@ const formatReadTime = (minutes?: number) => {
           <p
             class="text-slate-500 text-lg leading-relaxed border-l-2 border-slate-200 pl-6"
           >
-            Practical lessons, experiments, and checklists from building <span class="text-blue-400 font-mono">modern web</span> and
+            Practical lessons, experiments, and checklists from building <span
+              class="text-blue-400 font-mono">modern web</span
+            > and
             <span class="text-purple-400 font-mono">mobile products</span>.
           </p>
         </div>
 
-        <div class="hidden md:block text-right font-mono text-xs text-slate-400">
+        <div
+          class="hidden md:block text-right font-mono text-xs text-slate-400"
+        >
           <div>total_posts: {posts.length}</div>
           <div>status: <span class="text-green-500">active</span></div>
         </div>
