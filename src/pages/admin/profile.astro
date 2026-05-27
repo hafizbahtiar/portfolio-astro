@@ -301,6 +301,7 @@ const profile: any = {}; // populated client-side after page load
 
   <script>
     import { profileService } from "../../lib/profile";
+    import { uploadImage } from "../../lib/upload";
 
     const saveBtnBottom = document.getElementById(
       "save-profile-btn-bottom",
@@ -317,8 +318,6 @@ const profile: any = {}; // populated client-side after page load
     const avatarImg = document.querySelector(
       "#avatar-preview",
     ) as HTMLImageElement | null;
-
-    let newAvatarBase64: string | null = null;
 
     // Load profile data on mount
     async function loadProfile() {
@@ -373,9 +372,6 @@ const profile: any = {}; // populated client-side after page load
     // Handle URL input change
     if (avatarInput && avatarImg) {
       avatarInput.addEventListener("input", (e) => {
-        // If we have a file uploaded, ignore URL changes for preview
-        if (newAvatarBase64) return;
-
         const url = (e.target as HTMLInputElement).value;
         if (url) {
           try {
@@ -392,23 +388,20 @@ const profile: any = {}; // populated client-side after page load
 
     // Handle File Upload
     if (avatarUpload && avatarImg) {
-      avatarUpload.addEventListener("change", (e) => {
+      avatarUpload.addEventListener("change", async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
-        if (file) {
-          // Validate size (e.g. 2MB)
-          if (file.size > 2 * 1024 * 1024) {
-            alert("File is too large. Max 2MB.");
-            return;
-          }
+        if (!file) return;
 
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            if (e.target?.result) {
-              newAvatarBase64 = e.target.result as string;
-              avatarImg.src = newAvatarBase64;
-            }
-          };
-          reader.readAsDataURL(file);
+        avatarUpload.disabled = true;
+        try {
+          const url = await uploadImage(file);
+          avatarImg.src = url;
+          if (avatarInput) avatarInput.value = url;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Upload failed";
+          alert(`Upload failed: ${message}`);
+        } finally {
+          avatarUpload.disabled = false;
         }
       });
     }
@@ -426,11 +419,6 @@ const profile: any = {}; // populated client-side after page load
           data[key] = value;
         }
       });
-
-      // If new avatar uploaded, use it
-      if (newAvatarBase64) {
-        data.avatarUrl = newAvatarBase64;
-      }
 
       if (saveBtnBottom) {
         saveBtnBottom.dataset.originalContent = saveBtnBottom.innerHTML;

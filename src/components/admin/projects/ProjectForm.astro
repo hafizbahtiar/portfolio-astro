@@ -69,7 +69,18 @@ const inputClass =
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-2">
           <label class={labelClass}>Image URL</label>
-          <input type="text" name="imageUrl" class={inputClass} />
+          <input type="text" name="imageUrl" id="project-image-url" class={inputClass} />
+          <div class="flex items-center gap-2 mt-1">
+            <label
+              for="project-image-upload"
+              id="project-image-upload-label"
+              class="cursor-pointer text-xs text-cyan-400 hover:text-cyan-300 border border-gray-700 hover:border-cyan-500 rounded px-3 py-1.5 transition-colors"
+            >
+              Upload image
+            </label>
+            <input type="file" id="project-image-upload" accept="image/*" class="hidden" />
+            <span id="project-image-upload-status" class="text-xs text-gray-500"></span>
+          </div>
         </div>
         <div class="space-y-2">
           <Dropdown
@@ -169,6 +180,39 @@ const inputClass =
     </div>
   </div>
 </div>
+
+<script>
+  import { uploadImage } from "../../../lib/upload";
+
+  const fileInput = document.getElementById("project-image-upload") as HTMLInputElement | null;
+  const urlInput = document.getElementById("project-image-url") as HTMLInputElement | null;
+  const uploadLabel = document.getElementById("project-image-upload-label") as HTMLLabelElement | null;
+  const statusSpan = document.getElementById("project-image-upload-status") as HTMLSpanElement | null;
+
+  fileInput?.addEventListener("change", async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    if (fileInput) fileInput.disabled = true;
+    if (uploadLabel) uploadLabel.classList.add("opacity-50", "pointer-events-none");
+    if (statusSpan) statusSpan.textContent = "Uploading…";
+
+    try {
+      const url = await uploadImage(file);
+      if (urlInput) urlInput.value = url;
+      if (statusSpan) statusSpan.textContent = "Done";
+      setTimeout(() => { if (statusSpan) statusSpan.textContent = ""; }, 2000);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Upload failed";
+      alert(`Upload failed: ${message}`);
+      if (statusSpan) statusSpan.textContent = "";
+    } finally {
+      if (fileInput) fileInput.disabled = false;
+      if (uploadLabel) uploadLabel.classList.remove("opacity-50", "pointer-events-none");
+      if (fileInput) fileInput.value = "";
+    }
+  });
+</script>
 
 <div class="flex justify-end pt-4">
   <button

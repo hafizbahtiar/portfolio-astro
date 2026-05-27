@@ -27,6 +27,8 @@ export const setSharedAccessToken = (token: string | null): void => {
     _accessToken = token;
 };
 
+export const getSharedAccessToken = (): string | null => _accessToken;
+
 export class ApiClient {
     protected baseUrl: string;
     private refreshTokenPromise: Promise<boolean> | null = null;
