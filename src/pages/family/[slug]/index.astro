@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import PublicLayout from "../../../layouts/PublicLayout.astro";
 import {
   getPublicFamilyTreeBySlug,
@@ -8,34 +8,14 @@ import {
 import { FamilyTreeChart } from "../../../components/family/FamilyTreeChart";
 import { PersonInfoPanel } from "../../../components/family/PersonInfoPanel";
 import Checkbox from "../../../components/ui/Checkbox.astro";
-import type { FamilyTreeDetail } from "../../../types/family";
 import Dropdown from "../../../components/ui/Dropdown.astro";
 import { PublicFamilyExplorer } from "../../../components/family/PublicFamilyExplorer";
 
-export async function getStaticPaths() {
-  try {
-    const families = await getPublicFamilyTrees();
-    const paths = await Promise.all(
-      families.map(async (f) => {
-        const detail = await getPublicFamilyTreeBySlug(f.slug);
-        if (!detail) return null;
-        return {
-          params: { slug: f.slug },
-          props: { detail, families, slug: f.slug },
-        };
-      }),
-    );
-    return paths.filter(Boolean);
-  } catch {
-    return [];
-  }
-}
-
-const { slug, detail, families } = Astro.props as {
-  slug: string;
-  detail: FamilyTreeDetail | null;
-  families: Array<{ slug: string; name: string }>;
-};
+const slug = Astro.params.slug ?? "";
+const [families, detail] = await Promise.all([
+  getPublicFamilyTrees().catch(() => [] as Array<{ slug: string; name: string }>),
+  slug ? getPublicFamilyTreeBySlug(slug).catch(() => null) : Promise.resolve(null),
+]);
 const familyOptions = families.map((t) => ({ value: t.slug, label: t.name }));
 const personOptions = (detail?.people || []).map((p) => ({
   value: String(p.id),

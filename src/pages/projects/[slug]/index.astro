@@ -1,7 +1,7 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import ProjectLayout from "../../../layouts/ProjectLayout.astro";
-import { getProjects, getProjectPolicyBySlug } from "../../../lib/projects";
+import { getProjectBySlug, getProjectPolicyBySlug } from "../../../lib/projects";
 import type { ProjectPolicy } from "../../../types/project";
 import { TextEditor } from "../../../components/ui/TextEditor";
 import { Image } from "astro:assets";
@@ -9,20 +9,9 @@ import jomDapur from "../../../assets/projects/jom-dapur.jpg";
 import jdManagement from "../../../assets/projects/jd-management.png";
 import invois from "../../../assets/projects/invois/invois.png";
 
-export async function getStaticPaths() {
-    try {
-        const projects = await getProjects();
-        return projects.map((project) => ({
-            params: { slug: project.slug },
-            props: { project },
-        }));
-    } catch (error) {
-        console.error("Failed to fetch projects for static paths:", error);
-        return [];
-    }
-}
-
-const { project } = Astro.props;
+const slug = Astro.params.slug ?? "";
+const project = slug ? await getProjectBySlug(slug).catch(() => null) : null;
+if (!project) return Astro.redirect("/404");
 const localImageMap = new Map([
     ["/images/projects/jom-dapur.jpg", jomDapur],
     ["/images/projects/jd-management.png", jdManagement],

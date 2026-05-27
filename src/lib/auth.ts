@@ -1,6 +1,5 @@
 import { API_BASE_URL } from './config';
-import { ApiClient, setSharedAccessToken } from './api-client';
-
+import { ApiClient } from './api-client';
 
 export interface User {
   id: number;
@@ -9,7 +8,6 @@ export interface User {
 }
 
 export interface LoginResponse {
-  token: string;
   user: User;
   expiresAt: string;
 }
@@ -21,9 +19,10 @@ class AuthService extends ApiClient {
 
   async login(email: string, password: string): Promise<LoginResponse | null> {
     const response = await this.post<LoginResponse>('/auth/login', { email, password });
-    if (response?.token) {
-      setSharedAccessToken(response.token);
-      // Set on our domain — the API's Set-Cookie is ignored cross-origin
+    if (response) {
+      // The backend sets access_token and refresh_token as httpOnly cookies.
+      // We set session_active on the frontend domain so isAuthenticated() can
+      // do a cheap local check without a network roundtrip.
       document.cookie = 'session_active=1; path=/; max-age=604800; SameSite=Lax'
         + (location.protocol === 'https:' ? '; Secure' : '');
     }
@@ -39,6 +38,10 @@ class AuthService extends ApiClient {
       this.clearAuthState();
     }
     return true;
+  }
+
+  tryRefresh(): Promise<boolean> {
+    return this.refreshAccessToken();
   }
 }
 

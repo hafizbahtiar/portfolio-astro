@@ -1,14 +1,13 @@
 import { API_BASE_URL } from './config';
-import { ApiError, getSharedAccessToken } from './api-client';
+import { ApiError } from './api-client';
 
 export async function uploadImage(file: File): Promise<string> {
-    const token = getSharedAccessToken();
     const formData = new FormData();
     formData.append('file', file);
 
     const response = await fetch(`${API_BASE_URL}/owner/upload`, {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include',
         body: formData,
     });
 

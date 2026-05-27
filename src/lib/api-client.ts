@@ -18,17 +18,6 @@ export class ApiError extends Error {
     }
 }
 
-// Module-level token — shared across all ApiClient instances, cleared on page refresh.
-// Kept in memory (not localStorage, not a readable cookie) so it is not accessible to
-// third-party scripts injected into the page.
-let _accessToken: string | null = null;
-
-export const setSharedAccessToken = (token: string | null): void => {
-    _accessToken = token;
-};
-
-export const getSharedAccessToken = (): string | null => _accessToken;
-
 export class ApiClient {
     protected baseUrl: string;
     private refreshTokenPromise: Promise<boolean> | null = null;
@@ -37,22 +26,21 @@ export class ApiClient {
         this.baseUrl = baseUrl.replace(/\/$/, '');
     }
 
-    // session_active is a non-httpOnly cookie the server sets alongside the real tokens.
-    // It lets JS know a session exists without exposing the actual token value.
+    // session_active is a non-httpOnly cookie the frontend sets on login as a cheap
+    // local indicator. The real tokens (access_token, refresh_token) are httpOnly
+    // cookies on the API domain, sent automatically by credentials: 'include'.
     isAuthenticated(): boolean {
         if (typeof document === 'undefined') return false;
-        return _accessToken !== null || document.cookie.split(';').some(c => c.trim() === 'session_active=1');
+        return document.cookie.split(';').some(c => c.trim() === 'session_active=1');
     }
 
     clearAuthState(): void {
-        _accessToken = null;
         if (typeof document !== 'undefined') {
             document.cookie = 'session_active=; Max-Age=0; path=/';
         }
     }
 
-    // Silently exchange the httpOnly refresh_token cookie for a new access token.
-    // credentials: 'include' is only needed here — not on every request.
+    // Silently exchange the httpOnly refresh_token cookie for a new access_token cookie.
     protected async refreshAccessToken(): Promise<boolean> {
         try {
             const response = await fetch(`${this.baseUrl}/auth/refresh`, {
@@ -61,10 +49,6 @@ export class ApiClient {
                 headers: { 'Content-Type': 'application/json' },
             });
             if (response.ok) {
-                const json = await response.json().catch(() => ({}));
-                if (json?.data?.token) {
-                    _accessToken = json.data.token;
-                }
                 return true;
             }
             this.clearAuthState();
@@ -83,11 +67,6 @@ export class ApiClient {
                 'Content-Type': 'application/json',
                 ...(options?.headers as Record<string, string>),
             };
-
-            // Attach token via header — works cross-origin without needing credentials: include
-            if (_accessToken) {
-                headers['Authorization'] = `Bearer ${_accessToken}`;
-            }
 
             const response = await fetch(url, {
                 ...options,

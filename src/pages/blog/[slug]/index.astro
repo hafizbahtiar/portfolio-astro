@@ -1,15 +1,8 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import PublicLayout from "../../../layouts/PublicLayout.astro";
 import { blogService } from "../../../lib/blog";
 import sanitizeHtml from "sanitize-html";
-
-export async function getStaticPaths() {
-  const posts = await blogService.getPublicPosts().catch(() => []);
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-  }));
-}
 
 const slug = Astro.params.slug ?? "";
 const post = slug
