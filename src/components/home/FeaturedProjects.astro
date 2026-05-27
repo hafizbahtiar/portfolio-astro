@@ -35,11 +35,15 @@ const visibleProjects = projects.slice(0, 4).map((project) => ({
 {
   hasError ? (
     <div class="text-center py-10 rounded-xl border border-red-200 dark:border-red-900/20 bg-red-50 dark:bg-red-900/5">
-      <p class="text-red-600 dark:text-red-400 text-sm">Failed to load projects. Please try again later.</p>
+      <p class="text-red-600 dark:text-red-400 text-sm">
+        Failed to load projects. Please try again later.
+      </p>
     </div>
   ) : visibleProjects.length === 0 ? (
     <div class="text-center py-14 rounded-xl border border-slate-200 dark:border-slate-700 border-dashed">
-      <p class="text-slate-400 dark:text-slate-500 text-sm">No projects yet. Check back soon.</p>
+      <p class="text-slate-400 dark:text-slate-500 text-sm">
+        No projects yet. Check back soon.
+      </p>
     </div>
   ) : (
     <div class="grid grid-cols-2 gap-4">

@@ -2,6 +2,7 @@
 import MapCanvas from "./MapCanvas";
 import { experiencesService } from "../../lib/experiences";
 import type { Experience } from "../../types/experiences";
+import { KL_CENTER } from "../../lib/constants";
 
 const fallbackExperiences: Experience[] = [
   {
@@ -127,7 +128,7 @@ const mapCenter = mapMarkers.length
       mapMarkers.reduce((sum, m) => sum + m.longitude, 0) / mapMarkers.length,
       mapMarkers.reduce((sum, m) => sum + m.latitude, 0) / mapMarkers.length,
     ] as [number, number])
-  : ([101.68879746977579, 3.1789972504885134] as [number, number]);
+  : KL_CENTER;
 ---
 
 <section id="map" class="scroll-offset">
@@ -293,13 +294,37 @@ const mapCenter = mapMarkers.length
     prevBtn?.addEventListener("click", () => goTo(current - 1));
     nextBtn?.addEventListener("click", () => goTo(current + 1));
 
-    // Keyboard navigation
-    document.addEventListener("keydown", (e) => {
-      const section = document.getElementById("map");
-      if (!section) return;
-      if (e.key === "ArrowLeft") goTo(current - 1);
-      if (e.key === "ArrowRight") goTo(current + 1);
-    });
+    // Keyboard navigation — scoped to when the section is visible and user
+    // is not typing in an input field. AbortController prevents accumulation
+    // across repeated initExpSlider calls (page transitions).
+    (window as any).__expKeydown?.abort();
+    const kbController = new AbortController();
+    (window as any).__expKeydown = kbController;
+
+    let sectionVisible = false;
+    const sectionEl = document.getElementById("map");
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => { sectionVisible = entry.isIntersecting; },
+      { threshold: 0.1 },
+    );
+    if (sectionEl) visibilityObserver.observe(sectionEl);
+
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (!sectionVisible) return;
+        const active = document.activeElement;
+        if (
+          active instanceof HTMLInputElement ||
+          active instanceof HTMLTextAreaElement ||
+          active instanceof HTMLSelectElement ||
+          (active as HTMLElement)?.isContentEditable
+        ) return;
+        if (e.key === "ArrowLeft") goTo(current - 1);
+        if (e.key === "ArrowRight") goTo(current + 1);
+      },
+      { signal: kbController.signal },
+    );
 
     goTo(0);
   };

@@ -1,5 +1,3 @@
-"use client";
-
 import React, {
   createContext,
   forwardRef,
@@ -8,6 +6,7 @@ import React, {
   useEffect,
   useId,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -20,7 +19,6 @@ import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-// Check document class for theme (works with next-themes, etc.)
 function getDocumentTheme(): Theme | null {
   if (typeof document === "undefined") return null;
   if (document.documentElement.classList.contains("dark")) return "dark";
@@ -148,6 +146,8 @@ type MapProps = {
    * to enable controlled mode where the map viewport is driven by your state.
    */
   onViewportChange?: (viewport: MapViewport) => void;
+  /** Fired once when the map has loaded its initial style and is ready for layer operations. */
+  onLoad?: () => void;
 } & Omit<MapLibreGL.MapOptions, "container" | "style">;
 
 type MapRef = MapLibreGL.Map;
@@ -155,9 +155,9 @@ type MapRef = MapLibreGL.Map;
 const DefaultLoader = () => (
   <div className="absolute inset-0 flex items-center justify-center">
     <div className="flex gap-1">
-      <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-pulse" />
-      <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-pulse [animation-delay:150ms]" />
-      <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-pulse [animation-delay:300ms]" />
+      <span className="size-1.5 rounded-full bg-slate-400/60 animate-pulse" />
+      <span className="size-1.5 rounded-full bg-slate-400/60 animate-pulse [animation-delay:150ms]" />
+      <span className="size-1.5 rounded-full bg-slate-400/60 animate-pulse [animation-delay:300ms]" />
     </div>
   </div>
 );
@@ -171,6 +171,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     projection,
     viewport,
     onViewportChange,
+    onLoad,
     ...props
   },
   ref
@@ -180,7 +181,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   const [isLoaded, setIsLoaded] = useState(false);
   const [isStyleLoaded, setIsStyleLoaded] = useState(false);
   const currentStyleRef = useRef<MapStyleOption | null>(null);
-  const styleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const internalUpdateRef = useRef(false);
   const resolvedTheme = useResolvedTheme(themeProp);
 
@@ -188,6 +188,9 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
   const onViewportChangeRef = useRef(onViewportChange);
   onViewportChangeRef.current = onViewportChange;
+
+  const onLoadRef = useRef(onLoad);
+  onLoadRef.current = onLoad;
 
   const mapStyles = useMemo(
     () => ({
@@ -199,13 +202,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
   // Expose the map instance to the parent component
   useImperativeHandle(ref, () => mapInstance as MapLibreGL.Map, [mapInstance]);
-
-  const clearStyleTimeout = useCallback(() => {
-    if (styleTimeoutRef.current) {
-      clearTimeout(styleTimeoutRef.current);
-      styleTimeoutRef.current = null;
-    }
-  }, []);
 
   // Initialize the map
   useEffect(() => {
@@ -228,18 +224,16 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     map.getCanvas().removeAttribute("tabindex");
 
     const styleDataHandler = () => {
-      clearStyleTimeout();
-      // Delay to ensure style is fully processed before allowing layer operations
-      // This is a workaround to avoid race conditions with the style loading
-      // else we have to force update every layer on setStyle change
-      styleTimeoutRef.current = setTimeout(() => {
-        setIsStyleLoaded(true);
-        if (projection) {
-          map.setProjection(projection);
-        }
-      }, 100);
+      if (!map.isStyleLoaded()) return;
+      setIsStyleLoaded(true);
+      if (projection) {
+        map.setProjection(projection);
+      }
     };
-    const loadHandler = () => setIsLoaded(true);
+    const loadHandler = () => {
+      setIsLoaded(true);
+      onLoadRef.current?.();
+    };
 
     // Viewport change handler - skip if triggered by internal update
     const handleMove = () => {
@@ -253,7 +247,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     setMapInstance(map);
 
     return () => {
-      clearStyleTimeout();
       map.off("load", loadHandler);
       map.off("styledata", styleDataHandler);
       map.off("move", handleMove);
@@ -278,9 +271,10 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       pitch: viewport.pitch ?? current.pitch,
     };
 
+    const ε = 1e-6;
     if (
-      next.center[0] === current.center[0] &&
-      next.center[1] === current.center[1] &&
+      Math.abs(next.center[0] - current.center[0]) < ε &&
+      Math.abs(next.center[1] - current.center[1]) < ε &&
       next.zoom === current.zoom &&
       next.bearing === current.bearing &&
       next.pitch === current.pitch
@@ -302,12 +296,11 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
     if (currentStyleRef.current === newStyle) return;
 
-    clearStyleTimeout();
     currentStyleRef.current = newStyle;
     setIsStyleLoaded(false);
 
     mapInstance.setStyle(newStyle, { diff: true });
-  }, [mapInstance, resolvedTheme, mapStyles, clearStyleTimeout]);
+  }, [mapInstance, resolvedTheme, mapStyles]);
 
   const contextValue = useMemo(
     () => ({
@@ -454,34 +447,36 @@ function MapMarker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map]);
 
-  if (
-    marker.getLngLat().lng !== longitude ||
-    marker.getLngLat().lat !== latitude
-  ) {
-    marker.setLngLat([longitude, latitude]);
-  }
-  if (marker.isDraggable() !== draggable) {
-    marker.setDraggable(draggable);
-  }
+  useLayoutEffect(() => {
+    if (
+      marker.getLngLat().lng !== longitude ||
+      marker.getLngLat().lat !== latitude
+    ) {
+      marker.setLngLat([longitude, latitude]);
+    }
+    if (marker.isDraggable() !== draggable) {
+      marker.setDraggable(draggable);
+    }
 
-  const currentOffset = marker.getOffset();
-  const newOffset = markerOptions.offset ?? [0, 0];
-  const [newOffsetX, newOffsetY] = Array.isArray(newOffset)
-    ? newOffset
-    : [newOffset.x, newOffset.y];
-  if (currentOffset.x !== newOffsetX || currentOffset.y !== newOffsetY) {
-    marker.setOffset(newOffset);
-  }
+    const currentOffset = marker.getOffset();
+    const newOffset = markerOptions.offset ?? [0, 0];
+    const [newOffsetX, newOffsetY] = Array.isArray(newOffset)
+      ? newOffset
+      : [newOffset.x, newOffset.y];
+    if (currentOffset.x !== newOffsetX || currentOffset.y !== newOffsetY) {
+      marker.setOffset(newOffset);
+    }
 
-  if (marker.getRotation() !== markerOptions.rotation) {
-    marker.setRotation(markerOptions.rotation ?? 0);
-  }
-  if (marker.getRotationAlignment() !== markerOptions.rotationAlignment) {
-    marker.setRotationAlignment(markerOptions.rotationAlignment ?? "auto");
-  }
-  if (marker.getPitchAlignment() !== markerOptions.pitchAlignment) {
-    marker.setPitchAlignment(markerOptions.pitchAlignment ?? "auto");
-  }
+    if (marker.getRotation() !== markerOptions.rotation) {
+      marker.setRotation(markerOptions.rotation ?? 0);
+    }
+    if (marker.getRotationAlignment() !== markerOptions.rotationAlignment) {
+      marker.setRotationAlignment(markerOptions.rotationAlignment ?? "auto");
+    }
+    if (marker.getPitchAlignment() !== markerOptions.pitchAlignment) {
+      marker.setPitchAlignment(markerOptions.pitchAlignment ?? "auto");
+    }
+  });
 
   return (
     <MarkerContext.Provider value={{ marker, map }}>
@@ -1167,8 +1162,8 @@ function MapRoute({
 type MapPolygonProps = {
   /** Optional unique identifier for the polygon layer */
   id?: string;
-  /** Array of [longitude, latitude] coordinate pairs defining the polygon. Note: In GeoJSON, Polygon coordinates are an array of linear rings, where each linear ring is an array of coordinates. Alternatively, you can pass a full GeoJSON Feature or Geometry object. */
-  coordinates: any; // Relaxed type to allow passing MultiPolygon or full GeoJSON
+  /** Polygon ring coordinates (array of linear rings), or a full GeoJSON Polygon, MultiPolygon, Feature, or FeatureCollection. */
+  coordinates: number[][][] | { type: string; coordinates: number[][][] } | GeoJSON.Polygon | GeoJSON.MultiPolygon | GeoJSON.Feature | GeoJSON.FeatureCollection;
   /** Fill color as CSS color value (default: "#4285F4") */
   fillColor?: string;
   /** Fill opacity from 0 to 1 (default: 0.2) */
@@ -1211,15 +1206,14 @@ function MapPolygon({
 
     // Check if source already exists
     if (!map.getSource(sourceId)) {
-      // Handle case where coordinates might be a full GeoJSON object
-      const isFullGeoJson = coordinates && coordinates.type;
+      const isFullGeoJson = coordinates && typeof coordinates === "object" && "type" in coordinates && coordinates.type === "Feature";
 
       const geojsonData = isFullGeoJson
-        ? coordinates
+        ? (coordinates as GeoJSON.Feature | GeoJSON.FeatureCollection)
         : {
-          type: "Feature",
+          type: "Feature" as const,
           properties: {},
-          geometry: { type: "Polygon", coordinates: coordinates?.length > 0 ? coordinates : [] },
+          geometry: { type: "Polygon" as const, coordinates: Array.isArray(coordinates) && coordinates.length > 0 ? coordinates : [] },
         };
 
       map.addSource(sourceId, {
@@ -1269,14 +1263,14 @@ function MapPolygon({
 
     const source = map.getSource(sourceId) as MapLibreGL.GeoJSONSource;
     if (source) {
-      const isFullGeoJson = coordinates && coordinates.type;
+      const isFullGeoJson = coordinates && typeof coordinates === "object" && "type" in coordinates && coordinates.type === "Feature";
 
       const geojsonData = isFullGeoJson
-        ? coordinates
+        ? (coordinates as GeoJSON.Feature | GeoJSON.FeatureCollection)
         : {
-          type: "Feature",
+          type: "Feature" as const,
           properties: {},
-          geometry: { type: "Polygon", coordinates },
+          geometry: { type: "Polygon" as const, coordinates: Array.isArray(coordinates) ? coordinates : [] },
         };
 
       source.setData(geojsonData);

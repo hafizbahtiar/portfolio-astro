@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Clock, Sun, Moon } from "lucide-react";
 import {
-  Map,
+  Map as MapComponent,
   MapControls,
   type MapRef,
   MapMarker,
@@ -10,8 +11,8 @@ import {
   MapPolygon,
 } from "@/components/ui/map";
 import klBoundary from "./kl-boundary.json";
+import { KL_CENTER } from "@/lib/constants";
 
-// The accurate coordinates for Kuala Lumpur boundary
 const kualaLumpurPolygon = klBoundary;
 
 type MapMarkerData = {
@@ -29,58 +30,170 @@ type MapCanvasProps = {
   zoom?: number;
 };
 
+// ─── Theme logic ─────────────────────────────────────────────────────────────
+
+type MapThemePreference = "auto" | "light" | "dark";
+
+const MAP_THEME_KEY = "map-theme";
+const PREFERENCE_CYCLE: MapThemePreference[] = ["auto", "light", "dark"];
+
+function getTimeTheme(): "light" | "dark" {
+  const h = new Date().getHours();
+  return h >= 6 && h < 18 ? "light" : "dark";
+}
+
+function readStoredPreference(): MapThemePreference {
+  try {
+    const v = localStorage.getItem(MAP_THEME_KEY);
+    if (v === "light" || v === "dark" || v === "auto") return v;
+  } catch { }
+  return "auto";
+}
+
+function useMapTheme() {
+  // A1 — time-based default, updates every minute
+  const [timeTheme, setTimeTheme] = useState<"light" | "dark">(getTimeTheme);
+  useEffect(() => {
+    const id = setInterval(() => setTimeTheme(getTimeTheme()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // A2/A3 — manual override, persisted to localStorage
+  const [preference, setPreferenceState] = useState<MapThemePreference>(readStoredPreference);
+  const setPreference = (p: MapThemePreference) => {
+    setPreferenceState(p);
+    try {
+      localStorage.setItem(MAP_THEME_KEY, p);
+    } catch { }
+  };
+
+  const resolvedTheme: "light" | "dark" =
+    preference === "auto" ? timeTheme : preference;
+
+  return { resolvedTheme, preference, setPreference };
+}
+
+// ─── Theme toggle button ─────────────────────────────────────────────────────
+
+const PREF_META: Record<MapThemePreference, { label: string; Icon: React.FC<{ className?: string }> }> = {
+  auto: { label: "Auto", Icon: ({ className }) => <Clock className={className} /> },
+  light: { label: "Day", Icon: ({ className }) => <Sun className={className} /> },
+  dark: { label: "Night", Icon: ({ className }) => <Moon className={className} /> },
+};
+
+function MapThemeToggle({
+  preference,
+  onCycle,
+}: {
+  preference: MapThemePreference;
+  onCycle: () => void;
+}) {
+  const { label, Icon } = PREF_META[preference];
+  return (
+    <button
+      type="button"
+      onClick={onCycle}
+      aria-label={`Map theme: ${label}. Click to cycle.`}
+      className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full bg-white/90 border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 shadow-sm backdrop-blur-sm hover:bg-white transition-colors"
+    >
+      <Icon className="w-3.5 h-3.5 shrink-0" />
+      <span className="leading-none">{label}</span>
+    </button>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 const MapCanvas = ({
   markers,
-  center = [101.68879746977579, 3.1789972504885134],
+  center = KL_CENTER,
   zoom = 11,
 }: MapCanvasProps) => {
   const mapRef = useRef<MapRef | null>(null);
-  const [activeMarkerId, setActiveMarkerId] = useState<number | null>(markers[0]?.id ?? null);
+  const isMapLoadedRef = useRef(false);
+  const pendingFlyRef = useRef<{ center: [number, number]; zoom: number } | null>(null);
+  const [activeMarkerId, setActiveMarkerId] = useState<number | null>(
+    markers[0]?.id ?? null,
+  );
+  const { resolvedTheme, preference, setPreference } = useMapTheme();
 
+  const handleMapLoad = () => {
+    isMapLoadedRef.current = true;
+    if (pendingFlyRef.current && mapRef.current) {
+      mapRef.current.flyTo({
+        ...pendingFlyRef.current,
+        duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1200,
+      });
+      pendingFlyRef.current = null;
+    }
+  };
+
+  // Fixed: use native Map directly (no longer shadowed by the component import)
   const markerCoordinates = useMemo(
     () =>
-      new globalThis.Map(
-        markers.map((marker) => [marker.id, [marker.longitude, marker.latitude] as [number, number]]),
+      new Map(
+        markers.map((m) => [m.id, [m.longitude, m.latitude] as [number, number]]),
       ),
     [markers],
   );
 
   useEffect(() => {
-    if (!markers.some((marker) => marker.id === activeMarkerId)) {
+    if (!markers.some((m) => m.id === activeMarkerId)) {
       setActiveMarkerId(markers[0]?.id ?? null);
     }
   }, [activeMarkerId, markers]);
 
   useEffect(() => {
     const handleFocusMarker = (event: Event) => {
-      const markerId = (event as CustomEvent<{ markerId?: number }>).detail?.markerId;
+      const markerId = (event as CustomEvent<{ markerId?: number }>).detail
+        ?.markerId;
       if (typeof markerId !== "number") return;
       const coordinates = markerCoordinates.get(markerId);
       if (!coordinates) return;
 
       setActiveMarkerId(markerId);
-      mapRef.current?.flyTo({
-        center: coordinates,
-        zoom: Math.max(mapRef.current.getZoom(), 13),
-        duration: 1200,
-      });
+
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (mapRef.current && isMapLoadedRef.current) {
+        mapRef.current.flyTo({
+          center: coordinates,
+          zoom: Math.max(mapRef.current.getZoom(), 13),
+          duration: reducedMotion ? 0 : 1200,
+        });
+      } else {
+        // Map not ready yet — queue the flyTo; handleMapLoad will execute it
+        pendingFlyRef.current = { center: coordinates, zoom: 13 };
+      }
     };
 
     window.addEventListener("map-focus-marker", handleFocusMarker);
-    return () => {
-      window.removeEventListener("map-focus-marker", handleFocusMarker);
-    };
+    return () => window.removeEventListener("map-focus-marker", handleFocusMarker);
   }, [markerCoordinates]);
 
+  const cyclePreference = () => {
+    const next =
+      PREFERENCE_CYCLE[
+      (PREFERENCE_CYCLE.indexOf(preference) + 1) % PREFERENCE_CYCLE.length
+      ];
+    setPreference(next);
+  };
+
   return (
-    <div className="h-full w-full">
-      <Map ref={mapRef} center={center} zoom={zoom} className="h-full w-full">
+    <div className="h-full w-full relative">
+      <MapComponent
+        ref={mapRef}
+        theme={resolvedTheme}
+        center={center}
+        zoom={zoom}
+        className="h-full w-full"
+        onLoad={handleMapLoad}
+      >
         <MapControls position="bottom-right" showZoom={true} showLocate={true} />
 
         <MapPolygon
           id="kuala-lumpur-boundary"
           coordinates={kualaLumpurPolygon}
-          fillColor="#22c55e" // Light green
+          fillColor="#22c55e"
           fillOpacity={0.15}
           outlineColor="#16a34a"
           outlineWidth={2}
@@ -110,15 +223,17 @@ const MapCanvas = ({
                 </MarkerLabel>
               </MarkerContent>
               <MarkerPopup closeButton={true}>
-                <div className="text-sm font-semibold text-black">
+                <div className="text-sm font-semibold text-slate-900">
                   {marker.company} ({marker.role})
                 </div>
-                <div className="text-xs text-black">{marker.date}</div>
+                <div className="text-xs text-slate-500">{marker.date}</div>
               </MarkerPopup>
             </MapMarker>
           );
         })}
-      </Map>
+      </MapComponent>
+
+      <MapThemeToggle preference={preference} onCycle={cyclePreference} />
     </div>
   );
 };

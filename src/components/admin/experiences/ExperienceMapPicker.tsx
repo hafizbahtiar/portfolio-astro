@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { MapMouseEvent } from "maplibre-gl";
 import { Map, MapControls, MapMarker, MarkerContent, useMap } from "../../ui/map";
+import { KL_DEFAULT_LATITUDE, KL_DEFAULT_LONGITUDE } from "../../../lib/constants";
 
 type Props = {
   latitudeName?: string;
@@ -10,8 +11,8 @@ type Props = {
   className?: string;
 };
 
-const DEFAULT_LATITUDE = 3.139;
-const DEFAULT_LONGITUDE = 101.6869;
+const DEFAULT_LATITUDE = KL_DEFAULT_LATITUDE;
+const DEFAULT_LONGITUDE = KL_DEFAULT_LONGITUDE;
 
 const inputClass =
   "w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all font-mono text-sm";
