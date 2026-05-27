@@ -23,12 +23,14 @@ export class ApiClient {
     private refreshTokenPromise: Promise<boolean> | null = null;
 
     constructor(baseUrl: string) {
-        this.baseUrl = baseUrl.replace(/\/$/, '');
+        // FORCE ABSOLUTE URL: Ensure baseUrl starts with http/https
+        let formattedBase = baseUrl.trim();
+        if (!/^https?:\/\//i.test(formattedBase)) {
+            formattedBase = `https://${formattedBase}`;
+        }
+        this.baseUrl = formattedBase.replace(/\/$/, '');
     }
 
-    // session_active is a non-httpOnly cookie the frontend sets on login as a cheap
-    // local indicator. The real tokens (access_token, refresh_token) are httpOnly
-    // cookies on the API domain, sent automatically by credentials: 'include'.
     isAuthenticated(): boolean {
         if (typeof document === 'undefined') return false;
         return document.cookie.split(';').some(c => c.trim() === 'session_active=1');
@@ -40,7 +42,6 @@ export class ApiClient {
         }
     }
 
-    // Silently exchange the httpOnly refresh_token cookie for a new access_token cookie.
     protected async refreshAccessToken(): Promise<boolean> {
         try {
             const response = await fetch(`${this.baseUrl}/auth/refresh`, {
@@ -61,8 +62,10 @@ export class ApiClient {
 
     protected async request<T>(endpoint: string, options?: RequestInit): Promise<T | null> {
         try {
+            // Absolute URL construction
             const baseUrl = this.baseUrl;
-            const url = `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+            const cleanedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+            const url = `${baseUrl}${cleanedEndpoint}`;
 
             const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
@@ -76,7 +79,6 @@ export class ApiClient {
                 credentials: 'include',
             });
 
-            // Token expired — attempt silent refresh via the httpOnly cookie, then retry once
             if (response.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
                 if (!this.refreshTokenPromise) {
                     this.refreshTokenPromise = this.refreshAccessToken().finally(() => {
@@ -85,7 +87,6 @@ export class ApiClient {
                 }
 
                 const refreshed = await this.refreshTokenPromise;
-
                 if (refreshed) {
                     return this.request<T>(endpoint, options);
                 }
@@ -111,7 +112,6 @@ export class ApiClient {
             }
 
             throw new ApiError(data.message || data.error || 'Unknown API Error', response.status, data);
-
         } catch (error) {
             if (error instanceof ApiError) throw error;
             const message = error instanceof Error ? error.message : 'Unknown error';
