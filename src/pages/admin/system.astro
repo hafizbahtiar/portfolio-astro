@@ -2,7 +2,7 @@
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
 import { systemService } from "../../lib/system";
 
-const logs = await systemService.getLogs();
+const logs = await systemService.getLogs().catch(() => []);
 ---
 
 <PrivateLayout title="System Logs">

@@ -2,6 +2,7 @@
 export const prerender = true;
 import PublicLayout from "../../../layouts/PublicLayout.astro";
 import { blogService } from "../../../lib/blog";
+import sanitizeHtml from "sanitize-html";
 
 export async function getStaticPaths() {
   const posts = await blogService.getPublicPosts().catch(() => []);
@@ -41,7 +42,55 @@ const readTimeLabel = post?.readTimeMinutes
   : "";
 const sections = post?.sections ?? [];
 const checklist = post?.checklist?.map((item) => item.itemText) ?? [];
-const bodyContent = post?.bodyContent ?? "";
+const bodyContent = sanitizeHtml(post?.bodyContent ?? "", {
+  allowedTags: [
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "p",
+    "br",
+    "hr",
+    "strong",
+    "em",
+    "u",
+    "s",
+    "mark",
+    "kbd",
+    "sup",
+    "sub",
+    "ul",
+    "ol",
+    "li",
+    "blockquote",
+    "pre",
+    "code",
+    "a",
+    "img",
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
+    "div",
+    "span",
+    "figure",
+    "figcaption",
+  ],
+  allowedAttributes: {
+    a: ["href", "target", "rel", "class"],
+    img: ["src", "alt", "width", "height", "class"],
+    code: ["class"],
+    pre: ["class"],
+    td: ["colspan", "rowspan"],
+    th: ["colspan", "rowspan"],
+    "*": ["class"],
+  },
+  allowedSchemes: ["http", "https", "mailto"],
+});
 const postTags = post?.tags ?? [];
 const fileSlug = post?.slug ?? slug ?? "post";
 ---

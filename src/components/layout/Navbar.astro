@@ -208,6 +208,15 @@ const links = [
         animation: none;
         mix-blend-mode: normal;
     }
+
+    /* Skip view transitions entirely for users who prefer reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+        html[data-theme-switching]::view-transition-group(*),
+        html[data-theme-switching]::view-transition-old(*),
+        html[data-theme-switching]::view-transition-new(*) {
+            animation: none !important;
+        }
+    }
 </style>
 
 <script>
@@ -287,11 +296,22 @@ const links = [
                         syncThemeIcon(true);
                     };
 
-                    // Fallback for browsers without View Transitions API
-                    if (typeof document.startViewTransition !== "function") {
+                    // Skip animation for browsers without View Transitions API
+                    // or when user prefers reduced motion
+                    const reducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)",
+                    ).matches;
+
+                    if (
+                        typeof document.startViewTransition !== "function" ||
+                        reducedMotion
+                    ) {
                         applyTheme();
                         return;
                     }
+
+                    // Shorter duration on small (mobile) screens
+                    const duration = window.innerWidth < 768 ? 350 : 500;
 
                     // Scope transition CSS to theme-switch only
                     document.documentElement.setAttribute(
@@ -300,21 +320,26 @@ const links = [
                     );
                     const vt = document.startViewTransition(applyTheme);
 
-                    vt.ready.then(() => {
-                        document.documentElement.animate(
-                            {
-                                clipPath: [
-                                    `circle(0px at ${x}px ${y}px)`,
-                                    `circle(${radius}px at ${x}px ${y}px)`,
-                                ],
-                            },
-                            {
-                                duration: 500,
-                                easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-                                pseudoElement: "::view-transition-new(root)",
-                            },
-                        );
-                    });
+                    vt.ready
+                        .then(() => {
+                            document.documentElement.animate(
+                                {
+                                    clipPath: [
+                                        `circle(0px at ${x}px ${y}px)`,
+                                        `circle(${radius}px at ${x}px ${y}px)`,
+                                    ],
+                                },
+                                {
+                                    duration,
+                                    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                                    pseudoElement:
+                                        "::view-transition-new(root)",
+                                },
+                            );
+                        })
+                        .catch(() => {
+                            // Transition was skipped or interrupted — theme already applied
+                        });
 
                     vt.finished.finally(() => {
                         document.documentElement.removeAttribute(
