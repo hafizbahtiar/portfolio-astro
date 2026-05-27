@@ -61,7 +61,8 @@ export class ApiClient {
 
     protected async request<T>(endpoint: string, options?: RequestInit): Promise<T | null> {
         try {
-            const url = `${this.baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+            const baseUrl = this.baseUrl;
+            const url = `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
             const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
