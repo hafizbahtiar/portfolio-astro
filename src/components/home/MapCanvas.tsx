@@ -236,7 +236,10 @@ const MapCanvas = ({
                     }`}
                 />
                 <MarkerLabel
-                  className={`text-[11px] ${isActive ? "text-blue-200" : "text-white"}`}
+                  className={`text-[11px] font-medium ${isActive
+                      ? resolvedTheme === "dark" ? "text-blue-200" : "text-blue-700"
+                      : resolvedTheme === "dark" ? "text-white" : "text-slate-900"
+                    }`}
                 >
                   {marker.company}
                 </MarkerLabel>

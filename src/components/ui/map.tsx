@@ -219,6 +219,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       attributionControl: {
         compact: true,
       },
+      maxTileCacheZoomLevels: 8,
       ...props,
       ...viewport,
     });
