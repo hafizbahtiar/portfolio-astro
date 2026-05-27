@@ -10,14 +10,15 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.2",
+    "@astrojs/cloudflare": "^13.5.5",
     "@astrojs/react": "^5.0.3",
-    "@astrojs/vercel": "^10.0.7",
     "@floating-ui/dom": "^1.7.5",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.18",
+    "@tiptap/core": "^3.23.6",
     "@tiptap/extension-audio": "^3.19.0",
     "@tiptap/extension-blockquote": "^3.19.0",
     "@tiptap/extension-bold": "^3.19.0",
@@ -59,9 +60,9 @@
     "@tiptap/extension-unique-id": "^3.19.0",
     "@tiptap/extension-youtube": "^3.19.0",
     "@tiptap/extensions": "^3.19.0",
-    "@tiptap/pm": "^3.19.0",
-    "@tiptap/react": "^3.19.0",
-    "@tiptap/starter-kit": "^3.19.0",
+    "@tiptap/pm": "^3.23.6",
+    "@tiptap/react": "^3.23.6",
+    "@tiptap/starter-kit": "^3.23.6",
     "@tiptap/suggestion": "^3.19.0",
     "@tiptap/y-tiptap": "^3.0.2",
     "astro": "^6.1.7",
@@ -86,7 +87,8 @@
     "yjs": "^13.6.29"
   },
   "overrides": {
-    "vite": "^7.3.2"
+    "vite": "^7.3.2",
+    "@tiptap/*": "3.23.6"
   },
   "devDependencies": {
     "@types/node": "^25.0.10",

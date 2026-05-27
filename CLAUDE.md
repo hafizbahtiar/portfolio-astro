@@ -14,13 +14,13 @@ There are no test or lint scripts. Use `npm run build` as the verification step 
 
 ## Architecture
 
-**Stack:** Astro 6 (static output) + React 19 (islands) + Tailwind CSS v4 + Cloudflare Workers deploy.
+**Stack:** Astro 6 (server output) + React 19 (islands) + Tailwind CSS v4 + Cloudflare Pages.
 
 **Backend:** Separate repo at `/Users/hafiz/Developments/hono-workers` — a Hono API on Cloudflare Workers with D1 (SQLite) and KV. The portfolio fetches from it at `PUBLIC_API_URL` (`.env`: `http://localhost:8787/api/v1`; production: `https://hono-workers.hafizbahtiar98.workers.dev/api/v1`).
 
 ### Rendering model
 
-All public pages are fully static (`output: "static"`). Pages that fetch from the API at build time use `export const prerender = true` and call the API server-side during `npm run build`. Admin pages (`src/pages/admin/**`) have no `prerender` export — they are also static HTML but fetch data client-side after load (no server-side auth middleware).
+The project uses SSR (`output: "server"`) via `@astrojs/cloudflare`. Pages that need to be pre-rendered at build time use `export const prerender = true`. This avoids build-time fetch errors (ECONNREFUSED) by deferring data fetching to request time for non-prerendered pages, while still allowing static generation for others.
 
 ### Data flow
 
