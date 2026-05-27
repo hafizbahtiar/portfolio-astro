@@ -23,6 +23,9 @@ class AuthService extends ApiClient {
     const response = await this.post<LoginResponse>('/auth/login', { email, password });
     if (response?.token) {
       setSharedAccessToken(response.token);
+      // Set on our domain — the API's Set-Cookie is ignored cross-origin
+      document.cookie = 'session_active=1; path=/; max-age=604800; SameSite=Lax'
+        + (location.protocol === 'https:' ? '; Secure' : '');
     }
     return response;
   }
