@@ -1,6 +1,6 @@
+import { API_BASE_URL } from './config';
 import { ApiClient } from './api-client';
 
-const API_BASE_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1";
 
 export interface ContactData {
     name: string;

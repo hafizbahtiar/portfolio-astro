@@ -1,4 +1,5 @@
 import { ApiClient } from "./api-client";
+import { API_BASE_URL } from "./config";
 import type {
   CreateFamilyPersonPayload,
   CreateFamilyRelationshipPayload,
@@ -11,8 +12,6 @@ import type {
   UpdateFamilyRelationshipPayload,
   UpdateFamilyTreePayload,
 } from "../types/family";
-
-const API_BASE_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1";
 
 const withNoCache = (endpoint: string) => {
   const separator = endpoint.includes("?") ? "&" : "?";
@@ -36,7 +35,7 @@ export class FamilyService extends ApiClient {
   async getPublicPersonById(id: number): Promise<FamilyPerson | null> {
     return this.get<FamilyPerson>(withNoCache(`family/person/${id}`));
   }
-  
+
   async getPublicTreesByGlobalKey(key: string): Promise<FamilyTree[]> {
     const result = await this.get<FamilyTree[]>(
       withNoCache(`family/trees-by-global/${encodeURIComponent(key)}`),

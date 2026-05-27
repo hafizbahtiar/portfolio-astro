@@ -72,31 +72,25 @@ export function setupFormGuard(form: HTMLFormElement) {
   };
 
   const handlePopState = async () => {
-    // If we are dirty and a popstate occurs (User pressed Back)
     if (isDirty) {
-      // The user pressed Back, so they are now at the previous state.
-      // We need to restore the "Guard" state immediately to prevent them from leaving yet.
+      // Re-push guard so we stay on the current page while the modal is open.
+      // This means history is now [..., original, guard(re-pushed)].
+      // When the user confirms, we call go(-2) to skip both the re-pushed guard
+      // and the original push, landing on the real previous page.
       history.pushState({ tag: 'form-guard' }, document.title, window.location.href);
 
-      // Now show the modal
       if (window.unsavedChangesModal) {
-        const confirm = await window.unsavedChangesModal.show();
-        if (confirm) {
+        const confirmed = await window.unsavedChangesModal.show();
+        if (confirmed) {
           isDirty = false;
           window.removeEventListener('beforeunload', handleBeforeUnload);
-          // Go back for real (pop the guard state we just restored)
-          history.back();
-          // Note: Depending on browser speed, we might need a slight delay or just 
-          // let the first back happen. 
-          // Wait, if we pushed state, we are at [Guard].
-          // history.back() takes us to [Previous].
-          // That's what we want.
+          history.go(-2);
         }
       } else {
-        if (confirm("You have unsaved changes. Leave?")) {
+        if (window.confirm("You have unsaved changes. Leave?")) {
           isDirty = false;
           window.removeEventListener('beforeunload', handleBeforeUnload);
-          history.back();
+          history.go(-2);
         }
       }
     }

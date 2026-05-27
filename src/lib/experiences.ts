@@ -4,9 +4,7 @@ import type {
     UpdateExperiencePayload
 } from "../types/experiences";
 import { ApiClient } from "./api-client";
-
-const API_BASE_URL =
-    import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1";
+import { API_BASE_URL } from "./config";
 
 export class ExperiencesService extends ApiClient {
     constructor() {
