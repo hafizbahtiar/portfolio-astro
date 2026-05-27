@@ -1,0 +1,73 @@
+---
+export const prerender = false;
+import ProjectLayout from "../../layouts/ProjectLayout.astro";
+import ProjectCard from "../../components/project/ProjectCard.astro";
+import { getProjects } from "../../lib/projects";
+import type { Project } from "../../types/project";
+import jomDapur from "../../assets/projects/jom-dapur.jpg";
+import jdManagement from "../../assets/projects/jd-management.png";
+import invois from "../../assets/projects/invois/invois.png";
+
+let projects: Project[] = [];
+try {
+  projects = await getProjects();
+} catch (error) {
+  console.error("Failed to fetch projects:", error);
+}
+
+const localImageMap = new Map([
+  ["/images/projects/jom-dapur.jpg", jomDapur],
+  ["/images/projects/jd-management.png", jdManagement],
+  ["/images/projects/invois/invois.png", invois],
+]);
+const eagerCount = 3;
+const resolvedProjects = projects.map((project) => ({
+  ...project,
+  imageUrl: localImageMap.get(project.imageUrl) ?? project.imageUrl,
+}));
+---
+
+<ProjectLayout
+  title="Projects - Hafiz Bahtiar"
+  description="Explore my portfolio of projects ranging from mobile apps to web applications."
+>
+  <div class="mb-12 md:mb-16">
+    <h1
+      class="text-4xl md:text-5xl font-bold mb-4 text-slate-900 dark:text-slate-100 tracking-tight"
+    >
+      Projects
+    </h1>
+    <p
+      class="text-slate-500 dark:text-slate-400 text-lg leading-relaxed max-w-xl"
+    >
+      A selection of applications and tools I've built - from mobile apps to
+      backend services.
+    </p>
+    {
+      projects.length > 0 && (
+        <p class="text-slate-600 dark:text-slate-400 text-sm mt-3">
+          {projects.length} projects
+        </p>
+      )
+    }
+  </div>
+
+  <div class="grid grid-cols-2 gap-5">
+    {
+      resolvedProjects.map((project, index) => (
+        <div>
+          <ProjectCard
+            title={project.title}
+            description={project.description}
+            imageUrl={project.imageUrl}
+            imageVariant={project.imageVariant}
+            imageLoading={index < eagerCount ? "eager" : "lazy"}
+            imageFetchPriority={index < eagerCount ? "high" : "low"}
+            tags={project.tags || []}
+            link={`/projects/${project.slug}`}
+          />
+        </div>
+      ))
+    }
+  </div>
+</ProjectLayout>

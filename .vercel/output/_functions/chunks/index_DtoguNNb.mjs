@@ -1,0 +1,51 @@
+import { c as createComponent } from './astro-component_BCrB7690.mjs';
+import 'piccolore';
+import { r as renderComponent, b as renderTemplate, m as maybeRenderHead, c as addAttribute } from './entrypoint_DePlxNSC.mjs';
+import { $ as $$PublicLayout } from './api-client_CjQRNt0G.mjs';
+import { b as blogService } from './blog_DFR2wc41.mjs';
+
+const prerender = false;
+const $$Index = createComponent(async ($$result, $$props, $$slots) => {
+  const posts = await blogService.getPublicPosts().catch(() => []);
+  const formatDate = (value) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit"
+    });
+  };
+  const formatReadTime = (minutes) => {
+    if (!minutes) return "";
+    return `${minutes} min read`;
+  };
+  return renderTemplate`${renderComponent($$result, "PublicLayout", $$PublicLayout, { "title": "Blog - Hafiz Bahtiar", "description": "Insights on building reliable products, clean architecture, and shipping fast." }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="container-main space-y-12 md:space-y-16 pb-16 md:pb-24"> <section class="scroll-offset relative py-12 md:py-16"> <a href="/" class="inline-flex items-center gap-1.5 text-sm text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors mb-6 group"> <svg class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path> </svg>
+Back to Home
+</a> <div class="flex flex-col md:flex-row md:items-end justify-between gap-6"> <div class="max-w-2xl"> <h1 class="text-4xl md:text-5xl font-bold mb-6 text-slate-900 tracking-tight">
+Field Notes on Shipping
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+&nbsp;Great Software
+</span> </h1> <p class="text-slate-500 text-lg leading-relaxed border-l-2 border-slate-200 pl-6">
+Practical lessons, experiments, and checklists from building <span class="text-blue-400 font-mono">modern web</span> and
+<span class="text-purple-400 font-mono">mobile products</span>.
+</p> </div> <div class="hidden md:block text-right font-mono text-xs text-slate-400"> <div>total_posts: ${posts.length}</div> <div>status: <span class="text-green-500">active</span></div> </div> </div> </section> <section class="grid grid-cols-1 md:grid-cols-2 gap-6"> ${posts.map((post) => renderTemplate`<article class="group rounded-2xl border border-slate-200 bg-white backdrop-blur-sm p-6 transition-all hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(59,130,246,0.12)]"> <div class="flex items-center gap-2 text-xs font-mono text-slate-400 mb-4"> <span>${formatDate(post.publishedDate ?? post.createdAt)}</span> <span>•</span> <span>${formatReadTime(post.readTimeMinutes)}</span> </div> <h2 class="text-2xl font-semibold text-slate-900 mb-3 group-hover:text-blue-400 transition-colors"> ${post.title} </h2> <p class="text-slate-500 leading-relaxed mb-5">${post.excerpt}</p> <div class="flex flex-wrap gap-2 mb-6"> ${(post.tags ?? []).map((tag) => renderTemplate`<span class="badge-gray">${tag}</span>`)} </div> <a${addAttribute(`/blog/${post.slug}`, "href")} class="inline-flex items-center gap-2 text-sm font-mono text-blue-300 hover:text-blue-200 transition-colors">
+Read More
+<svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path> </svg> </a> </article>`)} </section> </div> ` })}`;
+}, "/Users/hafiz/Developments/portfolio-astro/src/pages/blog/index.astro", void 0);
+
+const $$file = "/Users/hafiz/Developments/portfolio-astro/src/pages/blog/index.astro";
+const $$url = "/blog";
+
+const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: $$Index,
+  file: $$file,
+  prerender,
+  url: $$url
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const page = () => _page;
+
+export { page };
