@@ -21,13 +21,13 @@ const {
 } = Astro.props;
 
 const cardClass =
-  "bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6";
+  "rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5";
 const titleClass =
-  "text-lg font-bold text-white mb-6 border-b border-gray-700 pb-4";
+  "text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4 border-b border-slate-200 dark:border-slate-700 pb-3";
 const labelClass =
-  "block text-sm font-medium text-gray-400 font-mono tracking-wide";
+  "block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest";
 const inputClass =
-  "w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all font-mono text-sm";
+  "w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400/50 focus:border-slate-400 outline-none transition-all bg-white dark:bg-slate-900/50";
 ---
 
 <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-8">
@@ -36,7 +36,7 @@ const inputClass =
       <h3 class={titleClass}>Experience Overview</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-2">
-          <label class={labelClass} for="experience-company">// Company </label>
+          <label class={labelClass} for="experience-company">Company</label>
           <input
             id="experience-company"
             type="text"
@@ -46,7 +46,7 @@ const inputClass =
           />
         </div>
         <div class="space-y-2">
-          <label class={labelClass} for="experience-role">// Role</label>
+          <label class={labelClass} for="experience-role">Role</label>
           <input
             id="experience-role"
             type="text"
@@ -56,32 +56,28 @@ const inputClass =
           />
         </div>
         <DateInput label="Start Date" name="startDate" required />
-        <DateInput
-          label="End Date"
-          name="endDate"
-          id="experience-end-date"
-        />
+        <DateInput label="End Date" name="endDate" id="experience-end-date" />
         <div class="space-y-2 md:col-span-2">
           <label class={labelClass} for="experience-is-current">
-            // Current Company
+            Current Company
           </label>
           <div
-            class="flex items-center gap-3 bg-gray-900/40 border border-gray-700 rounded-lg px-4 py-2"
+            class="flex items-center gap-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2"
           >
             <input
               id="experience-is-current"
               type="checkbox"
               name="isCurrent"
-              class="h-4 w-4 rounded border-gray-600 bg-gray-900 text-cyan-500 focus:ring-cyan-500/50"
+              class="h-4 w-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-blue-600 focus:ring-slate-400/50"
             />
-            <span class="text-sm font-mono text-gray-300">
+            <span class="text-sm text-slate-700 dark:text-slate-300">
               Still working here
             </span>
           </div>
         </div>
         <div class="space-y-2 md:col-span-2">
           <label class={labelClass} for="experience-description">
-            // Description
+            Description
           </label>
           <TextEditor
             id="experience-description"
@@ -99,8 +95,7 @@ const inputClass =
       <h3 class={titleClass}>Location & Metadata</h3>
       <div class="grid grid-cols-1 gap-6">
         <div class="space-y-2">
-          <label class={labelClass} for="experience-location">// Location</label
-          >
+          <label class={labelClass} for="experience-location">Location</label>
           <input
             id="experience-location"
             type="text"
@@ -118,7 +113,7 @@ const inputClass =
         />
         <div class="space-y-2">
           <label class={labelClass} for="experience-display-order">
-            // Display Order
+            Display Order
           </label>
           <input
             id="experience-display-order"
@@ -137,9 +132,9 @@ const inputClass =
   <button
     type="submit"
     id={submitButtonId}
-    class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-lg transition-colors shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-2"
+    class="inline-flex items-center gap-1.5 rounded-lg border border-slate-400 dark:border-slate-500 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 transition-colors hover:border-slate-500 dark:hover:border-slate-400 hover:text-slate-800 dark:hover:text-slate-100"
   >
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         stroke-linecap="round"
         stroke-linejoin="round"

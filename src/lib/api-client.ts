@@ -93,6 +93,7 @@ export class ApiClient {
                 ...options,
                 headers,
                 cache: 'no-store',
+                credentials: 'include',
             });
 
             // Token expired — attempt silent refresh via the httpOnly cookie, then retry once
