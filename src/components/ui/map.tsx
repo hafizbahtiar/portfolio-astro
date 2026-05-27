@@ -76,6 +76,7 @@ function useResolvedTheme(themeProp?: "light" | "dark"): "light" | "dark" {
 type MapContextValue = {
   map: MapLibreGL.Map | null;
   isLoaded: boolean;
+  theme: "light" | "dark";
 };
 
 const MapContext = createContext<MapContextValue | null>(null);
@@ -306,8 +307,9 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     () => ({
       map: mapInstance,
       isLoaded: isLoaded && isStyleLoaded,
+      theme: resolvedTheme,
     }),
-    [mapInstance, isLoaded, isStyleLoaded]
+    [mapInstance, isLoaded, isStyleLoaded, resolvedTheme]
   );
 
   return (
@@ -725,8 +727,18 @@ const positionClasses = {
 };
 
 function ControlGroup({ children }: { children: React.ReactNode }) {
+  const { theme } = useMap();
+  const dark = theme === "dark";
   return (
-    <div className="flex flex-col rounded-md border border-border bg-background shadow-sm overflow-hidden [&>button:not(:last-child)]:border-b [&>button:not(:last-child)]:border-border">
+    <div
+      className={cn(
+        "flex flex-col rounded-md border shadow-md overflow-hidden",
+        "[&>button:not(:last-child)]:border-b",
+        dark
+          ? "bg-slate-800 border-slate-600 [&>button:not(:last-child)]:border-slate-600"
+          : "bg-white border-slate-200 [&>button:not(:last-child)]:border-slate-200"
+      )}
+    >
       {children}
     </div>
   );
@@ -743,14 +755,19 @@ function ControlButton({
   children: React.ReactNode;
   disabled?: boolean;
 }) {
+  const { theme } = useMap();
+  const dark = theme === "dark";
   return (
     <button
       onClick={onClick}
       aria-label={label}
       type="button"
       className={cn(
-        "flex items-center justify-center size-8 hover:bg-accent dark:hover:bg-accent/40 transition-colors",
-        disabled && "opacity-50 pointer-events-none cursor-not-allowed"
+        "flex items-center justify-center size-8 transition-colors",
+        dark
+          ? "text-slate-200 hover:bg-slate-700"
+          : "text-slate-600 hover:bg-slate-100",
+        disabled && "opacity-40 pointer-events-none cursor-not-allowed"
       )}
       disabled={disabled}
     >
@@ -902,8 +919,8 @@ function CompassButton({ onClick }: { onClick: () => void }) {
       >
         <path d="M12 2L16 12H12V2Z" className="fill-red-500" />
         <path d="M12 2L8 12H12V2Z" className="fill-red-300" />
-        <path d="M12 22L16 12H12V22Z" className="fill-muted-foreground/60" />
-        <path d="M12 22L8 12H12V22Z" className="fill-muted-foreground/30" />
+        <path d="M12 22L16 12H12V22Z" className="fill-slate-400/70" />
+        <path d="M12 22L8 12H12V22Z" className="fill-slate-400/40" />
       </svg>
     </ControlButton>
   );
@@ -1206,15 +1223,14 @@ function MapPolygon({
 
     // Check if source already exists
     if (!map.getSource(sourceId)) {
-      const isFullGeoJson = coordinates && typeof coordinates === "object" && "type" in coordinates && coordinates.type === "Feature";
-
-      const geojsonData = isFullGeoJson
-        ? (coordinates as GeoJSON.Feature | GeoJSON.FeatureCollection)
-        : {
+      const isRawCoords = Array.isArray(coordinates);
+      const geojsonData: GeoJSON.GeoJSON = isRawCoords
+        ? {
           type: "Feature" as const,
           properties: {},
-          geometry: { type: "Polygon" as const, coordinates: Array.isArray(coordinates) && coordinates.length > 0 ? coordinates : [] },
-        };
+          geometry: { type: "Polygon" as const, coordinates: (coordinates as number[][][]).length > 0 ? (coordinates as number[][][]) : [] },
+        }
+        : (coordinates as GeoJSON.GeoJSON);
 
       map.addSource(sourceId, {
         type: "geojson",
@@ -1263,15 +1279,14 @@ function MapPolygon({
 
     const source = map.getSource(sourceId) as MapLibreGL.GeoJSONSource;
     if (source) {
-      const isFullGeoJson = coordinates && typeof coordinates === "object" && "type" in coordinates && coordinates.type === "Feature";
-
-      const geojsonData = isFullGeoJson
-        ? (coordinates as GeoJSON.Feature | GeoJSON.FeatureCollection)
-        : {
+      const isRawCoords = Array.isArray(coordinates);
+      const geojsonData: GeoJSON.GeoJSON = isRawCoords
+        ? {
           type: "Feature" as const,
           properties: {},
-          geometry: { type: "Polygon" as const, coordinates: Array.isArray(coordinates) ? coordinates : [] },
-        };
+          geometry: { type: "Polygon" as const, coordinates: (coordinates as number[][][]) },
+        }
+        : (coordinates as GeoJSON.GeoJSON);
 
       source.setData(geojsonData);
     }

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Clock, Sun, Moon } from "lucide-react";
+import type { Polygon } from "geojson";
 import {
   Map as MapComponent,
   MapControls,
@@ -13,7 +14,7 @@ import {
 import klBoundary from "./kl-boundary.json";
 import { KL_CENTER } from "@/lib/constants";
 
-const kualaLumpurPolygon = klBoundary;
+const kualaLumpurPolygon = klBoundary as unknown as Polygon;
 
 type MapMarkerData = {
   id: number;
@@ -42,6 +43,16 @@ function getTimeTheme(): "light" | "dark" {
   return h >= 6 && h < 18 ? "light" : "dark";
 }
 
+// Priority 1: .dark/.light class on <html> — follows the app's global toggle.
+// Priority 2: time of day (6 am–6 pm = light) — first-visit fallback when no
+//             app theme class has been set yet.
+function getAppTheme(): "light" | "dark" {
+  if (typeof document === "undefined") return getTimeTheme();
+  if (document.documentElement.classList.contains("dark")) return "dark";
+  if (document.documentElement.classList.contains("light")) return "light";
+  return getTimeTheme();
+}
+
 function readStoredPreference(): MapThemePreference {
   try {
     const v = localStorage.getItem(MAP_THEME_KEY);
@@ -51,25 +62,33 @@ function readStoredPreference(): MapThemePreference {
 }
 
 function useMapTheme() {
-  // A1 — time-based default, updates every minute
-  const [timeTheme, setTimeTheme] = useState<"light" | "dark">(getTimeTheme);
+  const [autoTheme, setAutoTheme] = useState<"light" | "dark">(getAppTheme);
+
   useEffect(() => {
-    const id = setInterval(() => setTimeTheme(getTimeTheme()), 60_000);
-    return () => clearInterval(id);
+    // React immediately to the app-wide dark/light toggle.
+    const observer = new MutationObserver(() => setAutoTheme(getAppTheme()));
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    // Re-evaluate the time fallback every minute — only matters when the app
+    // hasn't set an explicit theme class (e.g. first visit with no preference).
+    const interval = setInterval(() => setAutoTheme(getAppTheme()), 60_000);
+
+    return () => {
+      observer.disconnect();
+      clearInterval(interval);
+    };
   }, []);
 
-  // A2/A3 — manual override, persisted to localStorage
   const [preference, setPreferenceState] = useState<MapThemePreference>(readStoredPreference);
   const setPreference = (p: MapThemePreference) => {
     setPreferenceState(p);
-    try {
-      localStorage.setItem(MAP_THEME_KEY, p);
-    } catch { }
+    try { localStorage.setItem(MAP_THEME_KEY, p); } catch { }
   };
 
-  const resolvedTheme: "light" | "dark" =
-    preference === "auto" ? timeTheme : preference;
-
+  const resolvedTheme: "light" | "dark" = preference === "auto" ? autoTheme : preference;
   return { resolvedTheme, preference, setPreference };
 }
 
