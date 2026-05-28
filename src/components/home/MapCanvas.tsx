@@ -231,7 +231,7 @@ const MapCanvas = ({
 
         <MapPolygon
           id="kuala-lumpur-boundary"
-          coordinates={kualaLumpurPolygon}
+          coordinates={kualaLumpurPolygon.coordinates}
           fillColor="#22c55e"
           fillOpacity={0.15}
           outlineColor="#16a34a"

@@ -347,6 +347,8 @@ const formatDate = (value?: string | null) => {
 </script>
 
 <script>
+  import { sanitizeRichHtml } from "../../../lib/sanitize";
+
   function escapeHtml(str: string) {
     const div = document.createElement("div");
     div.appendChild(document.createTextNode(str));
@@ -516,7 +518,7 @@ const formatDate = (value?: string | null) => {
       const bodyContentEl = document.getElementById("post-body-content");
       if (bodyContentEl) {
         if (sections.length === 0 && post.bodyContent) {
-          bodyContentEl.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-[#0d1117] p-6 md:p-8 text-slate-700 prose prose-invert max-w-none">${post.bodyContent}</div>`;
+          bodyContentEl.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-[#0d1117] p-6 md:p-8 text-slate-700 prose prose-invert max-w-none">${sanitizeRichHtml(post.bodyContent)}</div>`;
         }
       }
 

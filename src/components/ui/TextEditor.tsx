@@ -4,6 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import { marked } from "marked";
+import { sanitizeRichHtml } from "../../lib/sanitize";
 
 type TextEditorProps = {
     content: string;
@@ -20,7 +21,10 @@ export const TextEditor = ({
     name,
     id,
 }: TextEditorProps) => {
-    const html = useMemo(() => String(marked.parse(content || "")), [content]);
+    const html = useMemo(
+        () => sanitizeRichHtml(String(marked.parse(content || ""))),
+        [content],
+    );
     const [formValue, setFormValue] = useState(html);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -46,7 +50,7 @@ export const TextEditor = ({
         editable,
         onUpdate: ({ editor }) => {
             if (!name) return;
-            setFormValue(editor.getHTML());
+            setFormValue(sanitizeRichHtml(editor.getHTML()));
         },
         editorProps: {
             attributes: {
@@ -72,7 +76,7 @@ export const TextEditor = ({
             if (nextValue === formValue) return;
             setFormValue(nextValue);
             editor.commands.setContent(
-                String(marked.parse(nextValue || "")),
+                sanitizeRichHtml(String(marked.parse(nextValue || ""))),
             );
         };
         textarea.addEventListener("change", handleChange);

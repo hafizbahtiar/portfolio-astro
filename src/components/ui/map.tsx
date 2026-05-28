@@ -234,6 +234,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     };
     const loadHandler = () => {
       setIsLoaded(true);
+      setIsStyleLoaded(map.isStyleLoaded() === true);
       onLoadRef.current?.();
     };
 
@@ -302,6 +303,9 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     setIsStyleLoaded(false);
 
     mapInstance.setStyle(newStyle, { diff: true });
+    mapInstance.once("style.load", () => {
+      setIsStyleLoaded(mapInstance.isStyleLoaded() === true);
+    });
   }, [mapInstance, resolvedTheme, mapStyles]);
 
   const contextValue = useMemo(
