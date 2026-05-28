@@ -366,7 +366,7 @@ const formatStatus = (status?: string) => {
     try {
       const slug =
         window.location.pathname.split("/").filter(Boolean).pop() || "";
-      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1"}`;
+      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "https://api.hafizbahtiar.com/api/v1"}`;
 
       const [projectRes, policyRes] = await Promise.all([
         fetch(`${apiUrl}/projects/${slug}`),

@@ -209,7 +209,7 @@ const mapCenter = KL_CENTER;
     let experiences = [];
 
     try {
-      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1"}`;
+      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "https://api.hafizbahtiar.com/api/v1"}`;
       const response = await fetch(`${apiUrl}/experiences`);
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);

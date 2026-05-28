@@ -458,7 +458,7 @@ const formatDate = (value?: string | null) => {
         return;
       }
 
-      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1"}`;
+      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "https://api.hafizbahtiar.com/api/v1"}`;
       const response = await fetch(`${apiUrl}/blog/${slug}`);
 
       if (response.status === 404) {

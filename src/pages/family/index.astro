@@ -121,7 +121,7 @@ const emptyDetail: FamilyTreeDetail = {
     const chartContainerEl = document.getElementById("family-chart-container");
 
     try {
-      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "http://localhost:8787/api/v1"}`;
+      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "https://api.hafizbahtiar.com/api/v1"}`;
 
       // Fetch all family trees
       const treesRes = await fetch(
