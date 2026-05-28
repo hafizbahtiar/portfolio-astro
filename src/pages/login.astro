@@ -201,9 +201,15 @@ import Background from "../components/layout/Background.astro";
     }
   });
 
-  // Redirect if already logged in
+  // Redirect only when the API refresh cookie is still valid.
   if (authService.isAuthenticated()) {
-    window.location.href = "/admin";
+    authService.tryRefresh().then((valid) => {
+      if (valid) {
+        window.location.href = "/admin";
+      } else {
+        authService.clearAuthState();
+      }
+    });
   }
 
   const showStatus = (
