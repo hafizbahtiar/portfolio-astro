@@ -234,7 +234,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     };
     const loadHandler = () => {
       setIsLoaded(true);
-      setIsStyleLoaded(map.isStyleLoaded() === true);
+      setIsStyleLoaded(true);
       onLoadRef.current?.();
     };
 
@@ -304,7 +304,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
     mapInstance.setStyle(newStyle, { diff: true });
     mapInstance.once("style.load", () => {
-      setIsStyleLoaded(mapInstance.isStyleLoaded() === true);
+      setIsStyleLoaded(true);
     });
   }, [mapInstance, resolvedTheme, mapStyles]);
 
@@ -1222,6 +1222,20 @@ function MapPolygon({
   const sourceId = `polygon-source-${id}`;
   const fillLayerId = `polygon-fill-layer-${id}`;
   const outlineLayerId = `polygon-outline-layer-${id}`;
+  const [styleRevision, setStyleRevision] = useState(0);
+
+  useEffect(() => {
+    if (!map) return;
+
+    const syncAfterStyleLoad = () => setStyleRevision((revision) => revision + 1);
+    map.on("load", syncAfterStyleLoad);
+    map.on("style.load", syncAfterStyleLoad);
+
+    return () => {
+      map.off("load", syncAfterStyleLoad);
+      map.off("style.load", syncAfterStyleLoad);
+    };
+  }, [map]);
 
   useEffect(() => {
     if (!isLoaded || !map) return;
@@ -1277,7 +1291,7 @@ function MapPolygon({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, sourceId, fillLayerId, outlineLayerId]);
+  }, [isLoaded, map, sourceId, fillLayerId, outlineLayerId, styleRevision]);
 
   useEffect(() => {
     if (!isLoaded || !map || !coordinates) return;
