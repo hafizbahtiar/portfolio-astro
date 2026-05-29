@@ -1,0 +1,20 @@
+# Cloudflare static-asset headers (prerendered pages + static files).
+# SSR'd HTML documents are covered by src/middleware.ts — KEEP THE CSP BELOW
+# IN SYNC with SECURITY_HEADERS there.
+#
+# CSP notes:
+#  - 'unsafe-inline' on script-src is required by Astro's inline hydration +
+#    <ClientRouter> (View Transitions) + the theme/sidebar IIFEs in CoreLayout.
+#    Tighten to hashes/nonces in a later pass (C1 follow-up).
+#  - blob: (script-src/worker-src) + basemaps.cartocdn.com (connect/img) are
+#    required by MapLibre (MapSection). Removing them breaks the map.
+#  - img-src https: is intentionally broad: the portfolio renders remote images
+#    from many hosts (github, licdn, dbkl, qiubbx, R2).
+
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' blob:; worker-src 'self' blob:; connect-src 'self' https://api.hafizbahtiar.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com
