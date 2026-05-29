@@ -1,10 +1,9 @@
 ---
-import { API_BASE_URL } from "../../lib/config";
 ---
 
 <div id="featured-projects">
   <div id="featured-projects-loading" class="grid grid-cols-2 gap-4">
-    {[0, 1, 2, 3].map((i) => (
+    {Array.from({ length: 4 }).map(() => (
       <div class="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-700" />
     ))}
   </div>
@@ -18,10 +17,18 @@ import { API_BASE_URL } from "../../lib/config";
 </div>
 
 <script>
-  function buildProjectCard(project) {
+  type FeaturedProject = {
+    slug?: string;
+    title: string;
+    description?: string | null;
+    imageUrl?: string | null;
+    tags?: string[] | null;
+  };
+
+  function buildProjectCard(project: FeaturedProject) {
     const slug = project.slug || project.title.toLowerCase().replace(/\s+/g, "-");
     const tags = project.tags || [];
-    const tagsHtml = tags.slice(0, 4).map(tag =>
+    const tagsHtml = tags.slice(0, 4).map((tag: string) =>
       `<span class="px-2 py-0.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded">${escapeHtml(tag)}</span>`
     ).join("") + (tags.length > 4
       ? `<span class="px-2 py-0.5 text-xs text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded">+${tags.length - 4}</span>`
@@ -49,9 +56,9 @@ import { API_BASE_URL } from "../../lib/config";
       </a>`;
   }
 
-  function escapeHtml(str) {
+  function escapeHtml(str: unknown) {
     const div = document.createElement("div");
-    div.appendChild(document.createTextNode(str));
+    div.appendChild(document.createTextNode(String(str ?? "")));
     return div.innerHTML;
   }
 

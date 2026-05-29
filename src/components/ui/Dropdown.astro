@@ -51,15 +51,15 @@ const menuId = `${name}-menu`;
       aria-haspopup="listbox"
       aria-expanded="false"
       type="button"
-      class="dropdown-trigger w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-left text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all flex justify-between items-center group hover:border-cyan-500/50"
+      class="dropdown-trigger w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-left text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all flex justify-between items-center group hover:border-blue-500/50"
     >
       <span
-        class="selected-text text-sm text-slate-600 dark:text-slate-300 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors truncate"
+        class="selected-text text-sm text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate"
       >
         {options.find((opt) => opt.value === value)?.label || placeholder}
       </span>
       <div
-        class="flex items-center text-slate-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-500 transition-colors"
+        class="flex items-center text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors"
       >
         <svg
           class="w-4 h-4 transform transition-transform duration-200"
@@ -78,7 +78,7 @@ const menuId = `${name}-menu`;
 
     <div
       id={menuId}
-      class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl transform origin-top transition-all duration-200"
+      class="dropdown-menu hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg dark:shadow-xl overflow-hidden backdrop-blur-xl transform origin-top transition-all duration-200"
     >
       <ul
         class="max-h-60 overflow-y-auto py-1 custom-scrollbar"
@@ -91,7 +91,7 @@ const menuId = `${name}-menu`;
               <button
                 type="button"
                 role="option"
-                class="dropdown-item w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors"
+                class="dropdown-item w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
                 data-value={option.value}
               >
                 <span>{option.label}</span>
@@ -156,9 +156,9 @@ const menuId = `${name}-menu`;
           });
           arrow?.classList.add("rotate-180");
           trigger.classList.add(
-            "border-cyan-500",
+            "border-blue-500",
             "ring-2",
-            "ring-cyan-500/50",
+            "ring-blue-500/50",
           );
         } else {
           menu.classList.add("opacity-0", "scale-95");
@@ -170,9 +170,9 @@ const menuId = `${name}-menu`;
           }, 200);
           arrow?.classList.remove("rotate-180");
           trigger.classList.remove(
-            "border-cyan-500",
+            "border-blue-500",
             "ring-2",
-            "ring-cyan-500/50",
+            "ring-blue-500/50",
           );
         }
       };
@@ -220,9 +220,9 @@ const menuId = `${name}-menu`;
             if (matchingItem) {
               newLabel =
                 matchingItem.querySelector("span")?.textContent || newLabel;
-              selectedText.classList.add("text-cyan-400");
+              selectedText.classList.add("text-blue-400");
             } else {
-              selectedText.classList.remove("text-cyan-400");
+              selectedText.classList.remove("text-blue-400");
             }
 
             selectedText.textContent = newLabel;
@@ -242,7 +242,7 @@ const menuId = `${name}-menu`;
 
           input.value = value;
           selectedText.textContent = label;
-          selectedText.classList.add("text-cyan-400");
+          selectedText.classList.add("text-blue-400");
 
           input.dispatchEvent(new Event("change", { bubbles: true }));
 

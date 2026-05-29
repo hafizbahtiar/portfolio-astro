@@ -153,12 +153,12 @@ import { TextEditor } from "../../../components/ui/TextEditor";
       const isActive = button.dataset.tab === tabId;
       button.setAttribute("aria-selected", String(isActive));
       button.classList.toggle("text-white", isActive);
-      button.classList.toggle("border-cyan-500/60", isActive);
-      button.classList.toggle("bg-cyan-500/10", isActive);
-      button.classList.toggle("text-gray-400", !isActive);
-      button.classList.toggle("border-gray-800", !isActive);
+      button.classList.toggle("border-blue-500/60", isActive);
+      button.classList.toggle("bg-blue-500/10", isActive);
+      button.classList.toggle("text-slate-400", !isActive);
+      button.classList.toggle("border-slate-800", !isActive);
       button.classList.toggle("hover:text-white", !isActive);
-      button.classList.toggle("hover:border-cyan-500/40", !isActive);
+      button.classList.toggle("hover:border-blue-500/40", !isActive);
     });
     tabPanels.forEach((panel) => {
       panel.classList.toggle("hidden", panel.dataset.tabPanel !== tabId);

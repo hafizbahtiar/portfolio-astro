@@ -68,14 +68,14 @@ export const Select: React.FC<SelectProps> = ({
                     aria-label={!label ? ariaLabel : undefined}
                     aria-labelledby={label ? labelId : undefined}
                     className={`w-full bg-white dark:bg-slate-800 border rounded-lg px-4 py-2 text-left text-slate-900 dark:text-slate-100 outline-none transition-all flex justify-between items-center group ${isOpen
-                        ? 'border-cyan-500 ring-2 ring-cyan-500/50'
-                        : 'border-slate-300 dark:border-slate-600 hover:border-cyan-500/50'
+                        ? 'border-blue-500 ring-2 ring-blue-500/50'
+                        : 'border-slate-300 dark:border-slate-600 hover:border-blue-500/50'
                         }`}
                 >
-                    <span className={`text-sm transition-colors truncate ${selectedOption ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                    <span className={`text-sm transition-colors truncate ${selectedOption ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}>
                         {selectedOption ? selectedOption.label : placeholder}
                     </span>
-                    <div className="flex items-center text-slate-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-500 transition-colors ml-2">
+                    <div className="flex items-center text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors ml-2">
                         <svg
                             className={`w-4 h-4 transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                             fill="none"
@@ -93,7 +93,7 @@ export const Select: React.FC<SelectProps> = ({
                 </button>
 
                 {isOpen && (
-                    <div className="absolute z-50 w-full min-w-[100px] mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl transform origin-top animate-fade-in">
+                    <div className="absolute z-50 w-full min-w-[100px] mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg dark:shadow-xl overflow-hidden backdrop-blur-xl transform origin-top animate-fade-in">
                         <ul className="max-h-60 overflow-y-auto py-1">
                             {options.map((option) => (
                                 <li key={option.value}>
@@ -101,8 +101,8 @@ export const Select: React.FC<SelectProps> = ({
                                         type="button"
                                         onClick={() => handleSelect(option.value)}
                                         className={`w-full text-left px-4 py-2 text-sm transition-colors ${option.value === value
-                                            ? 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400'
-                                            : 'text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-700 dark:hover:text-cyan-400'
+                                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-400'
                                             }`}
                                     >
                                         {option.label}

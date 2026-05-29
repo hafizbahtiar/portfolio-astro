@@ -11,7 +11,7 @@ const stats = [
     label: "Total Visits",
     value: "12,453",
     change: "+12%",
-    color: "text-cyan-400",
+    color: "text-blue-400",
   },
   {
     label: "Active Projects",
@@ -106,7 +106,7 @@ const stats = [
         }
       </div>
       <div
-        class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-4 px-2 font-mono"
+        class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-4 px-2"
       >
         <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span
           >Fri</span
@@ -197,10 +197,10 @@ const stats = [
               />
               <div class="flex-grow min-w-0">
                 <div class="flex items-center justify-between gap-2 mb-1">
-                  <span class="text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                  <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                     {log.source}
                   </span>
-                  <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                  <span class="text-xs text-slate-500 dark:text-slate-400">
                     {new Date(log.timestamp).toLocaleString()}
                   </span>
                 </div>

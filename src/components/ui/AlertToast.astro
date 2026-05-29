@@ -11,27 +11,27 @@ const alertId = id;
 >
   <div
     data-alert-panel
-    class="min-w-[280px] max-w-[360px] rounded-2xl border border-gray-800 bg-gray-950/95 backdrop-blur px-5 py-4 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)]"
+    class="min-w-[280px] max-w-[360px] rounded-lg border border-slate-200 bg-white px-5 py-4 shadow-lg dark:border-slate-700 dark:bg-slate-900"
   >
     <div class="flex items-start gap-3">
       <div
         data-alert-icon
-        class="mt-0.5 rounded-full border px-2 py-1 text-xs font-mono uppercase tracking-wide"
+        class="mt-0.5 rounded-full border px-2 py-1 text-xs font-medium"
       >
         INFO
       </div>
       <div class="flex-1">
-        <p data-alert-title class="text-sm font-semibold text-white">
+        <p data-alert-title class="text-sm font-semibold text-slate-900 dark:text-slate-100">
           Notification
         </p>
-        <p data-alert-message class="text-sm text-gray-400 mt-1">
+        <p data-alert-message class="text-sm text-slate-500 dark:text-slate-400 mt-1">
           Action completed.
         </p>
       </div>
       <button
         type="button"
         data-alert-close
-        class="text-gray-500 hover:text-gray-200 transition-colors"
+        class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
         aria-label="Dismiss"
       >
         <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -57,14 +57,12 @@ const alertId = id;
     const panelVariants = {
       success: [
         "border-emerald-500/40",
-        "shadow-[0_0_30px_rgba(16,185,129,0.15)]",
       ],
-      error: ["border-rose-500/40", "shadow-[0_0_30px_rgba(244,63,94,0.15)]"],
+      error: ["border-rose-500/40"],
       warning: [
         "border-amber-400/40",
-        "shadow-[0_0_30px_rgba(251,191,36,0.12)]",
       ],
-      info: ["border-blue-400/40", "shadow-[0_0_30px_rgba(59,130,246,0.15)]"],
+      info: ["border-blue-400/40"],
     };
 
     const iconVariants = {

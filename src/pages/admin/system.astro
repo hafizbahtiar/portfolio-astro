@@ -74,7 +74,7 @@ const logs = await systemService.getLogs().catch(() => []);
             {
               logs.map((log) => (
                 <tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                  <td class="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
+                  <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">
                     {new Date(log.timestamp).toLocaleString()}
                   </td>
                   <td class="px-6 py-4">

@@ -333,10 +333,10 @@ const profile: any = {}; // populated client-side after page load
           const nameDisplay = document.querySelector("h2");
           if (nameDisplay) nameDisplay.textContent = profile.name;
 
-          const emailDisplay = document.querySelector("p.text-cyan-400");
+          const emailDisplay = document.querySelector("p.text-blue-400");
           if (emailDisplay) emailDisplay.textContent = profile.email;
 
-          const dateDisplay = document.querySelector("p.text-gray-400");
+          const dateDisplay = document.querySelector("p.text-slate-400");
           if (dateDisplay) {
             const date = new Date(profile.createdAt);
             dateDisplay.innerHTML = `Member since ${date.toLocaleDateString()}`;
