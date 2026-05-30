@@ -1,32 +1,10 @@
 ---
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
-import { systemService } from "../../lib/system";
 
-const logs = await systemService.getLogs().catch(() => []);
-const recentLogs = logs.slice(0, 5);
-
-// Mock Data
-const stats = [
-  {
-    label: "Total Visits",
-    value: "12,453",
-    change: "+12%",
-    color: "text-blue-400",
-  },
-  {
-    label: "Active Projects",
-    value: "9",
-    change: "0%",
-    color: "text-green-400",
-  },
-  { label: "Messages", value: "24", change: "+4", color: "text-yellow-400" },
-  {
-    label: "System Status",
-    value: "98%",
-    change: "Optimal",
-    color: "text-blue-400",
-  },
-];
+// Data is fetched client-side (see <script> below): admin endpoints require the
+// httpOnly auth cookie, which an SSR fetch on Cloudflare cannot forward.
+const cardClass =
+  "rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5";
 ---
 
 <PrivateLayout title="Dashboard | Hafiz.dev">
@@ -37,188 +15,347 @@ const stats = [
       Dashboard
     </h1>
     <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-      Overview of your admin activity
+      Live overview of your portfolio content and messages
     </p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    {
-      stats.map((stat) => (
-        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-          <h3 class="text-slate-500 dark:text-slate-400 text-sm font-medium">
-            {stat.label}
-          </h3>
-          <div class="mt-2 flex items-baseline justify-between">
-            <span class="text-2xl font-bold text-slate-900 dark:text-slate-100">
-              {stat.value}
-            </span>
-            <span
-              class={`text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-900 ${stat.color}`}
-            >
-              {stat.change}
-            </span>
-          </div>
-          <div class="mt-4 h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-            <div
-              class={`h-full bg-current opacity-50 ${stat.color.replace("text", "bg")} w-2/3 group-hover:w-full transition-all duration-500`}
-            />
-          </div>
-        </div>
-      ))
-    }
+  <!-- Error banner -->
+  <div
+    id="dash-error"
+    class="hidden mb-6 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm px-4 py-3"
+  >
+    Couldn’t load dashboard data. Please refresh to try again.
+  </div>
+
+  <!-- KPI cards -->
+  <div
+    id="dash-kpis"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 transition-opacity duration-300"
+    data-loading="true"
+  >
+    <a
+      href="/admin/projects"
+      class={`${cardClass} block hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group`}
+    >
+      <h3 class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+        Projects
+      </h3>
+      <div class="mt-2 flex items-baseline justify-between">
+        <span
+          id="kpi-projects"
+          class="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums"
+          >—</span
+        >
+        <span
+          id="kpi-projects-sub"
+          class="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-900 text-blue-500 dark:text-blue-400"
+          >—</span
+        >
+      </div>
+    </a>
+
+    <a
+      href="/admin/contact"
+      class={`${cardClass} block hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group`}
+    >
+      <h3 class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+        Messages
+      </h3>
+      <div class="mt-2 flex items-baseline justify-between">
+        <span
+          id="kpi-messages"
+          class="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums"
+          >—</span
+        >
+        <span
+          id="kpi-messages-sub"
+          class="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-900 text-yellow-500 dark:text-yellow-400"
+          >—</span
+        >
+      </div>
+    </a>
+
+    <a
+      href="/admin/blog"
+      class={`${cardClass} block hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group`}
+    >
+      <h3 class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+        Blog Posts
+      </h3>
+      <div class="mt-2 flex items-baseline justify-between">
+        <span
+          id="kpi-blog"
+          class="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums"
+          >—</span
+        >
+        <span
+          class="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-900 text-emerald-500 dark:text-emerald-400"
+          >total</span
+        >
+      </div>
+    </a>
+
+    <a
+      href="/admin/experiences"
+      class={`${cardClass} block hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group`}
+    >
+      <h3 class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+        Experiences
+      </h3>
+      <div class="mt-2 flex items-baseline justify-between">
+        <span
+          id="kpi-experiences"
+          class="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums"
+          >—</span
+        >
+        <span
+          class="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-900 text-purple-500 dark:text-purple-400"
+          >total</span
+        >
+      </div>
+    </a>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Main Chart Area (Placeholder) -->
-    <div
-      class="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5 min-h-[400px]"
-    >
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">
-          Traffic Overview
-        </h2>
-        <select
-          class="border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400/50 focus:border-slate-400 outline-none transition-all bg-white dark:bg-slate-900/50 text-sm"
-        >
-          <option>Last 7 Days</option>
-          <option>Last 30 Days</option>
-          <option>This Year</option>
-        </select>
-      </div>
-
-      <!-- Chart Visual Placeholder -->
-      <div
-        class="relative h-64 w-full flex items-end justify-between gap-2 px-4"
-      >
-        {
-          [40, 65, 45, 80, 55, 90, 70].map((height) => (
-            <div class="w-full bg-slate-200/50 dark:bg-slate-700/30 rounded-t-sm relative group">
-              <div
-                class="absolute bottom-0 left-0 w-full bg-blue-500/50 group-hover:bg-blue-400 transition-all duration-300"
-                style={`height: ${height}%`}
-              >
-                <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs py-1 px-2 rounded border border-slate-700 whitespace-nowrap z-10">
-                  {height * 10} visits
-                </div>
-              </div>
-            </div>
-          ))
-        }
-      </div>
-      <div
-        class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-4 px-2"
-      >
-        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span
-          >Fri</span
-        ><span>Sat</span><span>Sun</span>
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div
-      class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5"
-    >
-      <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">
-        Quick Actions
-      </h3>
-      <div class="grid grid-cols-2 gap-4">
-        <a
-          href="/admin/projects/new"
-          class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400/50 dark:hover:border-blue-500/50 border border-slate-200 dark:border-slate-700 transition-all group"
-        >
-          <svg
-            class="w-6 h-6 text-blue-500 dark:text-blue-400 mb-2 group-hover:scale-110 transition-transform"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"></path>
-          </svg>
-          <span
-            class="text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-100"
-            >New Project</span
-          >
-        </a>
-        <a
-          href="/admin/system"
-          class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400/50 dark:hover:border-purple-500/50 border border-slate-200 dark:border-slate-700 transition-all group"
-        >
-          <svg
-            class="w-6 h-6 text-purple-500 dark:text-purple-400 mb-2 group-hover:scale-110 transition-transform"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            ></path>
-          </svg>
-          <span
-            class="text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-100"
-            >System Logs</span
-          >
-        </a>
-      </div>
-    </div>
-
-    <!-- Recent System Logs -->
-    <div
-      class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5 lg:col-span-3"
-    >
-      <div class="flex items-center justify-between mb-6">
-        <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">
-          Recent System Logs
-        </h3>
-        <a
-          href="/admin/system"
-          class="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
-          >View All</a
-        >
-      </div>
+    <!-- Contact status breakdown -->
+    <div class={cardClass}>
+      <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
+        Messages by status
+      </h2>
+      <p class="text-xs text-slate-400 dark:text-slate-500 mb-5">
+        <span id="cs-total" class="tabular-nums">—</span> total
+      </p>
       <div class="space-y-4">
         {
-          recentLogs.map((log) => (
-            <div class="flex items-start gap-4 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
-              <div
-                class={`mt-1 w-2 h-2 rounded-full shrink-0 ${
-                  log.level === "error"
-                    ? "bg-red-500"
-                    : log.level === "warning"
-                      ? "bg-yellow-500"
-                      : "bg-emerald-500"
-                }`}
-              />
-              <div class="flex-grow min-w-0">
-                <div class="flex items-center justify-between gap-2 mb-1">
-                  <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                    {log.source}
-                  </span>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">
-                    {new Date(log.timestamp).toLocaleString()}
-                  </span>
-                </div>
-                <p class="text-sm text-slate-700 dark:text-slate-300 truncate">
-                  {log.message}
-                </p>
+          [
+            { key: "new", label: "New", color: "bg-blue-500" },
+            { key: "read", label: "Read", color: "bg-slate-400" },
+            { key: "replied", label: "Replied", color: "bg-emerald-500" },
+            { key: "archived", label: "Archived", color: "bg-slate-500" },
+          ].map((row) => (
+            <div>
+              <div class="flex items-center justify-between text-sm mb-1">
+                <span class="text-slate-600 dark:text-slate-300">
+                  {row.label}
+                </span>
+                <span
+                  id={`cs-${row.key}`}
+                  class="text-slate-900 dark:text-slate-100 font-medium tabular-nums"
+                >
+                  —
+                </span>
+              </div>
+              <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  id={`csbar-${row.key}`}
+                  class={`h-full ${row.color} rounded-full transition-all duration-500`}
+                  style="width: 0%"
+                />
               </div>
             </div>
           ))
         }
-        {
-          recentLogs.length === 0 && (
-            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
-              No recent logs found.
-            </p>
-          )
-        }
+      </div>
+    </div>
+
+    <!-- Recent activity: projects + messages -->
+    <div class={`${cardClass} lg:col-span-2`}>
+      <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-5">
+        Recent activity
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3
+              class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide"
+            >
+              Projects
+            </h3>
+            <a
+              href="/admin/projects"
+              class="text-xs text-blue-500 dark:text-blue-400 hover:underline"
+              >View all</a
+            >
+          </div>
+          <ul id="recent-projects" class="space-y-2">
+            <li class="text-sm text-slate-400 dark:text-slate-500">Loading…</li>
+          </ul>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3
+              class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide"
+            >
+              Messages
+            </h3>
+            <a
+              href="/admin/contact"
+              class="text-xs text-blue-500 dark:text-blue-400 hover:underline"
+              >View all</a
+            >
+          </div>
+          <ul id="recent-messages" class="space-y-2">
+            <li class="text-sm text-slate-400 dark:text-slate-500">Loading…</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 </PrivateLayout>
+
+<script>
+  import { dashboardService } from "../../lib/dashboard";
+  import type {
+    DashboardOverview,
+    DashboardRecentProject,
+    DashboardRecentContact,
+  } from "../../lib/dashboard";
+
+  function timeAgo(iso: string): string {
+    const t = new Date(iso).getTime();
+    if (Number.isNaN(t)) return "";
+    const s = Math.floor((Date.now() - t) / 1000);
+    if (s < 60) return "just now";
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    if (d < 30) return `${d}d ago`;
+    const mo = Math.floor(d / 30);
+    if (mo < 12) return `${mo}mo ago`;
+    return `${Math.floor(mo / 12)}y ago`;
+  }
+
+  function setText(id: string, value: string | number) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value);
+  }
+
+  const CONTACT_BADGE: Record<string, string> = {
+    NEW: "text-blue-500 dark:text-blue-400",
+    READ: "text-slate-500 dark:text-slate-400",
+    REPLIED: "text-emerald-500 dark:text-emerald-400",
+    ARCHIVED: "text-slate-400 dark:text-slate-500",
+  };
+
+  // Build list rows with textContent only — contact name/subject are
+  // attacker-controlled (public contact form), so never use innerHTML here.
+  function renderProjects(list: DashboardRecentProject[]) {
+    const ul = document.getElementById("recent-projects");
+    if (!ul) return;
+    ul.replaceChildren();
+    if (!list.length) {
+      const li = document.createElement("li");
+      li.className = "text-sm text-slate-400 dark:text-slate-500";
+      li.textContent = "No projects yet.";
+      ul.appendChild(li);
+      return;
+    }
+    for (const p of list) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = `/admin/projects`;
+      a.className =
+        "flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 -mx-2 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors";
+      const title = document.createElement("span");
+      title.className = "text-sm text-slate-700 dark:text-slate-200 truncate";
+      title.textContent = p.title;
+      const when = document.createElement("span");
+      when.className = "text-xs text-slate-400 dark:text-slate-500 shrink-0";
+      when.textContent = timeAgo(p.updatedAt);
+      a.append(title, when);
+      li.appendChild(a);
+      ul.appendChild(li);
+    }
+  }
+
+  function renderMessages(list: DashboardRecentContact[]) {
+    const ul = document.getElementById("recent-messages");
+    if (!ul) return;
+    ul.replaceChildren();
+    if (!list.length) {
+      const li = document.createElement("li");
+      li.className = "text-sm text-slate-400 dark:text-slate-500";
+      li.textContent = "No messages yet.";
+      ul.appendChild(li);
+      return;
+    }
+    for (const m of list) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = `/admin/contact`;
+      a.className =
+        "block rounded-lg px-2 py-1.5 -mx-2 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors";
+
+      const top = document.createElement("div");
+      top.className = "flex items-center justify-between gap-3";
+      const name = document.createElement("span");
+      name.className =
+        "text-sm font-medium text-slate-700 dark:text-slate-200 truncate";
+      name.textContent = m.name;
+      const status = document.createElement("span");
+      status.className = `text-[11px] shrink-0 ${CONTACT_BADGE[m.status] ?? CONTACT_BADGE.READ}`;
+      status.textContent = m.status.toLowerCase();
+      top.append(name, status);
+
+      const sub = document.createElement("div");
+      sub.className = "flex items-center justify-between gap-3";
+      const subject = document.createElement("span");
+      subject.className = "text-xs text-slate-500 dark:text-slate-400 truncate";
+      subject.textContent = m.subject;
+      const when = document.createElement("span");
+      when.className = "text-xs text-slate-400 dark:text-slate-500 shrink-0";
+      when.textContent = timeAgo(m.createdAt);
+      sub.append(subject, when);
+
+      a.append(top, sub);
+      li.appendChild(a);
+      ul.appendChild(li);
+    }
+  }
+
+  function paint(data: DashboardOverview) {
+    // KPI cards
+    setText("kpi-projects", data.projects.total);
+    setText("kpi-projects-sub", `${data.projects.featured} featured`);
+    setText("kpi-messages", data.contacts.total);
+    setText("kpi-messages-sub", `${data.contacts.new} new`);
+    setText("kpi-blog", data.blog.total);
+    setText("kpi-experiences", data.experiences.total);
+
+    // Contact status breakdown
+    const s = data.contacts.stats;
+    setText("cs-total", s.total);
+    const denom = s.total || 1;
+    for (const key of ["new", "read", "replied", "archived"] as const) {
+      setText(`cs-${key}`, s[key]);
+      const bar = document.getElementById(`csbar-${key}`);
+      if (bar) bar.style.width = `${Math.round((s[key] / denom) * 100)}%`;
+    }
+
+    renderProjects(data.projects.recent ?? []);
+    renderMessages(data.contacts.recent ?? []);
+  }
+
+  async function loadDashboard() {
+    // Only run on the dashboard page (script persists across ClientRouter nav).
+    if (!document.getElementById("dash-kpis")) return;
+
+    const errorEl = document.getElementById("dash-error");
+    errorEl?.classList.add("hidden");
+
+    try {
+      const data = await dashboardService.getOverview();
+      // getOverview() returns null on 401 (ApiClient redirects to /login itself).
+      if (!data) return;
+      paint(data);
+      document.getElementById("dash-kpis")?.removeAttribute("data-loading");
+    } catch (err) {
+      console.error("Dashboard load failed:", err);
+      errorEl?.classList.remove("hidden");
+    }
+  }
+
+  document.addEventListener("astro:page-load", loadDashboard);
+</script>

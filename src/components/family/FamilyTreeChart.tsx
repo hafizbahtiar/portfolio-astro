@@ -755,7 +755,7 @@ export const FamilyTreeChart = ({
   }
 
   return (
-    <div className="h-full w-full min-h-[480px] rounded-xl border border-slate-700 bg-[#212121] overflow-hidden">
+    <div className="h-full w-full min-h-[480px] rounded-xl border border-slate-700 bg-family-canvas overflow-hidden">
       <div ref={containerRef} className="f3 h-full w-full" />
     </div>
   );

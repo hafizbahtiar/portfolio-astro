@@ -3,19 +3,41 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Design tokens — the ONLY place raw hex is allowed to live.
+ * Anything outside the slate/blue/cyan Tailwind palette must be added here as
+ * a named token and referenced by utility class (e.g. `bg-surface-code`),
+ * never inlined as an arbitrary `bg-[#...]` value in markup.
+ */
+@theme {
+    /* App canvas */
+    --color-canvas: #f8fafc;
+    /* light-mode page background */
+    --color-admin-base: #0f172a;
+    /* locked admin canvas (= slate-900) + dark body */
+
+    /* Code / editor surfaces (GitHub-dark family) */
+    --color-surface-code: #0d1117;
+    /* code & blog editor background */
+    --color-surface-code-rail: #161b22;
+    /* code toolbar / side rail */
+
+    /* Family tree */
+    --color-family-canvas: #212121;
+    /* family-chart wrapper (always dark) */
+}
+
 @layer base {
     html {
         scroll-behavior: smooth;
     }
 
     body {
-        @apply font-sans antialiased text-slate-800;
-        background-color: #f8fafc;
+        @apply font-sans antialiased text-slate-800 bg-canvas;
     }
 
     html.dark body {
-        @apply text-slate-200;
-        background-color: #0f172a;
+        @apply text-slate-200 bg-admin-base;
     }
 }
 

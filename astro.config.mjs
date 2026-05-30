@@ -1,16 +1,23 @@
 // @ts-check
-import { defineConfig, passthroughImageService } from 'astro/config';
+import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import cloudflare from '@astrojs/cloudflare';
 
 // https://astro.build/config
 export default defineConfig({
+  // Canonical origin — powers Astro.site for <link rel="canonical"> and OG URLs.
+  site: 'https://hafizbahtiar.com',
   output: 'server',
-  adapter: cloudflare(),
+  // imageService: 'cloudflare' routes <Image>/getImage through Cloudflare Image
+  // Transformations (/cdn-cgi/image/...), emitting AVIF/WebP + responsive sizes
+  // at the edge for both local and remote (allowlisted) images.
+  // PREREQUISITE: enable Transformations on the zone (Cloudflare dash →
+  // Images → Transformations → enable for hafizbahtiar.com). Without it,
+  // transformed URLs 404. Roll back to `cloudflare()` to restore passthrough.
+  adapter: cloudflare({ imageService: 'cloudflare' }),
   integrations: [react()],
   image: {
-    service: passthroughImageService(),
     domains: [
       "www.qiubbx.com",
       "qiubbx.com",
@@ -25,7 +32,6 @@ export default defineConfig({
     plugins: [tailwindcss()],
     optimizeDeps: {
       include: ["@tanstack/react-table", "@tanstack/react-virtual"],
-      force: true,
     },
     build: {
       chunkSizeWarningLimit: 1200,
