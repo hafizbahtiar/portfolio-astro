@@ -41,6 +41,20 @@
     }
 }
 
+html[data-theme-switching]::view-transition-old(root),
+html[data-theme-switching]::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html[data-theme-switching]::view-transition-group(*),
+    html[data-theme-switching]::view-transition-old(*),
+    html[data-theme-switching]::view-transition-new(*) {
+        animation: none !important;
+    }
+}
+
 @layer components {
 
     /* Layout */
@@ -80,6 +94,31 @@
 
     .btn-text {
         @apply inline-flex items-center text-blue-400 font-medium hover:text-blue-300 transition-colors;
+    }
+
+    /* Admin actions */
+    .admin-form-actions {
+        @apply flex flex-col gap-3 border-t border-slate-200 pt-5 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-end;
+    }
+
+    .admin-form-actions .admin-btn {
+        @apply w-full sm:w-auto;
+    }
+
+    .admin-btn {
+        @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-900;
+    }
+
+    .admin-btn-primary {
+        @apply border border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-950/10 hover:border-blue-500 hover:bg-blue-500 focus:ring-blue-400;
+    }
+
+    .admin-btn-secondary {
+        @apply border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus:ring-slate-400 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-800;
+    }
+
+    .admin-btn-danger {
+        @apply border border-red-500/50 bg-red-500/10 text-red-600 hover:bg-red-500/15 focus:ring-red-400 dark:text-red-300;
     }
 
     /* Cards */

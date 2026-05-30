@@ -30,7 +30,8 @@ const cardClass =
   "rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5";
 const titleClass =
   "text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4 border-b border-slate-200 dark:border-slate-700 pb-3";
-const labelClass = "block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest";
+const labelClass =
+  "block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest";
 const inputClass =
   "w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400/50 focus:border-slate-400 outline-none transition-all bg-white dark:bg-slate-900/50";
 ---
@@ -69,7 +70,12 @@ const inputClass =
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-2">
           <label class={labelClass}>Image URL</label>
-          <input type="text" name="imageUrl" id="project-image-url" class={inputClass} />
+          <input
+            type="text"
+            name="imageUrl"
+            id="project-image-url"
+            class={inputClass}
+          />
           <div class="flex items-center gap-2 mt-1">
             <label
               for="project-image-upload"
@@ -78,8 +84,15 @@ const inputClass =
             >
               Upload image
             </label>
-            <input type="file" id="project-image-upload" accept="image/*" class="hidden" />
-            <span id="project-image-upload-status" class="text-xs text-slate-500 dark:text-slate-400"></span>
+            <input
+              type="file"
+              id="project-image-upload"
+              accept="image/*"
+              class="hidden"
+            />
+            <span
+              id="project-image-upload-status"
+              class="text-xs text-slate-500 dark:text-slate-400"></span>
           </div>
         </div>
         <div class="space-y-2">
@@ -157,7 +170,8 @@ const inputClass =
               class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
             >
             </div>
-            <span class="ml-3 text-sm font-medium text-slate-500 dark:text-slate-400"
+            <span
+              class="ml-3 text-sm font-medium text-slate-500 dark:text-slate-400"
               >Featured Project</span
             >
           </label>
@@ -184,48 +198,56 @@ const inputClass =
 <script>
   import { uploadImage } from "../../../lib/upload";
 
-  const fileInput = document.getElementById("project-image-upload") as HTMLInputElement | null;
-  const urlInput = document.getElementById("project-image-url") as HTMLInputElement | null;
-  const uploadLabel = document.getElementById("project-image-upload-label") as HTMLLabelElement | null;
-  const statusSpan = document.getElementById("project-image-upload-status") as HTMLSpanElement | null;
+  const fileInput = document.getElementById(
+    "project-image-upload",
+  ) as HTMLInputElement | null;
+  const urlInput = document.getElementById(
+    "project-image-url",
+  ) as HTMLInputElement | null;
+  const uploadLabel = document.getElementById(
+    "project-image-upload-label",
+  ) as HTMLLabelElement | null;
+  const statusSpan = document.getElementById(
+    "project-image-upload-status",
+  ) as HTMLSpanElement | null;
 
   fileInput?.addEventListener("change", async (e) => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
     if (fileInput) fileInput.disabled = true;
-    if (uploadLabel) uploadLabel.classList.add("opacity-50", "pointer-events-none");
+    if (uploadLabel)
+      uploadLabel.classList.add("opacity-50", "pointer-events-none");
     if (statusSpan) statusSpan.textContent = "Uploading…";
 
     try {
       const url = await uploadImage(file);
       if (urlInput) urlInput.value = url;
       if (statusSpan) statusSpan.textContent = "Done";
-      setTimeout(() => { if (statusSpan) statusSpan.textContent = ""; }, 2000);
+      setTimeout(() => {
+        if (statusSpan) statusSpan.textContent = "";
+      }, 2000);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Upload failed";
       alert(`Upload failed: ${message}`);
       if (statusSpan) statusSpan.textContent = "";
     } finally {
       if (fileInput) fileInput.disabled = false;
-      if (uploadLabel) uploadLabel.classList.remove("opacity-50", "pointer-events-none");
+      if (uploadLabel)
+        uploadLabel.classList.remove("opacity-50", "pointer-events-none");
       if (fileInput) fileInput.value = "";
     }
   });
 </script>
 
-<div class="flex justify-end pt-4">
-  <button
-    type="submit"
-    id={submitButtonId}
-    class="inline-flex items-center gap-1.5 rounded-lg border border-slate-400 dark:border-slate-500 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 transition-colors hover:border-slate-500 dark:hover:border-slate-400 hover:text-slate-800 dark:hover:text-slate-100"
-  >
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="admin-form-actions">
+  <button type="submit" id={submitButtonId} class="admin-btn admin-btn-primary">
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         stroke-linecap="round"
         stroke-linejoin="round"
         stroke-width="2"
-        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        d="M5 13l4 4L19 7"></path>
     </svg>
     {submitLabel}
   </button>

@@ -17,10 +17,7 @@ import Dropdown from "../../../components/ui/Dropdown.astro";
           Create a new policy document
         </p>
       </div>
-      <a
-        href="/admin/policies"
-        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 transition-colors hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-      >
+      <a href="/admin/policies" class="admin-btn admin-btn-secondary">
         <svg
           class="w-4 h-4"
           fill="none"
@@ -110,13 +107,27 @@ import Dropdown from "../../../components/ui/Dropdown.astro";
         </div>
       </div>
 
-      <button
-        id="submit-btn"
-        type="submit"
-        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-400 dark:border-slate-500 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 transition-colors hover:border-slate-500 dark:hover:border-slate-400 hover:text-slate-800 dark:hover:text-slate-100"
-      >
-        Save Policy
-      </button>
+      <div class="admin-form-actions">
+        <button
+          id="submit-btn"
+          type="submit"
+          class="admin-btn admin-btn-primary"
+        >
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"></path>
+          </svg>
+          Save Policy
+        </button>
+      </div>
     </form>
   </div>
 </PrivateLayout>

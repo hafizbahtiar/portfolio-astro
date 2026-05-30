@@ -25,13 +25,13 @@ if (paths.length === 1 && paths[0] === "admin") {
 ---
 
 <header
-    class="h-16 border-b border-slate-700 flex items-center justify-between px-6 bg-slate-900/50 sticky top-0 z-20"
+    class="h-16 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-6 bg-white/85 dark:bg-slate-900/50 backdrop-blur-xl sticky top-0 z-20"
 >
     <div class="flex items-center gap-3">
         <div class="flex items-center gap-2">
             <button
                 id="toggle-sidebar"
-                class="md:hidden text-slate-400 hover:text-slate-200 p-2 rounded-lg hover:bg-slate-800 transition-colors"
+                class="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 aria-label="Toggle sidebar"
                 type="button"
             >
@@ -51,7 +51,7 @@ if (paths.length === 1 && paths[0] === "admin") {
             </button>
             <button
                 id="minimize-sidebar"
-                class="hidden md:inline-flex text-slate-400 hover:text-slate-200 p-2 rounded-lg hover:bg-slate-800 transition-colors"
+                class="hidden md:inline-flex text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 aria-label="Minimize sidebar"
                 type="button"
             >
@@ -70,17 +70,25 @@ if (paths.length === 1 && paths[0] === "admin") {
                 </svg>
             </button>
         </div>
-        <div class="hidden sm:flex items-center text-sm text-slate-400 gap-2">
+        <div
+            class="hidden sm:flex items-center text-sm text-slate-500 dark:text-slate-400 gap-2"
+        >
             {
                 breadcrumbs.map((crumb, index) => (
                     <>
-                        {index > 0 && <span class="text-slate-600">/</span>}
+                        {index > 0 && (
+                            <span class="text-slate-300 dark:text-slate-600">
+                                /
+                            </span>
+                        )}
                         {crumb.isLast ? (
-                            <span class="text-slate-200">{crumb.label}</span>
+                            <span class="text-slate-900 dark:text-slate-200">
+                                {crumb.label}
+                            </span>
                         ) : (
                             <a
                                 href={crumb.href}
-                                class="text-slate-400 hover:text-slate-200 transition-colors"
+                                class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
                             >
                                 {crumb.label}
                             </a>
@@ -91,10 +99,49 @@ if (paths.length === 1 && paths[0] === "admin") {
         </div>
     </div>
 
-    <div class="flex items-center space-x-4 ml-auto">
+    <div class="flex items-center gap-2 ml-auto">
+        <!-- Theme Toggle -->
+        <button
+            id="admin-theme-toggle"
+            type="button"
+            aria-label="Toggle theme"
+            class="admin-theme-toggle-btn p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+            <svg
+                id="admin-theme-sun"
+                class="hidden h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"
+                ></path>
+            </svg>
+            <svg
+                id="admin-theme-moon"
+                class="block h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                ></path>
+            </svg>
+        </button>
+
         <!-- Notifications -->
         <button
-            class="relative p-2 text-slate-400 hover:text-slate-200 transition-colors group"
+            class="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+            type="button"
+            aria-label="Notifications"
         >
             <div
                 class="absolute top-2 right-2 w-2 h-2 bg-slate-500 rounded-full animate-pulse"
@@ -119,7 +166,7 @@ if (paths.length === 1 && paths[0] === "admin") {
         <!-- Settings Quick Link -->
         <a
             href="/admin/settings"
-            class="p-2 text-slate-400 hover:text-slate-200 transition-colors hover:rotate-90 duration-300"
+            class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors hover:rotate-90 duration-300"
             aria-label="Settings"
         >
             <svg
@@ -140,6 +187,56 @@ if (paths.length === 1 && paths[0] === "admin") {
     </div>
 </header>
 <style>
+    .admin-theme-toggle-btn {
+        transform-origin: center;
+        transition:
+            transform 0.15s ease,
+            background-color 0.2s,
+            color 0.2s;
+    }
+    .admin-theme-toggle-btn:active {
+        transform: scale(0.8);
+    }
+    #admin-theme-sun,
+    #admin-theme-moon {
+        transform-origin: center;
+    }
+    @keyframes admin-icon-into-dark {
+        0% {
+            transform: rotate(-60deg) scale(0.3);
+            opacity: 0;
+        }
+        70% {
+            transform: rotate(8deg) scale(1.15);
+            opacity: 1;
+        }
+        100% {
+            transform: rotate(0deg) scale(1);
+            opacity: 1;
+        }
+    }
+    @keyframes admin-icon-into-light {
+        0% {
+            transform: rotate(60deg) scale(0.3);
+            opacity: 0;
+        }
+        70% {
+            transform: rotate(-8deg) scale(1.15);
+            opacity: 1;
+        }
+        100% {
+            transform: rotate(0deg) scale(1);
+            opacity: 1;
+        }
+    }
+    .admin-icon-anim-sun {
+        animation: admin-icon-into-dark 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)
+            both;
+    }
+    .admin-icon-anim-moon {
+        animation: admin-icon-into-light 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)
+            both;
+    }
     #minimize-sidebar svg {
         transition: transform 200ms ease;
     }
@@ -157,6 +254,106 @@ if (paths.length === 1 && paths[0] === "admin") {
     }
 
     function setupNavbar() {
+        const themeToggle = document.getElementById("admin-theme-toggle");
+        const sunIcon = document.getElementById("admin-theme-sun");
+        const moonIcon = document.getElementById("admin-theme-moon");
+
+        const syncThemeIcon = (animate = false) => {
+            const isDark = document.documentElement.classList.contains("dark");
+            if (!sunIcon || !moonIcon) return;
+
+            if (isDark) {
+                moonIcon.classList.add("hidden");
+                moonIcon.classList.remove("block", "admin-icon-anim-moon");
+                sunIcon.classList.remove("hidden");
+                sunIcon.classList.add("block");
+                if (animate) {
+                    sunIcon.classList.remove("admin-icon-anim-sun");
+                    void (sunIcon as HTMLElement).offsetWidth;
+                    sunIcon.classList.add("admin-icon-anim-sun");
+                }
+            } else {
+                sunIcon.classList.add("hidden");
+                sunIcon.classList.remove("block", "admin-icon-anim-sun");
+                moonIcon.classList.remove("hidden");
+                moonIcon.classList.add("block");
+                if (animate) {
+                    moonIcon.classList.remove("admin-icon-anim-moon");
+                    void (moonIcon as HTMLElement).offsetWidth;
+                    moonIcon.classList.add("admin-icon-anim-moon");
+                }
+            }
+        };
+
+        syncThemeIcon();
+
+        if (themeToggle && themeToggle.dataset.bound !== "true") {
+            themeToggle.addEventListener("click", () => {
+                const willBeDark =
+                    !document.documentElement.classList.contains("dark");
+                const rect = themeToggle.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                const radius = Math.hypot(
+                    Math.max(x, window.innerWidth - x),
+                    Math.max(y, window.innerHeight - y),
+                );
+
+                const applyTheme = () => {
+                    document.documentElement.classList.toggle(
+                        "dark",
+                        willBeDark,
+                    );
+                    localStorage.setItem(
+                        "theme",
+                        willBeDark ? "dark" : "light",
+                    );
+                    syncThemeIcon(true);
+                };
+
+                const reducedMotion = window.matchMedia(
+                    "(prefers-reduced-motion: reduce)",
+                ).matches;
+
+                if (
+                    typeof document.startViewTransition !== "function" ||
+                    reducedMotion
+                ) {
+                    applyTheme();
+                    return;
+                }
+
+                document.documentElement.setAttribute(
+                    "data-theme-switching",
+                    "",
+                );
+                const vt = document.startViewTransition(applyTheme);
+                vt.ready
+                    .then(() => {
+                        document.documentElement.animate(
+                            {
+                                clipPath: [
+                                    `circle(0px at ${x}px ${y}px)`,
+                                    `circle(${radius}px at ${x}px ${y}px)`,
+                                ],
+                            },
+                            {
+                                duration: window.innerWidth < 768 ? 350 : 500,
+                                easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                                pseudoElement: "::view-transition-new(root)",
+                            },
+                        );
+                    })
+                    .catch(() => undefined);
+                vt.finished.finally(() => {
+                    document.documentElement.removeAttribute(
+                        "data-theme-switching",
+                    );
+                });
+            });
+            themeToggle.dataset.bound = "true";
+        }
+
         document
             .getElementById("toggle-sidebar")
             ?.addEventListener("click", () => {

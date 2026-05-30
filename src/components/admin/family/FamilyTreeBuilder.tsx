@@ -284,7 +284,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
         result.tree.defaultMainPersonId ?? result.people[0]?.id ?? null;
       const focusedPersonId =
         options?.focusPersonId &&
-        result.people.some((person) => person.id === options.focusPersonId)
+          result.people.some((person) => person.id === options.focusPersonId)
           ? options.focusPersonId
           : defaultSelectedId;
       setSelectedPersonId(focusedPersonId);
@@ -862,20 +862,20 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
               />
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="rounded-md bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-500 disabled:opacity-50"
-              >
-                Create And Open Builder
-              </button>
+            <div className="admin-form-actions">
               <a
                 href="/admin/family"
-                className="rounded-md border border-gray-600 px-4 py-2 text-sm text-gray-300 transition hover:bg-gray-700/60"
+                className="admin-btn admin-btn-secondary"
               >
                 Cancel
               </a>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="admin-btn admin-btn-primary"
+              >
+                Create And Open Builder
+              </button>
             </div>
           </form>
 
@@ -1000,14 +1000,14 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   type="button"
                   onClick={handleDeleteTree}
                   disabled={isSaving}
-                  className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/20 disabled:opacity-50"
+                  className="admin-btn admin-btn-danger"
                 >
                   Delete Tree
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-cyan-500 disabled:opacity-50"
+                  className="admin-btn admin-btn-primary"
                 >
                   Save Tree Settings
                 </button>
@@ -1350,7 +1350,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                             <button
                               type="submit"
                               disabled={isSaving}
-                              className="rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-cyan-500 disabled:opacity-50"
+                              className="admin-btn admin-btn-primary"
                             >
                               Save Person
                             </button>
@@ -1370,7 +1370,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                               type="button"
                               onClick={handleDeletePerson}
                               disabled={isSaving}
-                              className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/20 disabled:opacity-50"
+                              className="admin-btn admin-btn-danger"
                             >
                               Delete
                             </button>
@@ -1480,18 +1480,18 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                           onChange={(e) => setPersonMetadataInput(e.target.value)}
                           className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 font-mono text-xs text-white outline-none focus:border-cyan-500"
                         />
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <button
                             type="submit"
                             disabled={isSaving}
-                            className="rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-cyan-500 disabled:opacity-50"
+                            className="admin-btn admin-btn-primary"
                           >
                             Create Relation
                           </button>
                           <button
                             type="button"
                             onClick={resetInspectorForm}
-                            className="rounded-md border border-gray-600 px-3 py-2 text-sm text-gray-300 transition hover:bg-gray-700/60"
+                            className="admin-btn admin-btn-secondary"
                           >
                             Cancel
                           </button>
