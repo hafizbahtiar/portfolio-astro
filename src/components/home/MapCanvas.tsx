@@ -31,6 +31,18 @@ type MapCanvasProps = {
   zoom?: number;
 };
 
+type ExperienceMapState = {
+  markers?: MapMarkerData[];
+  center?: [number, number];
+  focusedMarkerId?: number;
+};
+
+declare global {
+  interface Window {
+    __experienceMapState?: ExperienceMapState;
+  }
+}
+
 // ─── Theme logic ─────────────────────────────────────────────────────────────
 
 type MapThemePreference = "auto" | "light" | "dark";
@@ -135,8 +147,27 @@ const MapCanvas = ({
     markers[0]?.id ?? null,
   );
   const [markersState, setMarkersState] = useState<MapMarkerData[]>(markers);
+  const markersRef = useRef<MapMarkerData[]>(markers);
   const [centerState, setCenterState] = useState<[number, number]>(center);
   const { resolvedTheme, preference, setPreference } = useMapTheme();
+
+  const updateMarkers = (nextMarkers: MapMarkerData[]) => {
+    markersRef.current = nextMarkers;
+    setMarkersState(nextMarkers);
+  };
+
+  const moveTo = (nextCenter: [number, number], nextZoom = 13) => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (mapRef.current && isMapLoadedRef.current) {
+      mapRef.current.flyTo({
+        center: nextCenter,
+        zoom: nextZoom,
+        duration: reducedMotion ? 0 : 1200,
+      });
+    } else {
+      pendingFlyRef.current = { center: nextCenter, zoom: nextZoom };
+    }
+  };
 
   const handleMapLoad = () => {
     isMapLoadedRef.current = true;
@@ -169,22 +200,17 @@ const MapCanvas = ({
       const markerId = (event as CustomEvent<{ markerId?: number }>).detail
         ?.markerId;
       if (typeof markerId !== "number") return;
-      const coordinates = markerCoordinates.get(markerId);
+      const marker = markersRef.current.find((item) => item.id === markerId);
+      const coordinates =
+        markerCoordinates.get(markerId) ??
+        (marker
+          ? ([marker.longitude, marker.latitude] as [number, number])
+          : undefined);
       if (!coordinates) return;
 
       setActiveMarkerId(markerId);
 
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (mapRef.current && isMapLoadedRef.current) {
-        mapRef.current.flyTo({
-          center: coordinates,
-          zoom: Math.max(mapRef.current.getZoom(), 13),
-          duration: reducedMotion ? 0 : 1200,
-        });
-      } else {
-        // Map not ready yet — queue the flyTo; handleMapLoad will execute it
-        pendingFlyRef.current = { center: coordinates, zoom: 13 };
-      }
+      moveTo(coordinates, Math.max(mapRef.current?.getZoom() ?? 13, 13));
     };
 
     window.addEventListener("map-focus-marker", handleFocusMarker);
@@ -195,14 +221,33 @@ const MapCanvas = ({
   useEffect(() => {
     const handleSetMarkers = (e: Event) => {
       const detail = (e as CustomEvent<{ markers: MapMarkerData[] }>).detail;
-      if (detail?.markers) setMarkersState(detail.markers);
+      if (detail?.markers) updateMarkers(detail.markers);
     };
     const handleSetCenter = (e: Event) => {
       const detail = (e as CustomEvent<{ center: [number, number] }>).detail;
-      if (detail?.center) setCenterState(detail.center);
+      if (!detail?.center) return;
+      setCenterState(detail.center);
+      moveTo(detail.center, zoom);
     };
     window.addEventListener("map:set-markers", handleSetMarkers);
     window.addEventListener("map:set-center", handleSetCenter);
+
+    const cached = window.__experienceMapState;
+    if (cached?.markers) updateMarkers(cached.markers);
+    if (cached?.center) {
+      setCenterState(cached.center);
+      moveTo(cached.center, zoom);
+    }
+    if (typeof cached?.focusedMarkerId === "number") {
+      window.requestAnimationFrame(() => {
+        window.dispatchEvent(
+          new CustomEvent("map-focus-marker", {
+            detail: { markerId: cached.focusedMarkerId },
+          }),
+        );
+      });
+    }
+
     return () => {
       window.removeEventListener("map:set-markers", handleSetMarkers);
       window.removeEventListener("map:set-center", handleSetCenter);
@@ -257,8 +302,8 @@ const MapCanvas = ({
                 />
                 <MarkerLabel
                   className={`text-[11px] font-medium ${isActive
-                      ? resolvedTheme === "dark" ? "text-blue-200" : "text-blue-700"
-                      : resolvedTheme === "dark" ? "text-white" : "text-slate-900"
+                    ? resolvedTheme === "dark" ? "text-blue-200" : "text-blue-700"
+                    : resolvedTheme === "dark" ? "text-white" : "text-slate-900"
                     }`}
                 >
                   {marker.company}

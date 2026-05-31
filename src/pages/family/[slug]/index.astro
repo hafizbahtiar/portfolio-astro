@@ -140,8 +140,12 @@ const slug = Astro.params.slug ?? "";
     </div>
 
     <script is:inline>
-      const chooseInput = document.querySelector('input[name="choose-family"]') as HTMLInputElement | null;
-      const mainInput = document.querySelector('input[name="main-person"]') as HTMLInputElement | null;
+      const chooseInput = /** @type {HTMLInputElement | null} */ (
+        document.querySelector('input[name="choose-family"]')
+      );
+      const mainInput = /** @type {HTMLInputElement | null} */ (
+        document.querySelector('input[name="main-person"]')
+      );
       const noSpouseInput = document.querySelector('input[name="no-spouse"]');
       function onChooseChange() {
         const slug = chooseInput?.value || "";
@@ -271,7 +275,9 @@ const slug = Astro.params.slug ?? "";
     );
     if (!container) return;
     const list = container.querySelector('ul[role="listbox"]');
-    const input = container.querySelector(".dropdown-input") as HTMLInputElement | null;
+    const input = container.querySelector(
+      ".dropdown-input",
+    ) as HTMLInputElement | null;
     const selectedText = container.querySelector(".selected-text");
     if (!list || !input) return;
 
@@ -358,7 +364,9 @@ const slug = Astro.params.slug ?? "";
 
         // Trigger main person change event
         if (initialMainId) {
-          const mainInput = document.querySelector('input[name="main-person"]') as HTMLInputElement | null;
+          const mainInput = document.querySelector(
+            'input[name="main-person"]',
+          ) as HTMLInputElement | null;
           if (mainInput) {
             mainInput.value = initialMainId;
             mainInput.dispatchEvent(new Event("change", { bubbles: true }));
@@ -367,7 +375,9 @@ const slug = Astro.params.slug ?? "";
       } else {
         // No people in this tree
         populateDropdown("main-person", [], "");
-        const mainInput = document.querySelector('input[name="main-person"]') as HTMLInputElement | null;
+        const mainInput = document.querySelector(
+          'input[name="main-person"]',
+        ) as HTMLInputElement | null;
         if (mainInput) {
           mainInput.value = "";
         }

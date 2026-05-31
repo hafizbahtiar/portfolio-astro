@@ -1,17 +1,30 @@
 ---
+
 ---
 
 <div id="featured-projects">
   <div id="featured-projects-loading" class="grid grid-cols-2 gap-4">
-    {Array.from({ length: 4 }).map(() => (
-      <div class="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-700" />
-    ))}
+    {
+      Array.from({ length: 4 }).map(() => (
+        <div class="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-700" />
+      ))
+    }
   </div>
-  <div id="featured-projects-error" class="hidden text-center py-10 rounded-xl border border-red-200 dark:border-red-900/20 bg-red-50 dark:bg-red-900/5">
-    <p class="text-red-600 dark:text-red-400 text-sm">Failed to load projects. Please try again later.</p>
+  <div
+    id="featured-projects-error"
+    class="hidden text-center py-10 rounded-xl border border-red-200 dark:border-red-900/20 bg-red-50 dark:bg-red-900/5"
+  >
+    <p class="text-red-600 dark:text-red-400 text-sm">
+      Failed to load projects. Please try again later.
+    </p>
   </div>
-  <div id="featured-projects-empty" class="hidden text-center py-14 rounded-xl border border-slate-200 dark:border-slate-700 border-dashed">
-    <p class="text-slate-400 dark:text-slate-500 text-sm">No projects yet. Check back soon.</p>
+  <div
+    id="featured-projects-empty"
+    class="hidden text-center py-14 rounded-xl border border-slate-200 dark:border-slate-700 border-dashed"
+  >
+    <p class="text-slate-400 dark:text-slate-500 text-sm">
+      No projects yet. Check back soon.
+    </p>
   </div>
   <div id="featured-projects-grid" class="hidden grid grid-cols-2 gap-4"></div>
 </div>
@@ -26,13 +39,20 @@
   };
 
   function buildProjectCard(project: FeaturedProject) {
-    const slug = project.slug || project.title.toLowerCase().replace(/\s+/g, "-");
+    const slug =
+      project.slug || project.title.toLowerCase().replace(/\s+/g, "-");
     const tags = project.tags || [];
-    const tagsHtml = tags.slice(0, 4).map((tag: string) =>
-      `<span class="px-2 py-0.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded">${escapeHtml(tag)}</span>`
-    ).join("") + (tags.length > 4
-      ? `<span class="px-2 py-0.5 text-xs text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded">+${tags.length - 4}</span>`
-      : "");
+    const tagsHtml =
+      tags
+        .slice(0, 4)
+        .map(
+          (tag: string) =>
+            `<span class="px-2 py-0.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded">${escapeHtml(tag)}</span>`,
+        )
+        .join("") +
+      (tags.length > 4
+        ? `<span class="px-2 py-0.5 text-xs text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded">+${tags.length - 4}</span>`
+        : "");
 
     const imgHtml = project.imageUrl
       ? `<img src="${escapeHtml(project.imageUrl)}" alt="${escapeHtml(project.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" decoding="async" />`
@@ -91,7 +111,9 @@
       }
 
       // Update Hero project count
-      window.dispatchEvent(new CustomEvent("projects:count", { detail: projects.length }));
+      window.dispatchEvent(
+        new CustomEvent("projects:count", { detail: projects.length }),
+      );
     } catch {
       if (loadingEl) loadingEl.classList.add("hidden");
       if (errorEl) errorEl.classList.remove("hidden");

@@ -23,7 +23,7 @@ function formatDate(iso: string | null): string {
 export const PersonInfoPanel = ({ detail }: Props) => {
   const [personId, setPersonId] = useState<string | null>(null);
 
-  const resolvedDetail = useMemo(() => {
+  const resolvedDetail = useMemo<FamilyTreeDetail | null>(() => {
     if (detail && detail.people.length > 0) return detail;
     const win = typeof window !== "undefined" ? (window as any) : null;
     return win?.__familyDetail || detail || null;
