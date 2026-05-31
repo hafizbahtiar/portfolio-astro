@@ -6,13 +6,19 @@ interface Props {
   title?: string;
   description?: string;
   image?: string;
+  imageAlt?: string;
+  type?: "website" | "article";
+  publishedTime?: string;
   class?: string;
 }
 
 const {
   title = "Hafiz Bahtiar - Flutter Developer",
   description = "Portfolio of Hafiz Bahtiar, a Flutter Developer specializing in mobile apps and backend systems.",
-  image = "/favicons/web-app-manifest-512x512.png",
+  image = "/og-default.png",
+  imageAlt = "Hafiz Bahtiar — Flutter Developer",
+  type = "website",
+  publishedTime,
   class: className = "",
 } = Astro.props;
 
@@ -31,18 +37,29 @@ const socialImageURL = new URL(image, siteOrigin);
     <link rel="canonical" href={canonicalURL} />
 
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
     <meta property="og:site_name" content="Hafiz Bahtiar" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={socialImageURL} />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    {type === "article" && publishedTime && (
+      <meta property="article:published_time" content={publishedTime} />
+    )}
+    {type === "article" && (
+      <meta property="article:author" content="Hafiz Bahtiar" />
+    )}
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImageURL} />
+    <meta name="twitter:image:alt" content={imageAlt} />
 
     <ClientRouter />
     <link
