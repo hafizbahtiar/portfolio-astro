@@ -39,6 +39,8 @@ const hasTerms = Boolean(policy?.termsAndConditions);
 <ProjectLayout
   title={`Terms & Conditions - ${project?.title ?? "Project"}`}
   description={project?.description}
+  image={project?.imageUrl || undefined}
+  imageAlt={project?.title}
 >
   <div
     class="bg-white backdrop-blur-sm border border-slate-200 rounded-3xl overflow-hidden shadow-2xl"

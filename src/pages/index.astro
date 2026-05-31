@@ -1,5 +1,6 @@
 ---
 import PublicLayout from "../layouts/PublicLayout.astro";
+import JsonLd from "../components/seo/JsonLd.astro";
 import Hero from "../components/home/Hero.astro";
 import ContactSection from "../components/home/ContactSection.astro";
 import FeaturedProjects from "../components/home/FeaturedProjects.astro";
@@ -82,9 +83,26 @@ const levelStyle: Record<SkillLevel, string> = {
 	familiar:
 		"bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600",
 };
+
+const personSchema = {
+	"@context": "https://schema.org",
+	"@type": "Person",
+	name: "Hafiz Bahtiar",
+	jobTitle: "Flutter Developer",
+	url: "https://hafizbahtiar.com",
+	sameAs: ["https://github.com/hafizbahtiar"],
+};
+const websiteSchema = {
+	"@context": "https://schema.org",
+	"@type": "WebSite",
+	name: "Hafiz Bahtiar",
+	url: "https://hafizbahtiar.com",
+};
 ---
 
 <PublicLayout>
+	<JsonLd schema={personSchema} />
+	<JsonLd schema={websiteSchema} />
 	<Hero />
 
 	<div class="container-main space-y-10 md:space-y-14 pb-10 md:pb-14">

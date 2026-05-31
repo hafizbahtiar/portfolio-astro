@@ -7,12 +7,24 @@ import Background from "../components/layout/Background.astro";
 interface Props {
   title?: string;
   description?: string;
+  image?: string;
+  type?: "website" | "article";
+  publishedTime?: string;
+  imageAlt?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, image, type, publishedTime, imageAlt } =
+  Astro.props;
 ---
 
-<CoreLayout title={title} description={description}>
+<CoreLayout
+  title={title}
+  description={description}
+  image={image}
+  type={type}
+  publishedTime={publishedTime}
+  imageAlt={imageAlt}
+>
   <Background />
   <Navbar />
   <main class="flex-grow pt-20">
