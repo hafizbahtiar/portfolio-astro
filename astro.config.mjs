@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import cloudflare from '@astrojs/cloudflare';
 
@@ -16,7 +17,14 @@ export default defineConfig({
   // Images → Transformations → enable for hafizbahtiar.com). Without it,
   // transformed URLs 404. Roll back to `cloudflare()` to restore passthrough.
   adapter: cloudflare({ imageService: 'cloudflare' }),
-  integrations: [react()],
+  integrations: [
+    react(),
+    sitemap({
+      filter: (page) =>
+        !page.includes('/admin') &&
+        !page.includes('/login'),
+    }),
+  ],
   image: {
     domains: [
       "www.qiubbx.com",
