@@ -1,8 +1,23 @@
 ---
 export const prerender = false;
 import PublicLayout from "../../../layouts/PublicLayout.astro";
+import JsonLd from "../../../components/seo/JsonLd.astro";
+import { blogService } from "../../../lib/blog";
+import { sanitizeRichHtml } from "../../../lib/sanitize";
+import type { BlogSection, BlogChecklist } from "../../../types/blog";
 
 const slug = Astro.params.slug ?? "";
+
+let post = null;
+try {
+  post = slug ? await blogService.getPublicPostBySlug(slug) : null;
+} catch (err) {
+  console.error("Failed to load blog post", slug, err);
+}
+
+if (!post) {
+  return Astro.redirect("/404");
+}
 
 const formatDate = (value?: string | null) => {
   if (!value) return "—";
@@ -14,12 +29,47 @@ const formatDate = (value?: string | null) => {
     day: "2-digit",
   });
 };
+
+const publishedISO = post.publishedDate ?? post.createdAt;
+const metaDescription =
+  post.excerpt ||
+  "Insights on building reliable products, clean architecture, and shipping fast.";
+
+// TODO(backend): when BlogPost gains coverImageUrl, use it here (undefined => CoreLayout default OG image)
+const ogImage = undefined;
+
+const siteOrigin = Astro.site ?? new URL(Astro.url.origin);
+const canonical = new URL(`/blog/${post.slug}`, siteOrigin).toString();
+
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: post.title,
+  description: metaDescription,
+  datePublished: publishedISO,
+  dateModified: post.updatedAt ?? publishedISO,
+  author: { "@type": "Person", name: "Hafiz Bahtiar" },
+  publisher: { "@type": "Person", name: "Hafiz Bahtiar" },
+  mainEntityOfPage: canonical,
+  keywords: (post.tags ?? []).join(", "),
+};
+
+const sections = post.sections ?? [];
+const checklist = post.checklist ?? [];
+const bodyHtml =
+  sections.length === 0 && post.bodyContent
+    ? sanitizeRichHtml(post.bodyContent)
+    : "";
 ---
 
 <PublicLayout
-  title="Blog Post - Hafiz Bahtiar"
-  description="Insights on building reliable products, clean architecture, and shipping fast."
+  title={`${post.title} - Hafiz Bahtiar`}
+  description={metaDescription}
+  image={ogImage}
+  type="article"
+  publishedTime={publishedISO ?? undefined}
 >
+  <JsonLd schema={articleSchema} />
   <div
     class="fixed top-0 left-0 right-0 h-1.5 bg-white/90 z-50 backdrop-blur-sm"
   >
@@ -54,105 +104,8 @@ const formatDate = (value?: string | null) => {
 
       <!-- Blog Post Container -->
       <div id="blog-post-container">
-        <!-- Loading -->
-        <div id="blog-post-loading">
-          <div
-            class="rounded-xl border border-slate-200 bg-surface-code shadow-2xl overflow-hidden relative animate-pulse"
-          >
-            <div
-              class="flex items-center justify-between px-4 py-3 bg-surface-code-rail border-b border-slate-200"
-            >
-              <div class="flex items-center gap-2">
-                <div class="flex gap-2 mr-4">
-                  <div
-                    class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"
-                  >
-                  </div>
-                  <div
-                    class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"
-                  >
-                  </div>
-                  <div
-                    class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"
-                  >
-                  </div>
-                </div>
-                <div
-                  class="px-3 py-1 rounded-t-lg bg-surface-code border-t border-x border-slate-200 text-xs font-mono flex items-center gap-2 relative top-[1px]"
-                >
-                  <span class="text-blue-400">⚛</span>
-                  <span class="h-3 w-20 bg-slate-700 rounded"></span>
-                </div>
-              </div>
-            </div>
-            <div class="p-6 md:p-10 space-y-4">
-              <div class="space-y-1 border-l-2 border-slate-200 pl-4">
-                <div class="flex gap-4">
-                  <div class="h-3 w-6 bg-slate-700 rounded"></div><div
-                    class="h-3 w-8 bg-slate-700 rounded"
-                  >
-                  </div>
-                </div>
-                <div class="flex gap-4">
-                  <div class="h-3 w-6 bg-slate-700 rounded"></div><div
-                    class="h-3 w-16 bg-slate-700 rounded"
-                  >
-                  </div><div class="h-3 w-32 bg-slate-700 rounded"></div>
-                </div>
-                <div class="flex gap-4">
-                  <div class="h-3 w-6 bg-slate-700 rounded"></div><div
-                    class="h-3 w-16 bg-slate-700 rounded"
-                  >
-                  </div><div class="h-3 w-20 bg-slate-700 rounded"></div>
-                </div>
-                <div class="flex gap-4">
-                  <div class="h-3 w-6 bg-slate-700 rounded"></div><div
-                    class="h-3 w-16 bg-slate-700 rounded"
-                  >
-                  </div><div class="h-3 w-24 bg-slate-700 rounded"></div>
-                </div>
-                <div class="flex gap-4">
-                  <div class="h-3 w-6 bg-slate-700 rounded"></div><div
-                    class="h-3 w-8 bg-slate-700 rounded"
-                  >
-                  </div>
-                </div>
-              </div>
-              <div class="pl-10 space-y-3">
-                <div class="h-8 w-2/3 bg-slate-700 rounded"></div>
-                <div class="h-5 w-full bg-slate-700 rounded"></div>
-                <div class="h-5 w-4/5 bg-slate-700 rounded"></div>
-              </div>
-            </div>
-          </div>
-          <div class="mt-10 space-y-4">
-            <div
-              class="h-6 w-1/3 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"
-            >
-            </div>
-            <div
-              class="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded animate-pulse"
-            >
-            </div>
-            <div
-              class="h-4 w-5/6 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"
-            >
-            </div>
-          </div>
-        </div>
-
-        <!-- Error -->
-        <div
-          id="blog-post-error"
-          class="hidden text-center py-10 rounded-xl border border-red-200 dark:border-red-900/20 bg-red-50 dark:bg-red-900/5"
-        >
-          <p class="text-red-600 dark:text-red-400 text-sm">
-            Failed to load blog post. Please try again later.
-          </p>
-        </div>
-
         <!-- Content -->
-        <div id="blog-post-content" class="hidden space-y-10 md:space-y-12">
+        <div id="blog-post-content" class="space-y-10 md:space-y-12">
           <div
             class="rounded-xl border border-slate-200 bg-surface-code shadow-2xl overflow-hidden relative"
           >
@@ -179,7 +132,7 @@ const formatDate = (value?: string | null) => {
                   class="px-3 py-1 rounded-t-lg bg-surface-code border-t border-x border-slate-200 text-xs font-mono text-slate-700 flex items-center gap-2 relative top-[1px]"
                 >
                   <span class="text-blue-400">⚛</span>
-                  <span id="post-file-slug">.mdx</span>
+                  <span id="post-file-slug">{post.slug}.mdx</span>
                   <span class="ml-2 text-slate-600">x</span>
                 </div>
               </div>
@@ -224,23 +177,37 @@ const formatDate = (value?: string | null) => {
                   <span class="w-6 text-gray-700 text-right">2</span>
                   <span class="text-purple-400">title:</span>
                   <span id="post-title-display" class="text-green-400"
-                    >"Post"</span
+                    >{`"${post.title}"`}</span
                   >
                 </div>
                 <div class="flex gap-4">
                   <span class="w-6 text-gray-700 text-right">3</span>
                   <span class="text-purple-400">date:</span>
-                  <span id="post-date-display" class="text-yellow-400"></span>
+                  <span id="post-date-display" class="text-yellow-400"
+                    >{formatDate(publishedISO)}</span
+                  >
                 </div>
                 <div class="flex gap-4">
                   <span class="w-6 text-gray-700 text-right">4</span>
                   <span class="text-purple-400">readTime:</span>
-                  <span id="post-readtime-display" class="text-blue-400"></span>
+                  <span id="post-readtime-display" class="text-blue-400"
+                    >{
+                      post.readTimeMinutes
+                        ? `"${post.readTimeMinutes} min read"`
+                        : ""
+                    }</span
+                  >
                 </div>
                 <div class="flex gap-4">
                   <span class="w-6 text-gray-700 text-right">5</span>
                   <span class="text-purple-400">tags:</span>
-                  <span id="post-tags-display" class="text-slate-700"></span>
+                  <span id="post-tags-display" class="text-slate-700"
+                    >{
+                      `[${(post.tags ?? [])
+                        .map((t: string) => `"${t}"`)
+                        .join(", ")}]`
+                    }</span
+                  >
                 </div>
                 <div class="flex gap-4">
                   <span class="w-6 text-gray-700 text-right">6</span>
@@ -260,13 +227,13 @@ const formatDate = (value?: string | null) => {
                   id="post-title"
                   class="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6 font-sans"
                 >
-                  Post
+                  {post.title}
                 </h1>
                 <p
                   id="post-hero-text"
                   class="text-lg md:text-xl text-slate-500 leading-relaxed max-w-2xl border-l-2 border-blue-500/50 pl-4 italic"
                 >
-                  //
+                  {post.heroText ? `// ${post.heroText}` : "//"}
                 </p>
               </div>
             </div>
@@ -277,11 +244,119 @@ const formatDate = (value?: string | null) => {
             class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-10"
           >
             <article class="space-y-8">
-              <div id="post-sections"></div>
-              <div id="post-body-content"></div>
-              <div id="post-checklist"></div>
+              <div id="post-sections">
+                {
+                  sections.map((section: BlogSection, index: number) => (
+                    <div
+                      class="group relative pl-6 border-l-2 border-slate-200 hover:border-blue-500/50 transition-colors scroll-mt-24 py-2"
+                      id={`section-${index + 1}`}
+                    >
+                      <div class="absolute -left-[7px] top-6 w-3 h-3 rounded-full bg-surface-code border-2 border-slate-400 group-hover:border-blue-500 transition-colors" />
+                      <div class="mb-3">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="text-blue-500/60 font-mono text-sm">
+                            0{index + 1}
+                          </span>
+                          <span class="h-px w-8 bg-slate-100 group-hover:bg-slate-200 transition-colors" />
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800 font-sans tracking-tight group-hover:text-slate-900 transition-colors">
+                          {section.heading}
+                        </h2>
+                      </div>
+                      <p class="text-base md:text-lg text-slate-500 leading-relaxed font-sans group-hover:text-slate-700 transition-colors">
+                        {section.body}
+                      </p>
+                    </div>
+                  ))
+                }
+              </div>
+              <div id="post-body-content">
+                {
+                  bodyHtml && (
+                    <div
+                      class="rounded-2xl border border-slate-200 bg-surface-code p-6 md:p-8 text-slate-700 prose prose-invert max-w-none"
+                      set:html={bodyHtml}
+                    />
+                  )
+                }
+              </div>
+              <div id="post-checklist">
+                {
+                  checklist.length > 0 && (
+                    <div class="mt-12 rounded-lg border border-slate-200 bg-surface-code-rail p-6 font-mono text-sm shadow-lg">
+                      <div class="flex items-center gap-2 mb-4 border-b border-slate-300 pb-3">
+                        <span class="text-yellow-400">TODO:</span>
+                        <span class="text-slate-700">
+                          Implementation Checklist
+                        </span>
+                      </div>
+                      <ul class="space-y-2">
+                        {checklist.map((item: BlogChecklist) => (
+                          <li class="flex items-start gap-3 group cursor-default">
+                            <span class="text-slate-400 font-bold group-hover:text-green-400 transition-colors">
+                              [ ]
+                            </span>
+                            <span class="text-slate-500 group-hover:text-slate-700 transition-colors">
+                              {item.itemText}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )
+                }
+              </div>
             </article>
-            <aside id="post-minimap" class="hidden lg:block"></aside>
+            <aside id="post-minimap" class="lg:block">
+              {
+                sections.length > 0 && (
+                  <div class="sticky top-24 space-y-4 rounded-lg border border-slate-200 bg-surface-code p-4 shadow-xl">
+                    <div class="flex items-center justify-between text-xs font-mono text-slate-500 uppercase tracking-wider mb-2">
+                      <span>Minimap</span>
+                      <span id="read-percent" class="text-blue-400">
+                        0%
+                      </span>
+                    </div>
+                    <div class="relative w-full bg-slate-100 rounded h-1.5 overflow-hidden">
+                      <div
+                        id="read-progress-ghost"
+                        class="absolute top-0 left-0 h-full bg-blue-500 w-0 transition-all duration-100"
+                      />
+                    </div>
+                    <div class="pt-4 border-t border-slate-200">
+                      <div class="text-[10px] font-mono text-slate-400 mb-3 uppercase tracking-wider">
+                        Symbols
+                      </div>
+                      <ul class="space-y-1">
+                        {sections.map(
+                          (section: BlogSection, index: number) => (
+                            <li>
+                              <a
+                                href={`#section-${index + 1}`}
+                                class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-100 transition-colors group"
+                              >
+                                <span class="text-blue-500/70 text-xs font-mono group-hover:text-blue-400">
+                                  #
+                                </span>
+                                <span class="text-slate-500 text-xs font-mono truncate group-hover:text-slate-700 transition-colors">
+                                  {section.heading}
+                                </span>
+                              </a>
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                    <div class="pt-4 mt-2 border-t border-slate-200">
+                      <div class="flex justify-between text-[10px] font-mono text-slate-600">
+                        <span>Ln {sections.length * 15}, Col 1</span>
+                        <span>UTF-8</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+            </aside>
           </section>
         </div>
       </div>
@@ -344,220 +419,4 @@ const formatDate = (value?: string | null) => {
       initReadProgress();
     }
   });
-</script>
-
-<script>
-  import { sanitizeRichHtml } from "../../../lib/sanitize";
-
-  function escapeHtml(str: string) {
-    const div = document.createElement("div");
-    div.appendChild(document.createTextNode(str));
-    return div.innerHTML;
-  }
-
-  function formatDate(value: string | null) {
-    if (!value) return "—";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-    });
-  }
-
-  function buildSectionsHTML(sections: Record<string, any>[]) {
-    if (!sections || sections.length === 0) return "";
-    return sections
-      .map(
-        (section, index) => `
-      <div class="group relative pl-6 border-l-2 border-slate-200 hover:border-blue-500/50 transition-colors scroll-mt-24 py-2" id="section-${index + 1}">
-        <div class="absolute -left-[7px] top-6 w-3 h-3 rounded-full bg-surface-code border-2 border-slate-400 group-hover:border-blue-500 transition-colors"></div>
-        <div class="mb-3">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-blue-500/60 font-mono text-sm">0${index + 1}</span>
-            <span class="h-px w-8 bg-slate-100 group-hover:bg-slate-200 transition-colors"></span>
-          </div>
-          <h2 class="text-2xl font-bold text-slate-800 font-sans tracking-tight group-hover:text-slate-900 transition-colors">${escapeHtml(section.heading)}</h2>
-        </div>
-        <p class="text-base md:text-lg text-slate-500 leading-relaxed font-sans group-hover:text-slate-700 transition-colors">${escapeHtml(section.body)}</p>
-      </div>`,
-      )
-      .join("");
-  }
-
-  function buildChecklistHTML(checklist: Record<string, any>[]) {
-    if (!checklist || checklist.length === 0) return "";
-    return `
-      <div class="mt-12 rounded-lg border border-slate-200 bg-surface-code-rail p-6 font-mono text-sm shadow-lg">
-        <div class="flex items-center gap-2 mb-4 border-b border-slate-300 pb-3">
-          <span class="text-yellow-400">TODO:</span>
-          <span class="text-slate-700">Implementation Checklist</span>
-        </div>
-        <ul class="space-y-2">
-          ${checklist
-            .map(
-              (item) => `
-            <li class="flex items-start gap-3 group cursor-default">
-              <span class="text-slate-400 font-bold group-hover:text-green-400 transition-colors">[ ]</span>
-              <span class="text-slate-500 group-hover:text-slate-700 transition-colors">${escapeHtml(item.itemText)}</span>
-            </li>`,
-            )
-            .join("")}
-        </ul>
-      </div>`;
-  }
-
-  function buildMinimapHTML(sections: Record<string, any>[]) {
-    if (!sections || sections.length === 0) return "";
-    return `
-      <div class="sticky top-24 space-y-4 rounded-lg border border-slate-200 bg-surface-code p-4 shadow-xl">
-        <div class="flex items-center justify-between text-xs font-mono text-slate-500 uppercase tracking-wider mb-2">
-          <span>Minimap</span>
-          <span id="read-percent" class="text-blue-400">0%</span>
-        </div>
-        <div class="relative w-full bg-slate-100 rounded h-1.5 overflow-hidden">
-          <div id="read-progress-ghost" class="absolute top-0 left-0 h-full bg-blue-500 w-0 transition-all duration-100"></div>
-        </div>
-        <div class="pt-4 border-t border-slate-200">
-          <div class="text-[10px] font-mono text-slate-400 mb-3 uppercase tracking-wider">Symbols</div>
-          <ul class="space-y-1">
-            ${sections
-              .map(
-                (section, index) => `
-              <li>
-                <a href="#section-${index + 1}" class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-100 transition-colors group">
-                  <span class="text-blue-500/70 text-xs font-mono group-hover:text-blue-400">#</span>
-                  <span class="text-slate-500 text-xs font-mono truncate group-hover:text-slate-700 transition-colors">${escapeHtml(section.heading)}</span>
-                </a>
-              </li>`,
-              )
-              .join("")}
-          </ul>
-        </div>
-        <div class="pt-4 mt-2 border-t border-slate-200">
-          <div class="flex justify-between text-[10px] font-mono text-slate-600">
-            <span>Ln ${sections.length * 15}, Col 1</span>
-            <span>UTF-8</span>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  async function loadBlogPost() {
-    const loadingEl = document.getElementById("blog-post-loading");
-    const errorEl = document.getElementById("blog-post-error");
-    const contentEl = document.getElementById("blog-post-content");
-
-    try {
-      const slug = window.location.pathname
-        .replace(/^\/blog\//, "")
-        .replace(/\/$/, "");
-      if (!slug) {
-        window.location.href = "/404";
-        return;
-      }
-
-      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "https://api.hafizbahtiar.com/api/v1"}`;
-      const response = await fetch(`${apiUrl}/blog/${slug}`);
-
-      if (response.status === 404) {
-        window.location.href = "/404";
-        return;
-      }
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const json = await response.json();
-      const post = json?.data;
-      if (!post) {
-        window.location.href = "/404";
-        return;
-      }
-
-      // Populate IDE metadata
-      const fileSlugEl = document.getElementById("post-file-slug");
-      if (fileSlugEl) fileSlugEl.textContent = `${post.slug || slug}.mdx`;
-
-      const titleDisplay = document.getElementById("post-title-display");
-      if (titleDisplay) titleDisplay.textContent = `"${post.title}"`;
-
-      const dateDisplay = document.getElementById("post-date-display");
-      if (dateDisplay)
-        dateDisplay.textContent = formatDate(
-          post.publishedDate ?? post.createdAt,
-        );
-
-      const readtimeDisplay = document.getElementById("post-readtime-display");
-      if (readtimeDisplay)
-        readtimeDisplay.textContent = post.readTimeMinutes
-          ? `"${post.readTimeMinutes} min read"`
-          : "";
-
-      const tagsDisplay = document.getElementById("post-tags-display");
-      if (tagsDisplay)
-        tagsDisplay.textContent = `[${(post.tags ?? [])
-          .map((t: string) => `"${t}"`)
-          .join(", ")}]`;
-
-      // Populate title and hero text
-      const titleEl = document.getElementById("post-title");
-      if (titleEl) titleEl.textContent = post.title;
-
-      const heroTextEl = document.getElementById("post-hero-text");
-      if (heroTextEl)
-        heroTextEl.textContent = post.heroText ? `// ${post.heroText}` : "//";
-
-      // Build sections, body content, checklist
-      const sections = post.sections ?? [];
-      const sectionsEl = document.getElementById("post-sections");
-      if (sectionsEl) {
-        sectionsEl.innerHTML = buildSectionsHTML(sections);
-      }
-
-      const bodyContentEl = document.getElementById("post-body-content");
-      if (bodyContentEl) {
-        if (sections.length === 0 && post.bodyContent) {
-          bodyContentEl.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-surface-code p-6 md:p-8 text-slate-700 prose prose-invert max-w-none">${sanitizeRichHtml(post.bodyContent)}</div>`;
-        }
-      }
-
-      const checklist = post.checklist ?? [];
-      const checklistEl = document.getElementById("post-checklist");
-      if (checklistEl) {
-        checklistEl.innerHTML = buildChecklistHTML(checklist);
-      }
-
-      // Build minimap
-      const minimapEl = document.getElementById("post-minimap");
-      if (minimapEl && sections.length > 0) {
-        minimapEl.innerHTML = buildMinimapHTML(sections);
-        minimapEl.classList.remove("hidden");
-      }
-
-      // Update page title
-      document.title = `${post.title} - Hafiz Bahtiar`;
-
-      // Update meta description
-      const metaDesc = document.querySelector("meta[name='description']");
-      if (metaDesc && post.excerpt) {
-        metaDesc.setAttribute("content", post.excerpt);
-      }
-
-      // Show content
-      if (loadingEl) loadingEl.classList.add("hidden");
-      if (contentEl) contentEl.classList.remove("hidden");
-
-      // Re-init read progress after content is visible
-      if (typeof (window as any)._initBlogReadProgress === "function") {
-        (window as any)._initBlogReadProgress();
-      }
-    } catch {
-      if (loadingEl) loadingEl.classList.add("hidden");
-      if (errorEl) errorEl.classList.remove("hidden");
-    }
-  }
-
-  loadBlogPost();
-  document.addEventListener("astro:page-load", loadBlogPost);
 </script>
