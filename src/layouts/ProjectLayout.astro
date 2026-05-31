@@ -4,12 +4,14 @@ import PublicLayout from "./PublicLayout.astro";
 interface Props {
   title: string;
   description?: string;
+  image?: string;
+  imageAlt?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, image, imageAlt } = Astro.props;
 ---
 
-<PublicLayout title={title} description={description}>
+<PublicLayout title={title} description={description} image={image} imageAlt={imageAlt}>
   <div class="container-main py-8 md:py-10 min-h-screen">
     <slot />
   </div>
