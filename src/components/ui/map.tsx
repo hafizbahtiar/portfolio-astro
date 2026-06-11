@@ -179,6 +179,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<MapLibreGL.Map | null>(null);
+  const [initFailed, setInitFailed] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isStyleLoaded, setIsStyleLoaded] = useState(false);
   const currentStyleRef = useRef<MapStyleOption | null>(null);
@@ -212,17 +213,25 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       resolvedTheme === "dark" ? mapStyles.dark : mapStyles.light;
     currentStyleRef.current = initialStyle;
 
-    const map = new MapLibreGL.Map({
-      container: containerRef.current,
-      style: initialStyle,
-      renderWorldCopies: false,
-      attributionControl: {
-        compact: true,
-      },
-      maxTileCacheZoomLevels: 8,
-      ...props,
-      ...viewport,
-    });
+    // MapLibre needs WebGL; some browsers/devices don't provide it. Fail to
+    // a static fallback panel instead of throwing an uncaught error.
+    let map: MapLibreGL.Map;
+    try {
+      map = new MapLibreGL.Map({
+        container: containerRef.current,
+        style: initialStyle,
+        renderWorldCopies: false,
+        attributionControl: {
+          compact: true,
+        },
+        maxTileCacheZoomLevels: 8,
+        ...props,
+        ...viewport,
+      });
+    } catch {
+      setInitFailed(true);
+      return;
+    }
     map.getCanvas().removeAttribute("tabindex");
 
     const styleDataHandler = () => {
@@ -323,7 +332,33 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
         ref={containerRef}
         className={cn("relative w-full h-full", className)}
       >
-        {!isLoaded && <DefaultLoader />}
+        {initFailed ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            <span className="text-xs font-medium">Kuala Lumpur, Malaysia</span>
+          </div>
+        ) : (
+          !isLoaded && <DefaultLoader />
+        )}
         {/* SSR-safe: children render only when map is loaded on client */}
         {mapInstance && children}
       </div>

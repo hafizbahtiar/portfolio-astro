@@ -32,3 +32,29 @@ const { title, description, image, type, publishedTime, imageAlt } =
   </main>
   <Footer />
 </CoreLayout>
+
+<script>
+  // Scroll-reveal: elements with [data-reveal] slide up when entering the
+  // viewport. CSS handles prefers-reduced-motion (elements stay visible).
+  const initReveal = () => {
+    const targets = document.querySelectorAll<HTMLElement>(
+      "[data-reveal]:not(.is-revealed)",
+    );
+    if (!targets.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-revealed");
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -36px 0px" },
+    );
+    targets.forEach((el) => observer.observe(el));
+  };
+
+  initReveal();
+  document.addEventListener("astro:page-load", initReveal);
+</script>
