@@ -10,6 +10,7 @@ export interface User {
 export interface LoginResponse {
   user: User;
   expiresAt: string;
+  refreshable?: boolean;
 }
 
 class AuthService extends ApiClient {
@@ -31,7 +32,10 @@ class AuthService extends ApiClient {
       // The backend sets access_token and refresh_token as httpOnly cookies.
       // We set session_active on the frontend domain so isAuthenticated() can
       // do a cheap local check without a network roundtrip.
-      document.cookie = 'session_active=1; path=/; max-age=604800; SameSite=Lax'
+      const maxAge = response.refreshable === false
+        ? Math.max(0, Math.floor((new Date(response.expiresAt).getTime() - Date.now()) / 1000))
+        : 604800;
+      document.cookie = `session_active=1; path=/; max-age=${maxAge}; SameSite=Lax`
         + (location.protocol === 'https:' ? '; Secure' : '');
     }
     return response;
