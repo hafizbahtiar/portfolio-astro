@@ -7,7 +7,8 @@ interface Props {
 }
 
 const { projects } = Astro.props;
-const visible = projects.slice(0, 4);
+// 5 cards: the featured one spans both columns, the rest fill 2×2 — no holes.
+const visible = projects.slice(0, 5);
 ---
 
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

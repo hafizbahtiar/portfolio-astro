@@ -10,7 +10,7 @@ const { projectCount, yearsExperience } = Astro.props;
     <div class="container-main">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
             <!-- Intro -->
-            <div class="lg:col-span-7 flex flex-col gap-6">
+            <div class="lg:col-span-7 min-w-0 flex flex-col gap-6">
                 <p
                     class="hero-stagger font-mono text-xs tracking-[0.18em] uppercase text-slate-500 dark:text-slate-400"
                     style="--stagger-i: 0"
@@ -38,7 +38,7 @@ const { projectCount, yearsExperience } = Astro.props;
                     class="hero-stagger text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed max-w-xl"
                     style="--stagger-i: 2"
                 >
-                    Backend-first full stack engineer with {yearsExperience}+ years
+                    Backend &amp; Flutter developer with {yearsExperience}+ years
                     shipping production software: reliable APIs on Node.js and
                     Cloudflare Workers, mobile apps in Flutter, and everything
                     needed to take a product from idea to release.
@@ -75,7 +75,7 @@ const { projectCount, yearsExperience } = Astro.props;
             </div>
 
             <!-- API-response status card — the backend-first signature -->
-            <div class="lg:col-span-5 hero-stagger" style="--stagger-i: 4">
+            <div class="lg:col-span-5 min-w-0 hero-stagger" style="--stagger-i: 4">
                 <div
                     class="relative rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-surface-code shadow-xl shadow-slate-200/50 dark:shadow-black/30 overflow-hidden"
                 >
@@ -98,12 +98,16 @@ const { projectCount, yearsExperience } = Astro.props;
                     </div>
                     <!-- JSON body -->
                     <pre
-                        class="px-5 py-4 font-mono text-[12.5px] leading-[1.7] text-slate-600 dark:text-slate-400 overflow-x-auto"><code><span class="text-slate-400 dark:text-slate-500">{`{`}</span>
+                        class="px-5 py-4 font-mono text-xs sm:text-[12.5px] leading-[1.7] text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full"><code><span class="text-slate-400 dark:text-slate-500">{`{`}</span>
   <span class="text-cyan-700 dark:text-cyan-300">"name"</span>: <span class="text-emerald-700 dark:text-emerald-300">"Hafiz Bahtiar"</span>,
-  <span class="text-cyan-700 dark:text-cyan-300">"role"</span>: <span class="text-emerald-700 dark:text-emerald-300">"backend_first_full_stack"</span>,
-  <span class="text-cyan-700 dark:text-cyan-300">"strengths"</span>: [<span class="text-emerald-700 dark:text-emerald-300">"APIs"</span>, <span class="text-emerald-700 dark:text-emerald-300">"Flutter"</span>, <span class="text-emerald-700 dark:text-emerald-300">"clean architecture"</span>],
-  <span class="text-cyan-700 dark:text-cyan-300">"years_experience"</span>: <span class="text-amber-600 dark:text-amber-300">{yearsExperience}</span>,
-  <span class="text-cyan-700 dark:text-cyan-300">"projects_shipped"</span>: <span class="text-amber-600 dark:text-amber-300">{projectCount}</span>,
+  <span class="text-cyan-700 dark:text-cyan-300">"role"</span>: <span class="text-emerald-700 dark:text-emerald-300">"backend_flutter"</span>,
+  <span class="text-cyan-700 dark:text-cyan-300">"stack"</span>: [
+    <span class="text-emerald-700 dark:text-emerald-300">"APIs"</span>,
+    <span class="text-emerald-700 dark:text-emerald-300">"Flutter"</span>,
+    <span class="text-emerald-700 dark:text-emerald-300">"Workers"</span>
+  ],
+  <span class="text-cyan-700 dark:text-cyan-300">"years_exp"</span>: <span class="text-amber-600 dark:text-amber-300">{yearsExperience}</span>,
+  <span class="text-cyan-700 dark:text-cyan-300">"projects"</span>: <span class="text-amber-600 dark:text-amber-300">{projectCount}</span>,
   <span class="text-cyan-700 dark:text-cyan-300">"status"</span>: <span class="text-emerald-700 dark:text-emerald-300">"available_for_work"</span>
 <span class="text-slate-400 dark:text-slate-500">{`}`}</span></code></pre>
                     <!-- Status line -->

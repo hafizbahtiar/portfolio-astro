@@ -23,7 +23,9 @@ export const FALLBACK_PROJECTS: Project[] = [
             "Marketplace sellers lose a cut of every sale to platform commissions. QIUBBX is a zero-commission Halal marketplace — I built the storefront and seller experience as a Next.js PWA with AI-powered analytics, multi-currency payments, and integrated logistics. Sellers keep 100% of their earnings on a platform built for ethical commerce.",
         imageUrl:
             "https://www.qiubbx.com/_next/image?url=%2Fassets%2Fimages%2Flogos%2Flogo_text_light.png&w=256&q=75",
-        imageVariant: "banner",
+        // The source asset is a small text lockup, not a screenshot — render
+        // it contained on a light surface, never object-cover full-bleed.
+        imageVariant: "width-banner",
         technologies: [
             "Next.js",
             "TypeScript",
@@ -317,11 +319,13 @@ export const FALLBACK_EXPERIENCES: Experience[] = [
     },
 ];
 
-/** Curated descriptions take precedence over API copy for matching slugs. */
-export const PROJECT_COPY: Record<string, { title?: string; description: string }> =
-    Object.fromEntries(
-        FALLBACK_PROJECTS.map((p) => [
-            p.slug,
-            { title: p.title, description: p.description },
-        ]),
-    );
+/** Curated copy + presentation that take precedence over API records. */
+export const PROJECT_COPY: Record<
+    string,
+    { title?: string; description: string; imageVariant?: Project["imageVariant"] }
+> = Object.fromEntries(
+    FALLBACK_PROJECTS.map((p) => [
+        p.slug,
+        { title: p.title, description: p.description, imageVariant: p.imageVariant },
+    ]),
+);

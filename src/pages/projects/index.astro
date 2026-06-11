@@ -32,7 +32,11 @@ const projects = await getPublicProjects();
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
     {
       projects.map((project, index) => (
-        <div data-reveal style={`--reveal-delay: ${(index % 2) * 80}ms`}>
+        <div
+          class={index === 0 ? "sm:col-span-2" : ""}
+          data-reveal
+          style={`--reveal-delay: ${(index % 2) * 80}ms`}
+        >
           <ProjectCard
             title={project.title}
             description={project.description}

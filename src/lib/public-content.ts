@@ -52,7 +52,12 @@ export async function getPublicProjects(): Promise<Project[]> {
         data.map((project) => {
             const copy = PROJECT_COPY[project.slug];
             return copy
-                ? { ...project, title: copy.title ?? project.title, description: copy.description }
+                ? {
+                    ...project,
+                    title: copy.title ?? project.title,
+                    description: copy.description,
+                    imageVariant: copy.imageVariant ?? project.imageVariant,
+                }
                 : project;
         }),
     );
