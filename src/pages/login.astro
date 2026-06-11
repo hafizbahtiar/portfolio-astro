@@ -334,7 +334,7 @@ const recaptchaSiteKey =
 
     const formData = new FormData(e.target as HTMLFormElement);
     const email = (formData.get("username") as string)?.trim();
-    const password = formData.get("password") as string;
+    const password = ((formData.get("password") as string) || "").trim();
 
     if (!email || !password) {
       showStatus("Please enter your email and password.", "error", errorIcon);
