@@ -35,6 +35,32 @@ export const ContactsTable = () => {
     const [selectedContact, setSelectedContact] = useState<OwnerContact | null>(
         null
     );
+    const [statusUpdating, setStatusUpdating] = useState(false);
+
+    const updateStatus = async (
+        contact: OwnerContact,
+        status: "READ" | "REPLIED" | "ARCHIVED",
+    ) => {
+        setStatusUpdating(true);
+        try {
+            const updated = await contactService.updateContactStatus(
+                contact.id,
+                status,
+            );
+            const next = updated ?? { ...contact, status };
+            setData((prev) =>
+                prev.map((row) => (row.id === contact.id ? { ...row, ...next } : row)),
+            );
+            setSelectedContact((prev) =>
+                prev && prev.id === contact.id ? { ...prev, ...next } : prev,
+            );
+        } catch (error) {
+            console.error("Failed to update contact status:", error);
+            alert("Couldn't update the message status. Please try again.");
+        } finally {
+            setStatusUpdating(false);
+        }
+    };
 
     useEffect(() => {
         const loadContacts = async () => {
@@ -181,7 +207,20 @@ export const ContactsTable = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+                        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+                            <div className="flex flex-wrap items-center gap-2">
+                                {(["READ", "REPLIED", "ARCHIVED"] as const).map((status) => (
+                                    <button
+                                        key={status}
+                                        type="button"
+                                        disabled={statusUpdating || selectedContact.status === status}
+                                        onClick={() => updateStatus(selectedContact, status)}
+                                        className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-blue-400 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-blue-400 dark:hover:text-blue-300"
+                                    >
+                                        {status === "READ" ? "Mark read" : status === "REPLIED" ? "Mark replied" : "Archive"}
+                                    </button>
+                                ))}
+                            </div>
                             <button
                                 type="button"
                                 className="px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 rounded-lg hover:text-slate-900 hover:border-slate-400 transition-colors dark:text-slate-300 dark:border-slate-600 dark:hover:text-white dark:hover:border-slate-400"
