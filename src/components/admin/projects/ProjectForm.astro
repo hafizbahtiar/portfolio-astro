@@ -26,14 +26,10 @@ const {
   rolePlaceholder = "e.g. Lead Developer",
 } = Astro.props;
 
-const cardClass =
-  "rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5";
-const titleClass =
-  "text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4 border-b border-slate-200 dark:border-slate-700 pb-3";
-const labelClass =
-  "block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest";
-const inputClass =
-  "w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-slate-400/50 focus:border-slate-400 outline-none transition-all bg-white dark:bg-slate-900/50";
+const cardClass = "admin-card";
+const titleClass = "admin-card-title";
+const labelClass = "admin-label";
+const inputClass = "admin-input";
 ---
 
 <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-8">
@@ -80,7 +76,7 @@ const inputClass =
             <label
               for="project-image-upload"
               id="project-image-upload-label"
-              class="cursor-pointer text-xs text-cyan-400 hover:text-cyan-300 border border-gray-700 hover:border-cyan-500 rounded px-3 py-1.5 transition-colors"
+              class="cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-slate-600 dark:text-slate-300 dark:hover:border-blue-400 dark:hover:text-blue-300"
             >
               Upload image
             </label>

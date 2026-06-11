@@ -1,23 +1,21 @@
 ---
 import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
 import { FamilyTreeBuilder } from "../../../components/admin/family/FamilyTreeBuilder";
 import AlertToast from "../../../components/ui/AlertToast.astro";
 ---
 
 <PrivateLayout title="Edit Family Tree">
   <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <div>
-        <h1
-          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-        >
-          Edit Family Tree
-        </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-          Edit family member details
-        </p>
-      </div>
-      <a href="/admin/family" class="admin-btn admin-btn-secondary">
+    <AdminPageHeader
+      title="Edit Family Tree"
+      description="Edit family member details"
+    >
+      <a
+        slot="actions"
+        href="/admin/family"
+        class="admin-btn admin-btn-secondary"
+      >
         <svg
           class="w-4 h-4"
           fill="none"
@@ -32,7 +30,7 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
         </svg>
         Back to list
       </a>
-    </div>
+    </AdminPageHeader>
 
     <FamilyTreeBuilder client:load mode="edit" />
   </div>

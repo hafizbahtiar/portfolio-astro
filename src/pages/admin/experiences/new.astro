@@ -1,23 +1,21 @@
 ---
 import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
 import ExperienceForm from "../../../components/admin/experiences/ExperienceForm.astro";
 import AlertToast from "../../../components/ui/AlertToast.astro";
 ---
 
 <PrivateLayout title="New Experience">
   <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <div>
-        <h1
-          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-        >
-          New Experience
-        </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-          Add a new work experience
-        </p>
-      </div>
-      <a href="/admin/experiences" class="admin-btn admin-btn-secondary">
+    <AdminPageHeader
+      title="New Experience"
+      description="Add a new work experience"
+    >
+      <a
+        slot="actions"
+        href="/admin/experiences"
+        class="admin-btn admin-btn-secondary"
+      >
         <svg
           class="w-4 h-4"
           fill="none"
@@ -32,7 +30,7 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
         </svg>
         Back to list
       </a>
-    </div>
+    </AdminPageHeader>
 
     <form id="experience-form" class="space-y-8">
       <ExperienceForm submitLabel="Create experience" displayOrderValue={0} />

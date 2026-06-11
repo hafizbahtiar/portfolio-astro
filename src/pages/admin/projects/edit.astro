@@ -1,5 +1,6 @@
 ---
 import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
 import ProjectForm from "../../../components/admin/projects/ProjectForm.astro";
 
 const typeOptions = [
@@ -23,18 +24,12 @@ const imageVariantOptions = [
 
 <PrivateLayout title="Edit Project">
   <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <div>
-        <h1
-          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-        >
-          Edit Project
-        </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-          Edit project details
-        </p>
-      </div>
-      <a href="/admin/projects" class="admin-btn admin-btn-secondary">
+    <AdminPageHeader title="Edit Project" description="Edit project details">
+      <a
+        slot="actions"
+        href="/admin/projects"
+        class="admin-btn admin-btn-secondary"
+      >
         <svg
           class="w-4 h-4"
           fill="none"
@@ -49,7 +44,7 @@ const imageVariantOptions = [
         </svg>
         Back to list
       </a>
-    </div>
+    </AdminPageHeader>
 
     <div id="loading-state" class="text-center py-12">
       <div

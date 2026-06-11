@@ -1,5 +1,6 @@
 ---
 import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
 import ProjectForm from "../../../components/admin/projects/ProjectForm.astro";
 
 const typeOptions = [
@@ -23,18 +24,15 @@ const imageVariantOptions = [
 
 <PrivateLayout title="New Project">
   <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <div>
-        <h1
-          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-        >
-          New Project
-        </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-          Create a new project entry
-        </p>
-      </div>
-      <a href="/admin/projects" class="admin-btn admin-btn-secondary">
+    <AdminPageHeader
+      title="New Project"
+      description="Create a new project entry"
+    >
+      <a
+        slot="actions"
+        href="/admin/projects"
+        class="admin-btn admin-btn-secondary"
+      >
         <svg
           class="w-4 h-4"
           fill="none"
@@ -49,7 +47,7 @@ const imageVariantOptions = [
         </svg>
         Back to list
       </a>
-    </div>
+    </AdminPageHeader>
 
     <form id="project-form" class="space-y-8">
       <ProjectForm
