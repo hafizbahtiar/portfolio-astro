@@ -112,13 +112,24 @@ const emptyDetail: FamilyTreeDetail = {
     return div.innerHTML;
   }
 
+  let familyLoadRunning = false;
+
   async function loadCombinedFamily() {
+    // Guard: the immediate call and astro:page-load both fire on a fresh
+    // load — two concurrent runs race each other into mixed error/empty
+    // states. One run at a time, with a clean slate per run.
+    if (familyLoadRunning) return;
+    familyLoadRunning = true;
+
     const loadingNavEl = document.getElementById("family-trees-nav-loading");
     const navEl = document.getElementById("family-trees-nav");
     const errorEl = document.getElementById("family-combined-error");
     const emptyEl = document.getElementById("family-combined-empty");
     const chartLoadingEl = document.getElementById("family-chart-loading");
     const chartContainerEl = document.getElementById("family-chart-container");
+
+    errorEl?.classList.add("hidden");
+    emptyEl?.classList.add("hidden");
 
     try {
       const apiUrl = `${import.meta.env.PUBLIC_API_URL || "https://api.hafizbahtiar.com/api/v1"}`;
@@ -354,6 +365,8 @@ const emptyDetail: FamilyTreeDetail = {
       if (loadingNavEl) loadingNavEl.classList.add("hidden");
       if (chartLoadingEl) chartLoadingEl.classList.add("hidden");
       if (errorEl) errorEl.classList.remove("hidden");
+    } finally {
+      familyLoadRunning = false;
     }
   }
 
