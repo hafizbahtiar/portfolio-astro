@@ -9,6 +9,8 @@ export interface ContactData {
     subject?: string;
     phone?: string;
     source?: string;
+    /** reCAPTCHA v2 response token — required by the API when captcha is enabled. */
+    recaptchaToken?: string;
 }
 
 export interface ContactResponse {

@@ -1,5 +1,7 @@
 ---
-
+// reCAPTCHA v2 checkbox. When the site key is absent (e.g. local dev) the
+// widget is not rendered and the backend skips verification too.
+const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
 ---
 
 <section id="contact" class="scroll-offset mb-16 md:mb-20">
@@ -113,7 +115,12 @@
           </button>
         </div>
 
-        <form id="contact-form" class="space-y-4" novalidate>
+        <form
+          id="contact-form"
+          class="space-y-4"
+          novalidate
+          data-recaptcha-site-key={recaptchaSiteKey || undefined}
+        >
           <div
             id="contact-status"
             class="hidden text-sm p-3 rounded-lg border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400"
@@ -208,11 +215,49 @@
                 d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
             </svg>
           </button>
+
+          {
+            recaptchaSiteKey && (
+              <p class="text-[11px] leading-relaxed text-slate-400 dark:text-slate-500">
+                Protected by reCAPTCHA — the Google{" "}
+                <a
+                  href="https://policies.google.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="underline hover:text-slate-600 dark:hover:text-slate-300"
+                >
+                  Privacy Policy
+                </a>{" "}
+                and{" "}
+                <a
+                  href="https://policies.google.com/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="underline hover:text-slate-600 dark:hover:text-slate-300"
+                >
+                  Terms of Service
+                </a>{" "}
+                apply.
+              </p>
+            )
+          }
         </form>
       </div>
     </div>
   </div>
 </section>
+
+{
+  // reCAPTCHA v3 — invisible, score-based; a token is fetched per submit.
+  recaptchaSiteKey && (
+    <script
+      is:inline
+      src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
+      async
+      defer
+    />
+  )
+}
 
 <script>
   import { submitContactForm } from "../../lib/contact";
@@ -226,8 +271,30 @@
     const sendAnotherBtn = document.getElementById("contact-send-another");
     const messageInput = document.getElementById("contact-message") as HTMLTextAreaElement | null;
     const charCount = document.getElementById("contact-char-count");
-
     if (!form || !submitBtn) return;
+
+    const recaptchaSiteKey = form.dataset.recaptchaSiteKey || "";
+
+    // v3: fetch a fresh single-use token at submit time. Resolves to ""
+    // on any failure so the caller can show a clean error.
+    const executeRecaptcha = (): Promise<string> =>
+      new Promise((resolve) => {
+        const grecaptcha = (window as any).grecaptcha;
+        if (!recaptchaSiteKey || !grecaptcha?.execute) {
+          resolve("");
+          return;
+        }
+        try {
+          grecaptcha.ready(() => {
+            grecaptcha
+              .execute(recaptchaSiteKey, { action: "contact" })
+              .then((token: string) => resolve(token || ""))
+              .catch(() => resolve(""));
+          });
+        } catch {
+          resolve("");
+        }
+      });
 
     const existingController = (window as any).__contactController;
     if (existingController) existingController.abort();
@@ -269,7 +336,13 @@
 
         const formData = new FormData(form);
         const honeypot = ((formData.get("company") as string) || "").trim();
-        const data = {
+        const data: {
+          name: string;
+          email: string;
+          message: string;
+          source: string;
+          recaptchaToken?: string;
+        } = {
           name: ((formData.get("name") as string) || "").trim(),
           email: ((formData.get("email") as string) || "").trim(),
           message: ((formData.get("message") as string) || "").trim(),
@@ -299,6 +372,17 @@
           Sending…`;
 
         try {
+          if (recaptchaSiteKey) {
+            const token = await executeRecaptcha();
+            if (!token) {
+              showError(
+                "Couldn't run the spam check. Please reload and try again, or email me directly.",
+              );
+              return;
+            }
+            data.recaptchaToken = token;
+          }
+
           const result = await submitContactForm(data);
           if (result.success) {
             form.classList.add("hidden");
