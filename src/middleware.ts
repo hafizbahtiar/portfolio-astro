@@ -33,7 +33,11 @@ const SECURITY_HEADERS: Record<string, string> = {
     "script-src 'self' 'unsafe-inline' blob: https://static.cloudflareinsights.com https://www.google.com https://www.gstatic.com",
     "frame-src 'self' https://www.google.com",
     "worker-src 'self' blob:",
-    "connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com",
+    // In dev the API runs on localhost:8787 — without this, the CSP silently
+    // blocks every admin fetch during local development.
+    `connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com${
+      import.meta.env.DEV ? " http://localhost:8787" : ""
+    }`,
   ].join("; "),
 };
 

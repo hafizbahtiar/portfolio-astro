@@ -1,6 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
+import { FilePlus2 } from "lucide-react";
 import { DataTable } from "../../ui/DataTable";
+import {
+  AdminBadge,
+  AdminAction,
+  CellPrimary,
+  CellSecondary,
+  CellText,
+  RowActions,
+  EditAction,
+} from "../../ui/admin/primitives";
 import { projectsService } from "../../../lib/projects";
 
 interface PolicyRow {
@@ -75,88 +85,79 @@ export const PoliciesTable = () => {
     return date.toLocaleDateString();
   };
 
-  const badgeStyles = useMemo(
-    () => ({
-      privacy: "border-cyan-500/30 text-cyan-300 bg-cyan-500/10",
-      terms: "border-purple-500/30 text-purple-300 bg-purple-500/10",
-      inactive: "border-gray-700 text-gray-500 bg-gray-900/40",
-    }),
-    [],
-  );
-
   const columns: ColumnDef<PolicyRow>[] = [
     {
       accessorKey: "title",
       header: "Project",
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-white">{row.original.title}</span>
-          <span className="text-xs text-gray-500 font-mono">
-            {row.original.slug}
-          </span>
+        <div className="min-w-0">
+          <CellPrimary>{row.original.title}</CellPrimary>
+          <CellSecondary mono>{row.original.slug}</CellSecondary>
         </div>
       ),
     },
     {
       accessorKey: "hasPrivacy",
       header: "Privacy",
+      size: 120,
       cell: ({ row }) => (
-        <span
-          className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-mono border ${row.original.hasPrivacy ? badgeStyles.privacy : badgeStyles.inactive
-            }`}
-        >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${row.original.hasPrivacy ? "bg-cyan-400" : "bg-gray-600"
-              }`}
-          ></span>
-          Privacy
-        </span>
+        <AdminBadge variant={row.original.hasPrivacy ? "accent" : "neutral"} dot>
+          {row.original.hasPrivacy ? "Published" : "None"}
+        </AdminBadge>
       ),
     },
     {
       accessorKey: "hasTerms",
       header: "Terms",
+      size: 120,
       cell: ({ row }) => (
-        <span
-          className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-mono border ${row.original.hasTerms ? badgeStyles.terms : badgeStyles.inactive
-            }`}
-        >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${row.original.hasTerms ? "bg-purple-400" : "bg-gray-600"
-              }`}
-          ></span>
-          Terms
-        </span>
+        <AdminBadge variant={row.original.hasTerms ? "info" : "neutral"} dot>
+          {row.original.hasTerms ? "Published" : "None"}
+        </AdminBadge>
       ),
     },
     {
       accessorKey: "updatedAt",
       header: "Updated",
+      size: 120,
       cell: ({ row }) => (
-        <span className="text-gray-400 font-mono">
-          {formatDate(row.original.updatedAt)}
-        </span>
+        <CellText mono>{formatDate(row.original.updatedAt)}</CellText>
       ),
     },
     {
       id: "actions",
       header: "Actions",
+      size: 90,
+      enableSorting: false,
       cell: ({ row }) => {
         const hasPolicy = row.original.hasPrivacy || row.original.hasTerms;
-        const href = hasPolicy
-          ? `/admin/policies/edit?id=${row.original.id}`
-          : `/admin/policies/new?projectId=${row.original.id}`;
         return (
-          <a
-            href={href}
-            className="text-cyan-300 hover:text-cyan-200 font-mono text-xs uppercase tracking-wider"
-          >
-            {hasPolicy ? "Edit" : "Create"}
-          </a>
+          <RowActions>
+            {hasPolicy ? (
+              <EditAction
+                href={`/admin/policies/edit?id=${row.original.id}`}
+                label={`Edit policies for ${row.original.title}`}
+              />
+            ) : (
+              <AdminAction
+                href={`/admin/policies/new?projectId=${row.original.id}`}
+                label={`Create policies for ${row.original.title}`}
+                icon={FilePlus2}
+              />
+            )}
+          </RowActions>
         );
       },
     },
   ];
 
-  return <DataTable columns={columns} data={data} isLoading={isLoading} />;
+  return (
+    <DataTable
+      columns={columns}
+      data={data}
+      isLoading={isLoading}
+      emptyTitle="No projects found"
+      emptyDescription="Policies are attached to projects — create a project first."
+    />
+  );
 };

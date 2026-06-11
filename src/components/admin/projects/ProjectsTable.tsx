@@ -1,9 +1,23 @@
-
 import React, { useEffect, useState } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "../../ui/DataTable";
+import {
+  AdminBadge,
+  statusBadgeVariant,
+  CellPrimary,
+  CellSecondary,
+  RowActions,
+  EditAction,
+  DeleteAction,
+} from "../../ui/admin/primitives";
 import { projectsService } from "../../../lib/projects";
 import type { Project } from "../../../types/project";
+
+const TYPE_VARIANT = {
+  business: "info",
+  personal: "accent",
+  work: "neutral",
+} as const;
 
 export const ProjectsTable = () => {
   const [data, setData] = useState<Project[]>([]);
@@ -61,94 +75,82 @@ export const ProjectsTable = () => {
   const columns: ColumnDef<Project>[] = [
     {
       accessorKey: "title",
-      header: "Title",
+      header: "Project",
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-white">{row.original.title}</span>
-          <span className="text-xs text-gray-500 font-mono">
-            {row.original.slug}
+        <div className="min-w-0">
+          <span className="flex items-center gap-2">
+            <CellPrimary>{row.original.title}</CellPrimary>
+            {row.original.featured && (
+              <AdminBadge variant="accent">Featured</AdminBadge>
+            )}
           </span>
+          <CellSecondary mono>{row.original.slug}</CellSecondary>
         </div>
       ),
     },
     {
       accessorKey: "projectType",
       header: "Type",
-      cell: ({ row }) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-300 border border-gray-600 capitalize">
-          {row.getValue("projectType")}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
+      size: 120,
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
-        const colorClass =
-          status === "completed"
-            ? "bg-green-900/30 text-green-400 border border-green-900"
-            : status === "in-progress"
-              ? "bg-yellow-900/30 text-yellow-400 border border-yellow-900"
-              : "bg-blue-900/30 text-blue-400 border border-blue-900";
-
+        const type = row.original.projectType;
         return (
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}
-          >
-            {status ? status.toUpperCase() : "UNKNOWN"}
-          </span>
+          <AdminBadge variant={TYPE_VARIANT[type] ?? "neutral"}>
+            {type || "—"}
+          </AdminBadge>
         );
       },
     },
     {
+      accessorKey: "status",
+      header: "Status",
+      size: 140,
+      cell: ({ row }) => {
+        const status = (row.original.status as string) || "unknown";
+        return (
+          <AdminBadge variant={statusBadgeVariant(status)} dot>
+            {status.replace(/-/g, " ")}
+          </AdminBadge>
+        );
+      },
+    },
+    {
+      accessorKey: "year",
+      header: "Year",
+      size: 90,
+      cell: ({ row }) => (
+        <span className="text-sm text-slate-700 dark:text-slate-300 tabular-nums">
+          {row.original.year ?? "—"}
+        </span>
+      ),
+    },
+    {
       id: "actions",
       header: "Actions",
+      size: 110,
+      enableSorting: false,
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <a
+        <RowActions>
+          <EditAction
             href={`/admin/projects/edit?id=${row.original.id}`}
-            className="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/10 rounded-lg transition-colors"
-            title="Edit Project"
-            aria-label={`Edit ${row.original.title}`}
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              ></path>
-            </svg>
-          </a>
-          <button
+            label={`Edit ${row.original.title}`}
+          />
+          <DeleteAction
             onClick={() => handleDelete(row.original)}
-            className="p-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors"
-            title="Delete Project"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              ></path>
-            </svg>
-          </button>
-        </div>
+            label={`Delete ${row.original.title}`}
+          />
+        </RowActions>
       ),
     },
   ];
 
-  return <DataTable columns={columns} data={data} isLoading={isLoading} />;
+  return (
+    <DataTable
+      columns={columns}
+      data={data}
+      isLoading={isLoading}
+      emptyTitle="No projects yet"
+      emptyDescription="Create your first project to feature it on the portfolio."
+    />
+  );
 };

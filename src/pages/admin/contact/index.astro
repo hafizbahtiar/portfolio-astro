@@ -1,22 +1,15 @@
 ---
 import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
 import { ContactsTable } from "../../../components/admin/contact/ContactsTable";
 ---
 
 <PrivateLayout title="Contact Inbox">
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div class="space-y-1">
-        <h1
-          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-        >
-          Contact Me
-        </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-          Contact messages and enquiries
-        </p>
-      </div>
-    </div>
+    <AdminPageHeader
+      title="Messages"
+      description="Read and triage messages from the contact form."
+    />
 
     <ContactsTable client:load />
   </div>
