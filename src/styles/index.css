@@ -10,6 +10,13 @@
  * never inlined as an arbitrary `bg-[#...]` value in markup.
  */
 @theme {
+    /* Typography — public site type system.
+     * Display: Bricolage Grotesque (headings), Sans: Instrument Sans (body),
+     * Mono: IBM Plex Mono (labels, stats, code accents). Loaded in CoreLayout. */
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "Bricolage Grotesque", "Instrument Sans", ui-sans-serif, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+
     /* App canvas */
     --color-canvas: #f8fafc;
     /* light-mode page background */
@@ -59,7 +66,28 @@ html[data-theme-switching]::view-transition-new(root) {
 
     /* Layout */
     .container-main {
-        @apply max-w-[794px] mx-auto px-6 md:px-10;
+        @apply max-w-[860px] mx-auto px-6 md:px-10;
+    }
+
+    /* Section header system — numbered mono label + rule line */
+    .section-label {
+        @apply flex items-center gap-3 mb-3;
+    }
+
+    .section-label .section-index {
+        @apply font-mono text-xs tracking-[0.2em] uppercase text-cyan-600 dark:text-cyan-400;
+    }
+
+    .section-label .section-rule {
+        @apply h-px flex-1 bg-gradient-to-r from-slate-300 to-transparent dark:from-slate-700;
+    }
+
+    .section-heading {
+        @apply font-display text-2xl md:text-[1.75rem] font-bold tracking-tight text-slate-900 dark:text-slate-50;
+    }
+
+    .section-sub {
+        @apply text-sm text-slate-500 dark:text-slate-400 mt-1.5;
     }
 
     .section-padding {
@@ -143,30 +171,6 @@ html[data-theme-switching]::view-transition-new(root) {
         @apply px-3 py-1 bg-slate-100 text-slate-700 rounded-md text-sm font-medium border border-slate-300;
     }
 
-    /* Phone input */
-    .phone-input-clean .PhoneInputCountry {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .phone-input-clean .PhoneInputCountrySelect {
-        background: transparent;
-        border: none;
-        color: #334155;
-        font-size: 0.875rem;
-        outline: none;
-        cursor: pointer;
-        appearance: auto;
-    }
-
-    .phone-input-clean .PhoneInputCountryIcon {
-        width: 20px;
-        height: 14px;
-        border-radius: 2px;
-        overflow: hidden;
-    }
-
     /* Custom Scrollbar */
     .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
@@ -198,14 +202,47 @@ html[data-theme-switching]::view-transition-new(root) {
     }
 }
 
+/* ── Scroll-reveal & hero entrance ─────────────────────────────────────────
+   Elements with [data-reveal] start hidden and slide up when the
+   IntersectionObserver in PublicLayout adds .is-revealed. Hero children use
+   .hero-stagger with --stagger-i for a one-time orchestrated entrance. */
+[data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+        opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal].is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.hero-stagger {
+    opacity: 0;
+    animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: calc(var(--stagger-i, 0) * 90ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-reveal] {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .hero-stagger {
+        opacity: 1;
+        animation: none;
+    }
+}
+
 @layer utilities {
     .glass-nav {
         @apply backdrop-blur-md border-b border-slate-200;
         background-color: rgba(248, 250, 252, 0.92);
-    }
-
-    .dark .phone-input-clean .PhoneInputCountrySelect {
-        color: #94a3b8;
     }
 
     .scroll-offset {
