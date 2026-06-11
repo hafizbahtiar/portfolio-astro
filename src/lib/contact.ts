@@ -89,6 +89,15 @@ export class ContactService extends ApiClient {
     async getContactStats(): Promise<ContactStats | null> {
         return this.get<ContactStats>('owner/contact/stats');
     }
+
+    /** Owner: move a message to READ / REPLIED / ARCHIVED. */
+    async updateContactStatus(
+        id: number,
+        status: 'READ' | 'REPLIED' | 'ARCHIVED',
+    ): Promise<OwnerContact | null> {
+        const path = { READ: 'read', REPLIED: 'replied', ARCHIVED: 'archive' }[status];
+        return this.put<OwnerContact>(`owner/contact/${id}/${path}`, {});
+    }
 }
 
 export const contactService = new ContactService();
