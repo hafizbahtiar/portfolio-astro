@@ -25,9 +25,12 @@ const SECURITY_HEADERS: Record<string, string> = {
     "img-src 'self' data: blob: https:",
     "font-src 'self' https://fonts.gstatic.com data:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "script-src 'self' 'unsafe-inline' blob:",
+    // static.cloudflareinsights.com (script) + cloudflareinsights.com
+    // (beacon POST): Cloudflare Web Analytics is auto-injected by Cloudflare,
+    // so the CSP must allow it or analytics silently fails.
+    "script-src 'self' 'unsafe-inline' blob: https://static.cloudflareinsights.com",
     "worker-src 'self' blob:",
-    "connect-src 'self' https://api.hafizbahtiar.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com",
+    "connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com",
   ].join("; "),
 };
 

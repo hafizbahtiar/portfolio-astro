@@ -10,13 +10,12 @@ export default defineConfig({
   // Canonical origin — powers Astro.site for <link rel="canonical"> and OG URLs.
   site: 'https://hafizbahtiar.com',
   output: 'server',
-  // imageService: 'cloudflare' routes <Image>/getImage through Cloudflare Image
-  // Transformations (/cdn-cgi/image/...), emitting AVIF/WebP + responsive sizes
-  // at the edge for both local and remote (allowlisted) images.
-  // PREREQUISITE: enable Transformations on the zone (Cloudflare dash →
-  // Images → Transformations → enable for hafizbahtiar.com). Without it,
-  // transformed URLs 404. Roll back to `cloudflare()` to restore passthrough.
-  adapter: cloudflare({ imageService: 'cloudflare' }),
+  // Image passthrough. `imageService: 'cloudflare'` (edge AVIF/WebP via
+  // /cdn-cgi/image/...) caused production 404s on every remote project image
+  // because Transformations is NOT enabled on the zone. Re-enable ONLY after
+  // turning it on (Cloudflare dash → Images → Transformations →
+  // hafizbahtiar.com) and verifying /cdn-cgi/image/ URLs return 200.
+  adapter: cloudflare(),
   integrations: [
     react(),
     sitemap({
