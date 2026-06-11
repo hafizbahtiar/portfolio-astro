@@ -1,9 +1,8 @@
 ---
 const links = [
-    { text: "Projects", href: "/projects", reload: false },
-    { text: "Skills", href: "/#skills", reload: true },
-    { text: "Experience", href: "/#experience", reload: true },
-    { text: "Contact", href: "/#contact", reload: true },
+    { text: "Projects", href: "/projects", reload: false, spy: "projects" },
+    { text: "Skills", href: "/#skills", reload: true, spy: "skills" },
+    { text: "Experience", href: "/#experience", reload: true, spy: "experience" },
 ];
 ---
 
@@ -23,7 +22,7 @@ const links = [
             hafiz<span class="text-cyan-600 dark:text-cyan-400">.dev</span>
         </a>
 
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1.5">
             <!-- Desktop nav links -->
             <div class="hidden md:flex items-center gap-1" id="navbar-default">
                 {
@@ -31,12 +30,26 @@ const links = [
                         <a
                             href={link.href}
                             data-astro-reload={link.reload ? true : undefined}
-                            class="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                            data-spy={link.spy}
+                            class="nav-link relative px-4 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
                         >
                             {link.text}
+                            <span class="nav-link-dot absolute left-1/2 -translate-x-1/2 -bottom-0.5 w-1 h-1 rounded-full bg-cyan-500 dark:bg-cyan-400 opacity-0 scale-0 transition-all duration-200" />
                         </a>
                     ))
                 }
+                <!-- Contact CTA -->
+                <a
+                    href="/#contact"
+                    data-astro-reload
+                    data-spy="contact"
+                    class="nav-cta ml-1 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-full shadow-sm shadow-blue-600/25 hover:shadow-blue-600/40 transition-all"
+                >
+                    <span
+                        class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"
+                    ></span>
+                    Contact
+                </a>
             </div>
 
             <!-- Theme toggle -->
@@ -83,11 +96,12 @@ const links = [
                 id="navbar-toggle"
                 type="button"
                 class="inline-flex items-center p-2 w-9 h-9 justify-center text-slate-500 dark:text-slate-400 rounded-lg md:hidden hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                aria-controls="navbar-default"
+                aria-controls="mobile-menu"
                 aria-expanded="false"
             >
                 <span class="sr-only">Open main menu</span>
                 <svg
+                    id="nav-icon-open"
                     class="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -99,6 +113,19 @@ const links = [
                         stroke-linejoin="round"
                         d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
+                <svg
+                    id="nav-icon-close"
+                    class="hidden w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
             </button>
         </div>
     </div>
@@ -106,19 +133,48 @@ const links = [
     <!-- Mobile menu -->
     <div
         id="mobile-menu"
-        class="hidden md:hidden mx-4 mt-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl overflow-hidden"
+        class="md:hidden mx-4 mt-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl overflow-hidden grid grid-rows-[0fr] opacity-0 -translate-y-1 pointer-events-none transition-all duration-300 ease-out"
     >
-        {
-            links.map((link) => (
+        <div class="min-h-0">
+            <div class="p-2">
+                {
+                    links.map((link) => (
+                        <a
+                            href={link.href}
+                            data-astro-reload={link.reload ? true : undefined}
+                            class="block px-4 py-3 text-sm rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        >
+                            {link.text}
+                        </a>
+                    ))
+                }
                 <a
-                    href={link.href}
-                    data-astro-reload={link.reload ? true : undefined}
-                    class="block px-4 py-3 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    href="/#contact"
+                    data-astro-reload
+                    class="block px-4 py-3 text-sm font-semibold rounded-xl text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
                 >
-                    {link.text}
+                    Contact
                 </a>
-            ))
-        }
+            </div>
+            <div
+                class="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-700"
+            >
+                <span
+                    class="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500"
+                >
+                    <span
+                        class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
+                    ></span>
+                    Available for work
+                </span>
+                <a
+                    href="mailto:hafiz@hafizbahtiar.com"
+                    class="font-mono text-[11px] text-slate-400 dark:text-slate-500 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors"
+                >
+                    hafiz@hafizbahtiar.com
+                </a>
+            </div>
+        </div>
     </div>
 </nav>
 
@@ -136,14 +192,37 @@ const links = [
         border: 1px solid rgba(148, 163, 184, 0.35);
         border-radius: 9999px;
         padding: 0.5rem 1.25rem;
-        max-width: 794px;
+        /* Match .container-main (860px) so the pill aligns with content */
+        max-width: 860px;
         margin-left: auto;
         margin-right: auto;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
     }
 
     html.dark nav.floating-nav #nav-container {
         background-color: rgba(15, 23, 42, 0.92);
         border-color: rgba(51, 65, 85, 0.5);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Active link (scroll-spy / current page) */
+    .nav-link[aria-current] {
+        color: var(--color-slate-900, #0f172a);
+    }
+    html.dark .nav-link[aria-current] {
+        color: var(--color-slate-100, #f1f5f9);
+    }
+    .nav-link[aria-current] .nav-link-dot {
+        opacity: 1;
+        scale: 1;
+    }
+
+    /* Mobile menu open state */
+    #mobile-menu.is-open {
+        grid-template-rows: 1fr;
+        opacity: 1;
+        translate: 0 0;
+        pointer-events: auto;
     }
 
     /* Theme toggle button — press feedback */
@@ -217,6 +296,10 @@ const links = [
         html[data-theme-switching]::view-transition-new(*) {
             animation: none !important;
         }
+
+        #mobile-menu {
+            transition: none;
+        }
     }
 </style>
 
@@ -228,6 +311,8 @@ const links = [
         const themeToggle = document.getElementById("theme-toggle");
         const sunIcon = document.getElementById("theme-sun");
         const moonIcon = document.getElementById("theme-moon");
+        const iconOpen = document.getElementById("nav-icon-open");
+        const iconClose = document.getElementById("nav-icon-close");
 
         if (!nav || !toggleBtn || !mobileMenu) return;
 
@@ -238,7 +323,94 @@ const links = [
         (window as any).__navbarController = controller;
         const { signal } = controller;
 
-        // Sync icon visibility + optional entrance animation
+        // ── Mobile menu ──────────────────────────────────────────────
+        const setMenu = (open: boolean) => {
+            mobileMenu.classList.toggle("is-open", open);
+            toggleBtn.setAttribute("aria-expanded", String(open));
+            iconOpen?.classList.toggle("hidden", open);
+            iconClose?.classList.toggle("hidden", !open);
+        };
+
+        toggleBtn.addEventListener(
+            "click",
+            () => setMenu(!mobileMenu.classList.contains("is-open")),
+            { signal },
+        );
+
+        document.addEventListener(
+            "click",
+            (e) => {
+                if (
+                    !mobileMenu.contains(e.target as Node) &&
+                    !toggleBtn.contains(e.target as Node)
+                ) {
+                    setMenu(false);
+                }
+            },
+            { signal },
+        );
+
+        document.addEventListener(
+            "keydown",
+            (e) => {
+                if (e.key === "Escape") setMenu(false);
+            },
+            { signal },
+        );
+
+        mobileMenu.querySelectorAll("a").forEach((link) => {
+            link.addEventListener("click", () => setMenu(false), { signal });
+        });
+
+        // ── Floating pill on scroll ──────────────────────────────────
+        const handleScroll = () => {
+            nav.classList.toggle("floating-nav", window.scrollY > 50);
+        };
+        handleScroll();
+        window.addEventListener("scroll", handleScroll, { signal });
+
+        // ── Active link: current page + homepage scroll-spy ──────────
+        const spyLinks =
+            document.querySelectorAll<HTMLAnchorElement>("[data-spy]");
+        const setActive = (key: string | null) => {
+            spyLinks.forEach((a) => {
+                if (a.dataset.spy === key) {
+                    a.setAttribute("aria-current", "true");
+                } else {
+                    a.removeAttribute("aria-current");
+                }
+            });
+        };
+
+        if (window.location.pathname.startsWith("/projects")) {
+            setActive("projects");
+        } else if (window.location.pathname === "/") {
+            const sections = ["projects", "skills", "experience", "contact"]
+                .map((id) => document.getElementById(id))
+                .filter((el): el is HTMLElement => el !== null);
+
+            const spyObserver = new IntersectionObserver(
+                (entries) => {
+                    // Pick the most visible intersecting section.
+                    const visible = entries
+                        .filter((e) => e.isIntersecting)
+                        .sort(
+                            (a, b) =>
+                                b.intersectionRatio - a.intersectionRatio,
+                        )[0];
+                    if (visible) {
+                        setActive(visible.target.id);
+                    } else if (window.scrollY < 200) {
+                        setActive(null);
+                    }
+                },
+                { rootMargin: "-25% 0px -55% 0px", threshold: [0, 0.2, 0.5] },
+            );
+            sections.forEach((s) => spyObserver.observe(s));
+            signal.addEventListener("abort", () => spyObserver.disconnect());
+        }
+
+        // ── Theme toggle (icon sync + radial view transition) ────────
         const syncThemeIcon = (animate = false) => {
             const isDark = document.documentElement.classList.contains("dark");
 
@@ -351,46 +523,6 @@ const links = [
                 { signal },
             );
         }
-
-        const handleScroll = () => {
-            nav.classList.toggle("floating-nav", window.scrollY > 50);
-        };
-
-        handleScroll();
-        window.addEventListener("scroll", handleScroll, { signal });
-
-        toggleBtn.addEventListener(
-            "click",
-            () => {
-                const open = mobileMenu.classList.toggle("hidden");
-                toggleBtn.setAttribute("aria-expanded", String(!open));
-            },
-            { signal },
-        );
-
-        document.addEventListener(
-            "click",
-            (e) => {
-                if (
-                    !mobileMenu.contains(e.target as Node) &&
-                    !toggleBtn.contains(e.target as Node)
-                ) {
-                    mobileMenu.classList.add("hidden");
-                    toggleBtn.setAttribute("aria-expanded", "false");
-                }
-            },
-            { signal },
-        );
-
-        mobileMenu.querySelectorAll("a").forEach((link) => {
-            link.addEventListener(
-                "click",
-                () => {
-                    mobileMenu.classList.add("hidden");
-                },
-                { signal },
-            );
-        });
 
         // Smooth-scroll hash anchors when already on home page
         document
