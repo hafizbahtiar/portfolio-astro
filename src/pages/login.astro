@@ -1,45 +1,40 @@
 ---
 import CoreLayout from "../layouts/CoreLayout.astro";
 import Background from "../components/layout/Background.astro";
+
+// reCAPTCHA v2 checkbox. When the site key is absent (e.g. local dev) the
+// widget is not rendered and the backend skips verification too.
+const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
 ---
 
-<CoreLayout title="Sign in | Hafiz.dev">
+<CoreLayout title="Sign in | Hafiz Bahtiar">
   <Background />
   <div class="min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-sm">
       <!-- Header -->
       <div class="mb-8 text-center">
-        <div
-          class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 mb-4"
+        <a
+          href="/"
+          class="font-mono text-lg font-semibold text-slate-900 dark:text-slate-100 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 text-blue-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            ></path>
-          </svg>
-        </div>
-        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
-          Sign in
+          hafiz<span class="text-cyan-600 dark:text-cyan-400">.dev</span>
+        </a>
+        <h1
+          class="font-display text-2xl font-bold text-slate-900 dark:text-slate-100 mt-4"
+        >
+          Welcome back
         </h1>
         <p class="text-sm text-slate-400 dark:text-slate-500 mt-1">
-          Admin dashboard access
+          Sign in to manage your portfolio
         </p>
       </div>
 
       <!-- Status message -->
-      <div id="status-display" class="mb-4 hidden">
+      <div id="status-display" class="mb-4 hidden" aria-live="polite">
         <div
           id="status-panel"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg border text-sm border-red-500/30 bg-red-500/8 text-red-300"
+          role="alert"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg border text-sm border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-300"
         >
           <div id="status-icon" class="shrink-0">
             <svg
@@ -60,9 +55,9 @@ import Background from "../components/layout/Background.astro";
 
       <!-- Login Form -->
       <div
-        class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-xl"
+        class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 sm:p-6 shadow-xl shadow-slate-200/50 dark:shadow-black/30"
       >
-        <form class="space-y-5" id="login-form">
+        <form class="space-y-5" id="login-form" novalidate>
           <div class="space-y-1.5">
             <label
               for="username"
@@ -70,9 +65,11 @@ import Background from "../components/layout/Background.astro";
               >Email</label
             >
             <input
-              type="text"
+              type="email"
               id="username"
               name="username"
+              autocomplete="username"
+              inputmode="email"
               class="block w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60 transition-colors text-sm"
               placeholder="you@example.com"
               required
@@ -90,6 +87,7 @@ import Background from "../components/layout/Background.astro";
                 type="password"
                 id="password"
                 name="password"
+                autocomplete="current-password"
                 class="block w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60 transition-colors text-sm pr-10"
                 placeholder="••••••••"
                 required
@@ -97,7 +95,7 @@ import Background from "../components/layout/Background.astro";
               <button
                 type="button"
                 id="toggle-password"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                 aria-label="Toggle password visibility"
               >
                 <svg
@@ -123,42 +121,78 @@ import Background from "../components/layout/Background.astro";
             </div>
           </div>
 
+          {
+            recaptchaSiteKey && (
+              <div
+                id="recaptcha-container"
+                class="flex justify-center min-h-[78px]"
+                data-sitekey={recaptchaSiteKey}
+              />
+            )
+          }
+
           <button
             type="submit"
             id="submit-btn"
-            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
+            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Sign in
           </button>
         </form>
       </div>
+
+      <p class="mt-6 text-center">
+        <a
+          href="/"
+          class="inline-flex items-center gap-1.5 text-sm text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+        >
+          <svg
+            class="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Back to site
+        </a>
+      </p>
     </div>
   </div>
 </CoreLayout>
 
-<style>
-  .status-panel {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
+{
+  recaptchaSiteKey && (
+    <script
+      is:inline
+      src="https://www.google.com/recaptcha/api.js?onload=__onRecaptchaLoad&render=explicit"
+      async
+      defer
+    />
+  )
+}
 
-  #status-display:not(.hidden) .status-panel {
-    animation: status-in 0.25s ease forwards;
-  }
-
-  .status-success {
-    border-color: rgba(16, 185, 129, 0.3) !important;
-    background: rgba(16, 185, 129, 0.08) !important;
-    color: rgb(167, 243, 208) !important;
-  }
-
-  @keyframes status-in {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-</style>
+<script is:inline>
+  // Renders the reCAPTCHA widget once the Google script loads. Explicit
+  // rendering lets us match the active theme and use the compact size on
+  // narrow screens (the normal widget is 304px fixed and overflows at 360px).
+  window.__onRecaptchaLoad = function () {
+    var container = document.getElementById("recaptcha-container");
+    if (!container || !window.grecaptcha || container.dataset.rendered) return;
+    container.dataset.rendered = "true";
+    window.__recaptchaWidgetId = window.grecaptcha.render(container, {
+      sitekey: container.dataset.sitekey,
+      theme: document.documentElement.classList.contains("dark")
+        ? "dark"
+        : "light",
+      size: window.innerWidth < 400 ? "compact" : "normal",
+    });
+  };
+</script>
 
 <script>
   import { authService } from "../lib/auth";
@@ -171,9 +205,27 @@ import Background from "../components/layout/Background.astro";
   const submitBtn = document.getElementById(
     "submit-btn",
   ) as HTMLButtonElement | null;
+  const recaptchaEnabled = !!document.getElementById("recaptcha-container");
 
   let failedAttempts = 0;
   let lockUntil = 0;
+  let submitting = false;
+
+  const getRecaptcha = () => (window as any).grecaptcha;
+  const getRecaptchaToken = (): string => {
+    try {
+      return getRecaptcha()?.getResponse((window as any).__recaptchaWidgetId) ?? "";
+    } catch {
+      return "";
+    }
+  };
+  const resetRecaptcha = () => {
+    try {
+      getRecaptcha()?.reset((window as any).__recaptchaWidgetId);
+    } catch {
+      /* widget not rendered yet */
+    }
+  };
 
   // Toggle Password Visibility
   const togglePasswordBtn = document.getElementById("toggle-password");
@@ -241,6 +293,7 @@ import Background from "../components/layout/Background.astro";
 
   const resetUI = () => {
     (form as HTMLFormElement)?.reset();
+    submitting = false;
     if (submitBtn) {
       submitBtn.textContent = "Sign in";
       submitBtn.disabled = false;
@@ -251,13 +304,31 @@ import Background from "../components/layout/Background.astro";
   resetUI();
   window.addEventListener("pageshow", resetUI);
 
+  // Map backend/API errors to clean user-facing copy. Never surface raw
+  // technical messages on the login screen.
+  const friendlyError = (error: unknown): string => {
+    const message = error instanceof Error ? error.message : "";
+    const status = (error as { status?: number })?.status;
+    if (message.toLowerCase().includes("captcha")) {
+      return "Captcha check failed. Please tick the box and try again.";
+    }
+    if (status === 401 || status === 400) return "Invalid email or password.";
+    if (status === 429) return "Too many attempts. Please wait a minute.";
+    return "Couldn't sign you in right now. Please try again.";
+  };
+
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (submitting) return;
+
     const formData = new FormData(e.target as HTMLFormElement);
-    const email = formData.get("username") as string;
+    const email = (formData.get("username") as string)?.trim();
     const password = formData.get("password") as string;
 
-    if (!email || !password) return;
+    if (!email || !password) {
+      showStatus("Please enter your email and password.", "error", errorIcon);
+      return;
+    }
 
     if (Date.now() < lockUntil) {
       const remaining = Math.ceil((lockUntil - Date.now()) / 1000);
@@ -269,6 +340,20 @@ import Background from "../components/layout/Background.astro";
       return;
     }
 
+    let recaptchaToken = "";
+    if (recaptchaEnabled) {
+      recaptchaToken = getRecaptchaToken();
+      if (!recaptchaToken) {
+        showStatus(
+          "Please complete the captcha check.",
+          "error",
+          errorIcon,
+        );
+        return;
+      }
+    }
+
+    submitting = true;
     if (submitBtn) {
       submitBtn.innerHTML = `
         <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -283,7 +368,11 @@ import Background from "../components/layout/Background.astro";
     if (statusDisplay) statusDisplay.classList.add("hidden");
 
     try {
-      const result = await authService.login(email, password);
+      const result = await authService.login(
+        email,
+        password,
+        recaptchaToken || undefined,
+      );
 
       if (result) {
         failedAttempts = 0;
@@ -302,23 +391,33 @@ import Background from "../components/layout/Background.astro";
       } else {
         throw new Error("Invalid email or password.");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       failedAttempts++;
       if (failedAttempts >= 5) {
         lockUntil = Date.now() + 60_000;
         failedAttempts = 0;
       }
 
+      submitting = false;
       if (submitBtn) {
         submitBtn.textContent = "Sign in";
         submitBtn.disabled = false;
       }
+      // A used token can't be re-verified — require a fresh tick.
+      resetRecaptcha();
 
-      showStatus(
-        error.message || "Invalid email or password.",
-        "error",
-        errorIcon,
-      );
+      showStatus(friendlyError(error), "error", errorIcon);
     }
   });
 </script>
+
+<style>
+  .status-success {
+    border-color: rgba(16, 185, 129, 0.3) !important;
+    background: rgba(16, 185, 129, 0.08) !important;
+    color: rgb(5, 150, 105) !important;
+  }
+  html.dark .status-success {
+    color: rgb(167, 243, 208) !important;
+  }
+</style>
