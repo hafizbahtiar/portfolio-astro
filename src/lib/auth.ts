@@ -17,8 +17,16 @@ class AuthService extends ApiClient {
     super(API_BASE_URL);
   }
 
-  async login(email: string, password: string): Promise<LoginResponse | null> {
-    const response = await this.post<LoginResponse>('/auth/login', { email, password });
+  async login(
+    email: string,
+    password: string,
+    recaptchaToken?: string,
+  ): Promise<LoginResponse | null> {
+    const response = await this.post<LoginResponse>('/auth/login', {
+      email,
+      password,
+      ...(recaptchaToken ? { recaptchaToken } : {}),
+    });
     if (response) {
       // The backend sets access_token and refresh_token as httpOnly cookies.
       // We set session_active on the frontend domain so isAuthenticated() can

@@ -28,7 +28,10 @@ const SECURITY_HEADERS: Record<string, string> = {
     // static.cloudflareinsights.com (script) + cloudflareinsights.com
     // (beacon POST): Cloudflare Web Analytics is auto-injected by Cloudflare,
     // so the CSP must allow it or analytics silently fails.
-    "script-src 'self' 'unsafe-inline' blob: https://static.cloudflareinsights.com",
+    // www.google.com + www.gstatic.com (script) and frame-src www.google.com:
+    // Google reCAPTCHA on /login.
+    "script-src 'self' 'unsafe-inline' blob: https://static.cloudflareinsights.com https://www.google.com https://www.gstatic.com",
+    "frame-src 'self' https://www.google.com",
     "worker-src 'self' blob:",
     "connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com",
   ].join("; "),
