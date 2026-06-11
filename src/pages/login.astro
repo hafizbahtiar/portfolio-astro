@@ -2,9 +2,11 @@
 import CoreLayout from "../layouts/CoreLayout.astro";
 import Background from "../components/layout/Background.astro";
 
-// reCAPTCHA v3 (invisible, score-based). When the site key is absent
-// (e.g. local dev) no script loads and the backend skips verification too.
-const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
+// reCAPTCHA v3 (invisible, score-based). This site key is public; keep it
+// as a fallback so production login still works when build-time env is absent.
+const DEFAULT_RECAPTCHA_SITE_KEY = "6Ldb8RgtAAAAAFgHmhsP9-D0KKlpbO2eIo6iE9CJ";
+const recaptchaSiteKey =
+  import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || DEFAULT_RECAPTCHA_SITE_KEY;
 ---
 
 <CoreLayout title="Sign in | Hafiz Bahtiar">
