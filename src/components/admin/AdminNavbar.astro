@@ -329,21 +329,19 @@ if (paths.length === 1 && paths[0] === "admin") {
             themeToggle.dataset.bound = "true";
         }
 
-        document
-            .getElementById("toggle-sidebar")
-            ?.addEventListener("click", () => {
-                if (window.toggleAdminSidebar) {
-                    window.toggleAdminSidebar();
+        // Delegated: survives first-load module races and DOM swaps — the
+        // listener works no matter when (or in what order) modules loaded.
+        if (!document.documentElement.dataset.sidebarTogglesBound) {
+            document.documentElement.dataset.sidebarTogglesBound = "true";
+            document.addEventListener("click", (event) => {
+                const target = event.target as HTMLElement;
+                if (target.closest("#toggle-sidebar")) {
+                    window.toggleAdminSidebar?.();
+                } else if (target.closest("#minimize-sidebar")) {
+                    window.minimizeAdminSidebar?.();
                 }
             });
-
-        document
-            .getElementById("minimize-sidebar")
-            ?.addEventListener("click", () => {
-                if (window.minimizeAdminSidebar) {
-                    window.minimizeAdminSidebar();
-                }
-            });
+        }
     }
 
     setupNavbar();
