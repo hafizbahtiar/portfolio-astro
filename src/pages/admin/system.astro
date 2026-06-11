@@ -1,5 +1,6 @@
 ---
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../components/admin/AdminPageHeader.astro";
 import { systemService } from "../../lib/system";
 
 const logs = await systemService.getLogs().catch(() => []);
@@ -7,18 +8,12 @@ const logs = await systemService.getLogs().catch(() => []);
 
 <PrivateLayout title="System Logs">
   <div class="space-y-6">
-    <div class="flex justify-between items-start">
-      <div>
-        <h1
-          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-        >
-          System Logs
-        </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-          System status and diagnostics
-        </p>
-      </div>
+    <AdminPageHeader
+      title="System Logs"
+      description="System status and diagnostics"
+    >
       <button
+        slot="actions"
         onclick="window.location.reload()"
         class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 transition-colors hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
       >
@@ -37,7 +32,7 @@ const logs = await systemService.getLogs().catch(() => []);
         </svg>
         Refresh
       </button>
-    </div>
+    </AdminPageHeader>
 
     <div
       class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden"

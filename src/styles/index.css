@@ -55,6 +55,7 @@ html[data-theme-switching]::view-transition-new(root) {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     html[data-theme-switching]::view-transition-group(*),
     html[data-theme-switching]::view-transition-old(*),
     html[data-theme-switching]::view-transition-new(*) {
@@ -122,6 +123,33 @@ html[data-theme-switching]::view-transition-new(root) {
 
     .btn-text {
         @apply inline-flex items-center text-blue-400 font-medium hover:text-blue-300 transition-colors;
+    }
+
+    /* Admin form system — single source of truth for admin cards, labels,
+       and fields. Pages must use these instead of per-file class constants
+       so the admin stays one coherent system. */
+    .admin-card {
+        @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 md:p-5;
+    }
+
+    .admin-card-title {
+        @apply mb-4 border-b border-slate-200 pb-3 text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100;
+    }
+
+    .admin-label {
+        @apply block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400;
+    }
+
+    .admin-input {
+        @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-100 dark:placeholder:text-slate-500;
+    }
+
+    .admin-help {
+        @apply text-xs text-slate-400 dark:text-slate-500;
+    }
+
+    .admin-error {
+        @apply text-xs text-red-600 dark:text-red-400;
     }
 
     /* Admin actions */

@@ -1,5 +1,6 @@
 ---
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../components/admin/AdminPageHeader.astro";
 import { Image } from "astro:assets";
 
 const profile: any = {}; // populated client-side after page load
@@ -7,16 +8,10 @@ const profile: any = {}; // populated client-side after page load
 
 <PrivateLayout title="Admin Profile">
   <div class="space-y-6">
-    <div class="mb-8">
-      <h1
-        class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-      >
-        Profile
-      </h1>
-      <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-        Manage your profile and account details
-      </p>
-    </div>
+    <AdminPageHeader
+      title="Profile"
+      description="Manage your profile and account details"
+    />
 
     <div class="flex flex-col md:flex-row gap-6 items-start">
       <!-- Profile Card -->
@@ -271,9 +266,7 @@ const profile: any = {}; // populated client-side after page load
               </div>
             </fieldset>
 
-            <div
-              class="admin-form-actions"
-            >
+            <div class="admin-form-actions">
               <button
                 type="submit"
                 id="save-profile-btn-bottom"

@@ -1,23 +1,17 @@
 ---
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../components/admin/AdminPageHeader.astro";
 
 // Data is fetched client-side (see <script> below): admin endpoints require the
 // httpOnly auth cookie, which an SSR fetch on Cloudflare cannot forward.
-const cardClass =
-  "rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 md:p-5";
+const cardClass = "admin-card";
 ---
 
 <PrivateLayout title="Dashboard | Hafiz.dev">
-  <div class="mb-6">
-    <h1
-      class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-    >
-      Dashboard
-    </h1>
-    <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-      Live overview of your portfolio content and messages
-    </p>
-  </div>
+  <AdminPageHeader
+    title="Dashboard"
+    description="Live overview of your portfolio content and messages"
+  />
 
   <!-- Error banner -->
   <div

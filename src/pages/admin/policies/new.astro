@@ -1,23 +1,21 @@
 ---
 import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
 import { TextEditor } from "../../../components/ui/TextEditor";
 import Dropdown from "../../../components/ui/Dropdown.astro";
 ---
 
 <PrivateLayout title="New Policy">
   <div class="space-y-6">
-    <div class="flex flex-wrap justify-between items-center gap-4">
-      <div>
-        <h1
-          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-        >
-          New Privacy Policy
-        </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-          Create a new policy document
-        </p>
-      </div>
-      <a href="/admin/policies" class="admin-btn admin-btn-secondary">
+    <AdminPageHeader
+      title="New Privacy Policy"
+      description="Create a new policy document"
+    >
+      <a
+        slot="actions"
+        href="/admin/policies"
+        class="admin-btn admin-btn-secondary"
+      >
         <svg
           class="w-4 h-4"
           fill="none"
@@ -32,7 +30,7 @@ import Dropdown from "../../../components/ui/Dropdown.astro";
         </svg>
         Back to list
       </a>
-    </div>
+    </AdminPageHeader>
 
     <div
       id="loading-state"
@@ -164,13 +162,23 @@ import Dropdown from "../../../components/ui/Dropdown.astro";
     tabButtons.forEach((button) => {
       const isActive = button.dataset.tab === tabId;
       button.setAttribute("aria-selected", String(isActive));
-      button.classList.toggle("text-white", isActive);
-      button.classList.toggle("border-blue-500/60", isActive);
-      button.classList.toggle("bg-blue-500/10", isActive);
-      button.classList.toggle("text-slate-400", !isActive);
-      button.classList.toggle("border-slate-800", !isActive);
-      button.classList.toggle("hover:text-white", !isActive);
-      button.classList.toggle("hover:border-blue-500/40", !isActive);
+      // Theme-aware active state (light + dark)
+      for (const cls of [
+        "text-blue-700",
+        "dark:text-blue-300",
+        "border-blue-500/60",
+        "bg-blue-500/10",
+      ]) {
+        button.classList.toggle(cls, isActive);
+      }
+      for (const cls of [
+        "text-slate-600",
+        "dark:text-slate-400",
+        "border-slate-300",
+        "dark:border-slate-600",
+      ]) {
+        button.classList.toggle(cls, !isActive);
+      }
     });
     tabPanels.forEach((panel) => {
       panel.classList.toggle("hidden", panel.dataset.tabPanel !== tabId);
