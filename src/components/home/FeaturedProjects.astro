@@ -32,6 +32,9 @@ const visible = projects.slice(0, 5);
               : (project.tags ?? [])
           }
           link={`/projects/${project.slug}`}
+          year={project.year}
+          projectType={project.projectType}
+          featured={index === 0 && project.featured}
         />
       </div>
     ))

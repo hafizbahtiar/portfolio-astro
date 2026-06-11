@@ -154,7 +154,9 @@ export const FALLBACK_PROJECTS: Project[] = [
         description:
             "Operating a delivery platform needs more than an app — it needs visibility. I built Jom Dapur's admin dashboard in React with Node.js APIs: live operational metrics, financial reporting, and investor-facing KPIs behind role-based access control.",
         imageUrl: "/images/projects/jd-management.png",
-        imageVariant: "banner",
+        // The asset is a square logo, not a dashboard screenshot — composed
+        // preview treatment, same as the other logo-only projects.
+        imageVariant: "logo",
         technologies: [
             "React",
             "Node.js",

@@ -50,6 +50,9 @@ const projects = await getPublicProjects();
                 : (project.tags ?? [])
             }
             link={`/projects/${project.slug}`}
+            year={project.year}
+            projectType={project.projectType}
+            featured={index === 0 && project.featured}
           />
         </div>
       ))
