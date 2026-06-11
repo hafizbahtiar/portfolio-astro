@@ -1,22 +1,20 @@
 ---
 import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
 import { ProjectsTable } from "../../../components/admin/projects/ProjectsTable";
 ---
 
 <PrivateLayout title="Manage Projects">
   <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <div>
-        <h1
-          class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100"
-        >
-          Projects
-        </h1>
-        <p class="text-slate-400 dark:text-slate-500 text-xs md:text-sm mt-1">
-          All your projects, ordered by display priority
-        </p>
-      </div>
-      <a href="/admin/projects/new" class="admin-btn admin-btn-primary">
+    <AdminPageHeader
+      title="Projects"
+      description="Manage portfolio projects, visibility, ordering, and status."
+    >
+      <a
+        slot="actions"
+        href="/admin/projects/new"
+        class="admin-btn admin-btn-primary"
+      >
         <svg
           class="w-4 h-4"
           fill="none"
@@ -31,7 +29,7 @@ import { ProjectsTable } from "../../../components/admin/projects/ProjectsTable"
         </svg>
         New Project
       </a>
-    </div>
+    </AdminPageHeader>
 
     <ProjectsTable client:load />
   </div>

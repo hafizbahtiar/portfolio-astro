@@ -2,8 +2,8 @@
 import CoreLayout from "../layouts/CoreLayout.astro";
 import Background from "../components/layout/Background.astro";
 
-// reCAPTCHA v2 checkbox. When the site key is absent (e.g. local dev) the
-// widget is not rendered and the backend skips verification too.
+// reCAPTCHA v3 (invisible, score-based). When the site key is absent
+// (e.g. local dev) no script loads and the backend skips verification too.
 const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
 ---
 
@@ -57,7 +57,12 @@ const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
       <div
         class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 sm:p-6 shadow-xl shadow-slate-200/50 dark:shadow-black/30"
       >
-        <form class="space-y-5" id="login-form" novalidate>
+        <form
+          class="space-y-5"
+          id="login-form"
+          novalidate
+          data-recaptcha-site-key={recaptchaSiteKey || undefined}
+        >
           <div class="space-y-1.5">
             <label
               for="username"
@@ -121,16 +126,6 @@ const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
             </div>
           </div>
 
-          {
-            recaptchaSiteKey && (
-              <div
-                id="recaptcha-container"
-                class="flex justify-center min-h-[78px]"
-                data-sitekey={recaptchaSiteKey}
-              />
-            )
-          }
-
           <button
             type="submit"
             id="submit-btn"
@@ -138,6 +133,32 @@ const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
           >
             Sign in
           </button>
+
+          {
+            recaptchaSiteKey && (
+              <p class="text-[11px] leading-relaxed text-center text-slate-400 dark:text-slate-500">
+                Protected by reCAPTCHA — the Google{" "}
+                <a
+                  href="https://policies.google.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="underline hover:text-slate-600 dark:hover:text-slate-300"
+                >
+                  Privacy Policy
+                </a>{" "}
+                and{" "}
+                <a
+                  href="https://policies.google.com/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="underline hover:text-slate-600 dark:hover:text-slate-300"
+                >
+                  Terms of Service
+                </a>{" "}
+                apply.
+              </p>
+            )
+          }
         </form>
       </div>
 
@@ -166,33 +187,16 @@ const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
 </CoreLayout>
 
 {
+  // reCAPTCHA v3 — invisible, score-based; a token is fetched per submit.
   recaptchaSiteKey && (
     <script
       is:inline
-      src="https://www.google.com/recaptcha/api.js?onload=__onRecaptchaLoad&render=explicit"
+      src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
       async
       defer
     />
   )
 }
-
-<script is:inline>
-  // Renders the reCAPTCHA widget once the Google script loads. Explicit
-  // rendering lets us match the active theme and use the compact size on
-  // narrow screens (the normal widget is 304px fixed and overflows at 360px).
-  window.__onRecaptchaLoad = function () {
-    var container = document.getElementById("recaptcha-container");
-    if (!container || !window.grecaptcha || container.dataset.rendered) return;
-    container.dataset.rendered = "true";
-    window.__recaptchaWidgetId = window.grecaptcha.render(container, {
-      sitekey: container.dataset.sitekey,
-      theme: document.documentElement.classList.contains("dark")
-        ? "dark"
-        : "light",
-      size: window.innerWidth < 400 ? "compact" : "normal",
-    });
-  };
-</script>
 
 <script>
   import { authService } from "../lib/auth";
@@ -205,27 +209,32 @@ const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
   const submitBtn = document.getElementById(
     "submit-btn",
   ) as HTMLButtonElement | null;
-  const recaptchaEnabled = !!document.getElementById("recaptcha-container");
+  const recaptchaSiteKey = form?.dataset.recaptchaSiteKey || "";
 
   let failedAttempts = 0;
   let lockUntil = 0;
   let submitting = false;
 
-  const getRecaptcha = () => (window as any).grecaptcha;
-  const getRecaptchaToken = (): string => {
-    try {
-      return getRecaptcha()?.getResponse((window as any).__recaptchaWidgetId) ?? "";
-    } catch {
-      return "";
-    }
-  };
-  const resetRecaptcha = () => {
-    try {
-      getRecaptcha()?.reset((window as any).__recaptchaWidgetId);
-    } catch {
-      /* widget not rendered yet */
-    }
-  };
+  // v3: fetch a fresh single-use token at submit time. Resolves to ""
+  // on any failure so the caller can show a clean error.
+  const executeRecaptcha = (): Promise<string> =>
+    new Promise((resolve) => {
+      const grecaptcha = (window as any).grecaptcha;
+      if (!recaptchaSiteKey || !grecaptcha?.execute) {
+        resolve("");
+        return;
+      }
+      try {
+        grecaptcha.ready(() => {
+          grecaptcha
+            .execute(recaptchaSiteKey, { action: "login" })
+            .then((token: string) => resolve(token || ""))
+            .catch(() => resolve(""));
+        });
+      } catch {
+        resolve("");
+      }
+    });
 
   // Toggle Password Visibility
   const togglePasswordBtn = document.getElementById("toggle-password");
@@ -310,7 +319,7 @@ const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
     const message = error instanceof Error ? error.message : "";
     const status = (error as { status?: number })?.status;
     if (message.toLowerCase().includes("captcha")) {
-      return "Captcha check failed. Please tick the box and try again.";
+      return "Spam check failed. Please reload the page and try again.";
     }
     if (status === 401 || status === 400) return "Invalid email or password.";
     if (status === 429) return "Too many attempts. Please wait a minute.";
@@ -340,19 +349,6 @@ const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
       return;
     }
 
-    let recaptchaToken = "";
-    if (recaptchaEnabled) {
-      recaptchaToken = getRecaptchaToken();
-      if (!recaptchaToken) {
-        showStatus(
-          "Please complete the captcha check.",
-          "error",
-          errorIcon,
-        );
-        return;
-      }
-    }
-
     submitting = true;
     if (submitBtn) {
       submitBtn.innerHTML = `
@@ -368,6 +364,14 @@ const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
     if (statusDisplay) statusDisplay.classList.add("hidden");
 
     try {
+      let recaptchaToken = "";
+      if (recaptchaSiteKey) {
+        recaptchaToken = await executeRecaptcha();
+        if (!recaptchaToken) {
+          throw Object.assign(new Error("captcha"), { status: 0 });
+        }
+      }
+
       const result = await authService.login(
         email,
         password,
@@ -403,8 +407,6 @@ const recaptchaSiteKey = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || "";
         submitBtn.textContent = "Sign in";
         submitBtn.disabled = false;
       }
-      // A used token can't be re-verified — require a fresh tick.
-      resetRecaptcha();
 
       showStatus(friendlyError(error), "error", errorIcon);
     }

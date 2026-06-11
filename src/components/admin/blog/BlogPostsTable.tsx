@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "../../ui/DataTable";
+import {
+  AdminBadge,
+  statusBadgeVariant,
+  CellPrimary,
+  CellSecondary,
+  CellText,
+  RowActions,
+  EditAction,
+  DeleteAction,
+} from "../../ui/admin/primitives";
 import { blogService } from "../../../lib/blog";
 import type { BlogPostSummary } from "../../../types/blog";
 
@@ -60,105 +70,74 @@ export const BlogPostsTable = () => {
   const columns: ColumnDef<BlogPostSummary>[] = [
     {
       accessorKey: "title",
-      header: "Title",
+      header: "Post",
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-white">{row.original.title}</span>
-          <span className="text-xs text-gray-500 font-mono">
-            {row.original.slug}
-          </span>
+        <div className="min-w-0">
+          <CellPrimary>{row.original.title}</CellPrimary>
+          <CellSecondary mono>{row.original.slug}</CellSecondary>
         </div>
       ),
     },
     {
       accessorKey: "status",
       header: "Status",
+      size: 130,
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
-        const colorClass =
-          status === "published"
-            ? "bg-green-900/30 text-green-400 border border-green-900"
-            : status === "draft"
-              ? "bg-yellow-900/30 text-yellow-400 border border-yellow-900"
-              : "bg-gray-800/60 text-gray-400 border border-gray-700";
-
+        const status = (row.getValue("status") as string) || "unknown";
         return (
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}
-          >
-            {status ? status.toUpperCase() : "UNKNOWN"}
-          </span>
+          <AdminBadge variant={statusBadgeVariant(status)} dot>
+            {status}
+          </AdminBadge>
         );
       },
     },
     {
       accessorKey: "publishedDate",
       header: "Published",
+      size: 130,
       cell: ({ row }) => (
-        <span className="text-sm text-gray-300">
-          {row.original.publishedDate || "—"}
-        </span>
+        <CellText mono>{row.original.publishedDate || "—"}</CellText>
       ),
     },
     {
       accessorKey: "readTimeMinutes",
       header: "Read Time",
+      size: 110,
       cell: ({ row }) => (
-        <span className="text-sm text-gray-300">
+        <CellText>
           {row.original.readTimeMinutes
             ? `${row.original.readTimeMinutes} min`
             : "—"}
-        </span>
+        </CellText>
       ),
     },
     {
       id: "actions",
       header: "Actions",
+      size: 110,
+      enableSorting: false,
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <a
+        <RowActions>
+          <EditAction
             href={`/admin/blog/edit?id=${row.original.id}`}
-            className="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/10 rounded-lg transition-colors"
-            title="Edit Post"
-            aria-label={`Edit ${row.original.title}`}
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              ></path>
-            </svg>
-          </a>
-          <button
+            label={`Edit ${row.original.title}`}
+          />
+          <DeleteAction
             onClick={() => handleDelete(row.original)}
-            className="p-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors"
-            title="Delete Post"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              ></path>
-            </svg>
-          </button>
-        </div>
+            label={`Delete ${row.original.title}`}
+          />
+        </RowActions>
       ),
     },
   ];
 
-  return <DataTable columns={columns} data={data} isLoading={isLoading} />;
+  return (
+    <DataTable
+      columns={columns}
+      data={data}
+      isLoading={isLoading}
+      emptyTitle="No posts yet"
+      emptyDescription="Write your first post to populate the blog."
+    />
+  );
 };
