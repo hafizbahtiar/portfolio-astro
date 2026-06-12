@@ -13,32 +13,44 @@ import type {
   UpdateFamilyTreePayload,
 } from "../types/family";
 
-const withNoCache = (endpoint: string) => {
-  const separator = endpoint.includes("?") ? "&" : "?";
-  return `${endpoint}${separator}noCache=1&_=${Date.now()}`;
-};
-
 export class FamilyService extends ApiClient {
   constructor() {
     super(API_BASE_URL);
   }
 
+  private async publicGet<T>(endpoint: string): Promise<T | null> {
+    const cleanedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const response = await fetch(`${this.baseUrl}${cleanedEndpoint}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      throw new Error(`Public family API error: ${response.status}`);
+    }
+
+    const payload = await response.json();
+    if (payload?.success) return payload.data as T;
+    throw new Error(payload?.error || payload?.message || "Public family API error");
+  }
+
   async getPublicTrees(): Promise<FamilyTree[]> {
-    const result = await this.get<FamilyTree[]>(withNoCache("family"));
+    const result = await this.publicGet<FamilyTree[]>("family");
     return result || [];
   }
 
   async getPublicTreeBySlug(slug: string): Promise<FamilyTreeDetail | null> {
-    return this.get<FamilyTreeDetail>(withNoCache(`family/${slug}`));
+    return this.publicGet<FamilyTreeDetail>(`family/${slug}`);
   }
 
   async getPublicPersonById(id: number): Promise<FamilyPerson | null> {
-    return this.get<FamilyPerson>(withNoCache(`family/person/${id}`));
+    return this.publicGet<FamilyPerson>(`family/person/${id}`);
   }
 
   async getPublicTreesByGlobalKey(key: string): Promise<FamilyTree[]> {
-    const result = await this.get<FamilyTree[]>(
-      withNoCache(`family/trees-by-global/${encodeURIComponent(key)}`),
+    const result = await this.publicGet<FamilyTree[]>(
+      `family/trees-by-global/${encodeURIComponent(key)}`,
     );
     return result || [];
   }
