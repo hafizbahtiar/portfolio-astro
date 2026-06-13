@@ -1,0 +1,48 @@
+/* Light/dark theming for family-chart (.f3) to match the portfolio palette. */
+.f3 {
+  --f3-card-bg: #ffffff;
+  --f3-card-text: #0f172a;
+  --f3-card-sub: #64748b;
+  --f3-card-border: #e2e8f0;
+  --f3-card-main: #0891b2;
+  --f3-link: #94a3b8;
+}
+
+.dark .f3 {
+  --f3-card-bg: #1e293b;
+  --f3-card-text: #f1f5f9;
+  --f3-card-sub: #94a3b8;
+  --f3-card-border: #334155;
+  --f3-card-main: #22d3ee;
+  --f3-link: #475569;
+}
+
+.f3 .card-inner,
+.f3 .card_cont .card {
+  border: 1px solid var(--f3-card-border);
+  background: var(--f3-card-bg);
+  color: var(--f3-card-text);
+}
+
+.f3 .card_cont,
+.f3 .card_cont text {
+  color: var(--f3-card-text);
+  fill: var(--f3-card-text);
+}
+
+.f3 .card_cont .text-overflow-mask,
+.f3 .card_cont .card-label,
+.f3 .card_cont .card_text {
+  color: var(--f3-card-sub);
+  fill: var(--f3-card-sub);
+}
+
+.f3 .link {
+  stroke: var(--f3-link);
+}
+
+.f3 .card_main .card-inner,
+.f3 .card_main .card {
+  border-color: var(--f3-card-main);
+  box-shadow: 0 0 0 1px var(--f3-card-main);
+}

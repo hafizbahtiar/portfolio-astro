@@ -1,0 +1,73 @@
+import type {
+  FamilyGender,
+  FamilyRelationshipType,
+  FamilyTreeDetail,
+} from "../types/family";
+
+export interface PublicFamilyTree {
+  slug: string;
+  name: string;
+  description: string | null;
+  defaultMainPersonId?: number | null;
+}
+
+export interface PublicFamilyPerson {
+  id: number;
+  displayName: string;
+  globalKey?: string | null;
+  gender: FamilyGender;
+  birthDate: string | null;
+  deathDate: string | null;
+  isLiving: boolean;
+  photoUrl: string | null;
+}
+
+export interface PublicFamilyRelationship {
+  personId: number;
+  relatedPersonId: number;
+  relationshipType: FamilyRelationshipType;
+}
+
+export interface PublicFamilyTreeDetail {
+  tree: PublicFamilyTree;
+  people: PublicFamilyPerson[];
+  relationships: PublicFamilyRelationship[];
+}
+
+const yearOnly = (value: string | null) => {
+  if (!value) return null;
+  // Read the year textually first so the reduction is timezone-safe even if
+  // SSR runs outside UTC; fall back to Date parsing for unusual formats.
+  const match = value.match(/\b(\d{4})\b/);
+  if (match) return match[1];
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : String(date.getFullYear());
+};
+
+export function sanitizeFamilyDetailForPublic(
+  detail: FamilyTreeDetail,
+): PublicFamilyTreeDetail {
+  return {
+    tree: {
+      slug: detail.tree.slug,
+      name: detail.tree.name,
+      description: detail.tree.description,
+      defaultMainPersonId: detail.tree.defaultMainPersonId ?? null,
+    },
+    people: detail.people.map((person) => ({
+      id: person.id,
+      displayName: person.displayName,
+      globalKey: person.globalKey ?? null,
+      gender: person.gender,
+      birthDate: person.isLiving ? yearOnly(person.birthDate) : person.birthDate,
+      deathDate: person.isLiving ? null : person.deathDate,
+      isLiving: person.isLiving,
+      photoUrl: person.photoUrl,
+    })),
+    relationships: detail.relationships.map((relationship) => ({
+      personId: relationship.personId,
+      relatedPersonId: relationship.relatedPersonId,
+      relationshipType: relationship.relationshipType,
+    })),
+  };
+}

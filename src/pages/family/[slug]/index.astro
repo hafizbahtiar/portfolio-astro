@@ -1,23 +1,40 @@
 ---
 export const prerender = false;
 import PublicLayout from "../../../layouts/PublicLayout.astro";
-import { PersonInfoPanel } from "../../../components/family/PersonInfoPanel";
-import Checkbox from "../../../components/ui/Checkbox.astro";
-import Dropdown from "../../../components/ui/Dropdown.astro";
-import { PublicFamilyExplorer } from "../../../components/family/PublicFamilyExplorer";
+import { FamilyExplorer } from "../../../components/family/FamilyExplorer";
+import { getPublicFamilyTreeBySlug } from "../../../lib/family";
+import {
+  sanitizeFamilyDetailForPublic,
+  type PublicFamilyTreeDetail,
+} from "../../../lib/family-privacy";
 
 const slug = Astro.params.slug ?? "";
+let detail: PublicFamilyTreeDetail | null = null;
+let loadError = false;
+
+try {
+  const loadedDetail = await getPublicFamilyTreeBySlug(slug);
+  detail = loadedDetail ? sanitizeFamilyDetailForPublic(loadedDetail) : null;
+} catch (error) {
+  console.error(`Failed to load family tree "${slug}":`, error);
+  loadError = true;
+}
+
+if (!detail && !loadError) {
+  Astro.response.status = 404;
+}
 ---
 
-<PublicLayout title="Family">
-  <section class="container-main py-24 space-y-8" id="family-slug-page">
+<PublicLayout title={detail ? detail.tree.name : "Family"}>
+  <section class="container-main py-24 space-y-8">
     <div class="space-y-3">
       <a
         href="/family"
-        class="inline-flex items-center gap-1.5 text-sm text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors group"
+        class="group inline-flex items-center gap-1.5 text-sm text-slate-400 transition-colors hover:text-slate-900 dark:text-slate-500 dark:hover:text-slate-100"
       >
         <svg
-          class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform"
+          aria-hidden="true"
+          class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -28,387 +45,42 @@ const slug = Astro.params.slug ?? "";
             stroke-width="2"
             d="M15 19l-7-7 7-7"></path>
         </svg>
-        Back to Families
+        All families
       </a>
-      <h1
-        id="family-slug-title"
-        class="text-4xl font-bold text-slate-900 dark:text-slate-100 tracking-tight"
-      >
-        {slug}
+      <h1 class="text-4xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+        {detail ? detail.tree.name : "Family tree not found"}
       </h1>
-      <p
-        id="family-slug-desc"
-        class="text-slate-500 dark:text-slate-400 max-w-3xl"
-      >
-        Loading family details...
-      </p>
+      {
+        detail?.tree.description && (
+          <p class="max-w-3xl text-slate-500 dark:text-slate-400">
+            {detail.tree.description}
+          </p>
+        )
+      }
     </div>
 
-    <div class="space-y-4">
-      <div
-        class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex flex-wrap items-end gap-3"
-      >
-        <div class="w-48 shrink-0">
-          <Dropdown
-            label="Choose Family"
-            name="choose-family"
-            options={[]}
-            value={slug}
-            placeholder="Select family"
-          />
+    {
+      loadError && (
+        <div
+          role="alert"
+          class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900/20 dark:bg-red-900/5 dark:text-red-400"
+        >
+          Failed to load this family tree. Please refresh to try again.
         </div>
-        <div class="w-48 shrink-0">
-          <Dropdown
-            label="Main Person"
-            name="main-person"
-            options={[]}
-            value=""
-            placeholder="Loading..."
-          />
-        </div>
-        <div class="w-44 shrink-0">
-          <Checkbox label="No Spouse" name="no-spouse" />
-        </div>
-        <div class="flex flex-wrap gap-2 items-end pb-0.5">
-          <button
-            id="btn-orient-vertical"
-            type="button"
-            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-            >Vertical</button
-          >
-          <button
-            id="btn-orient-horizontal"
-            type="button"
-            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-            >Horizontal</button
-          >
-          <button
-            id="btn-zoom-out"
-            type="button"
-            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-            >-</button
-          >
-          <button
-            id="btn-zoom-in"
-            type="button"
-            class="rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-            >+</button
-          >
-          <button
-            id="btn-center-main"
-            type="button"
-            class="rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-500/20"
-            >Center Main</button
-          >
-          <button
-            id="btn-fit"
-            type="button"
-            class="rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-500/20"
-            >Fit</button
-          >
-        </div>
-      </div>
+      )
+    }
 
-      <div
-        id="family-slug-error"
-        class="hidden rounded-xl border border-red-200 dark:border-red-900/20 bg-red-50 dark:bg-red-900/5 p-4 text-sm text-red-600 dark:text-red-400"
-      >
-        Failed to load family data. Please try again later.
-      </div>
-
-      <div class="flex gap-4 h-[580px]">
-        <div class="flex-1 min-w-0">
-          <div class="space-y-3 h-full">
-            <div
-              class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-600 dark:text-yellow-300 text-sm"
-            >
-              Live data will be loaded in the browser for this family.
-            </div>
-            <div class="h-full">
-              <PublicFamilyExplorer
-                client:load
-                minimal={true}
-                initialSlug={slug}
-              />
-            </div>
-          </div>
+    {
+      !loadError && !detail && (
+        <div class="flex h-[320px] flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+          <p>There is no family tree at this address.</p>
+          <a href="/family" class="text-cyan-600 hover:underline dark:text-cyan-400">
+            Browse all families
+          </a>
         </div>
-        <div class="w-64 shrink-0">
-          <PersonInfoPanel client:load />
-        </div>
-      </div>
-    </div>
+      )
+    }
 
-    <script is:inline>
-      const chooseInput = /** @type {HTMLInputElement | null} */ (
-        document.querySelector('input[name="choose-family"]')
-      );
-      const mainInput = /** @type {HTMLInputElement | null} */ (
-        document.querySelector('input[name="main-person"]')
-      );
-      const noSpouseInput = document.querySelector('input[name="no-spouse"]');
-      function onChooseChange() {
-        const slug = chooseInput?.value || "";
-        if (!slug) return;
-        window.dispatchEvent(
-          new CustomEvent("family:set-family", { detail: { slug } }),
-        );
-        window.location.href = `/family/${slug}`;
-      }
-      function onMainChange() {
-        const id = mainInput?.value || "";
-        if (!id) return;
-        window.dispatchEvent(
-          new CustomEvent("family:set-main", { detail: { id } }),
-        );
-      }
-      function onNoSpouseChange() {
-        const el = document.querySelector('input[name="no-spouse"]');
-        const checked = !!(el && el instanceof HTMLInputElement
-          ? el.checked
-          : false);
-        const api =
-          typeof window !== "undefined" && window && window["familyChartApi"]
-            ? window["familyChartApi"]
-            : null;
-        if (api && typeof api.setShowSpouses === "function") {
-          api.setShowSpouses(!checked);
-        }
-        window.dispatchEvent(new CustomEvent("family:center-main"));
-      }
-      chooseInput?.addEventListener("change", onChooseChange);
-      mainInput?.addEventListener("change", onMainChange);
-      noSpouseInput?.addEventListener("change", onNoSpouseChange);
-      document.addEventListener("change", (e) => {
-        const el = e.target instanceof Element ? e.target : null;
-        if (!el) return;
-        let name = el.getAttribute ? el.getAttribute("name") : null;
-        if (!name && el.closest) {
-          const inputEl = el.closest("input[name]");
-          if (inputEl && inputEl.getAttribute) {
-            name = inputEl.getAttribute("name");
-          }
-        }
-        if (name === "choose-family") onChooseChange();
-        if (name === "main-person") onMainChange();
-        if (name === "no-spouse") onNoSpouseChange();
-      });
-      window.addEventListener("family:on-main-changed", (e) => {
-        const id = e?.detail?.id;
-        if (!id || !mainInput) return;
-        if (mainInput.value === String(id)) return;
-        mainInput.value = id;
-        mainInput.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-      if (window.setupDropdowns) {
-        window.setupDropdowns();
-      }
-      const zIn = document.getElementById("btn-zoom-in");
-      const zOut = document.getElementById("btn-zoom-out");
-      const fit = document.getElementById("btn-fit");
-      const center = document.getElementById("btn-center-main");
-      const v = document.getElementById("btn-orient-vertical");
-      const h = document.getElementById("btn-orient-horizontal");
-      zIn?.addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent("family:zoom-in"));
-      });
-      zOut?.addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent("family:zoom-out"));
-      });
-      fit?.addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent("family:fit"));
-      });
-      center?.addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent("family:center-main"));
-      });
-      const orientBase =
-        "rounded-md px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700";
-      const orientActive =
-        "rounded-md px-3 py-2 text-sm border border-cyan-500/40 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-500/20";
-      function setOrientUI(vertical) {
-        if (!v || !h) return;
-        v.className = vertical ? orientActive : orientBase;
-        h.className = vertical ? orientBase : orientActive;
-      }
-      v?.addEventListener("click", () => {
-        window.dispatchEvent(
-          new CustomEvent("family:set-orientation", {
-            detail: { vertical: true },
-          }),
-        );
-        setOrientUI(true);
-      });
-      h?.addEventListener("click", () => {
-        window.dispatchEvent(
-          new CustomEvent("family:set-orientation", {
-            detail: { vertical: false },
-          }),
-        );
-        setOrientUI(false);
-      });
-      setOrientUI(true);
-      if (mainInput && mainInput.value) {
-        mainInput.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-    </script>
+    {detail && <FamilyExplorer client:load detail={detail} />}
   </section>
 </PublicLayout>
-
-<script>
-  function escapeHtml(str: string) {
-    const div = document.createElement("div");
-    div.appendChild(document.createTextNode(str));
-    return div.innerHTML;
-  }
-
-  function buildDropdownItemHtml(value: string, label: string) {
-    return `<li><button type="button" role="option" class="dropdown-item w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors" data-value="${escapeHtml(value)}"><span>${escapeHtml(label)}</span></button></li>`;
-  }
-
-  function populateDropdown(
-    dataName: string,
-    options: any[],
-    selectedValue: string,
-  ) {
-    const container = document.querySelector(
-      `.tech-dropdown-container[data-name="${dataName}"]`,
-    );
-    if (!container) return;
-    const list = container.querySelector('ul[role="listbox"]');
-    const input = container.querySelector(
-      ".dropdown-input",
-    ) as HTMLInputElement | null;
-    const selectedText = container.querySelector(".selected-text");
-    if (!list || !input) return;
-
-    // Clear existing items
-    list.innerHTML = options
-      .map((o: any) => buildDropdownItemHtml(o.value, o.label))
-      .join("");
-
-    // Reset data-bound on items so setupDropdowns rebinds them
-    list.querySelectorAll(".dropdown-item").forEach((item: any) => {
-      item.removeAttribute("data-bound");
-    });
-
-    // Re-initialize dropdown
-    if (window.setupDropdowns) {
-      window.setupDropdowns();
-    }
-
-    // Set selected value
-    if (selectedValue && options.some((o: any) => o.value === selectedValue)) {
-      input.value = selectedValue;
-      const match = options.find((o: any) => o.value === selectedValue);
-      if (selectedText && match) {
-        selectedText.textContent = match.label;
-        selectedText.classList.add("text-cyan-400");
-      }
-    }
-  }
-
-  async function loadFamilySlugData() {
-    const slug =
-      window.location.pathname.split("/family/")[1]?.replace(/\/$/, "") || "";
-    if (!slug) return;
-
-    const titleEl = document.getElementById("family-slug-title");
-    const descEl = document.getElementById("family-slug-desc");
-    const errorEl = document.getElementById("family-slug-error");
-
-    try {
-      const apiUrl = `${import.meta.env.PUBLIC_API_URL || "https://api.hafizbahtiar.com/api/v1"}`;
-
-      // Fetch families list and tree detail in parallel
-      const [familiesRes, detailRes] = await Promise.all([
-        fetch(`${apiUrl}/family?noCache=1&_=${Date.now()}`),
-        fetch(`${apiUrl}/family/${slug}?noCache=1&_=${Date.now()}`),
-      ]);
-
-      if (!familiesRes.ok && !detailRes.ok) {
-        throw new Error("Failed to fetch family data");
-      }
-
-      const familiesJson = familiesRes.ok
-        ? await familiesRes.json()
-        : { data: [] };
-      const families = familiesJson?.data || [];
-
-      const detailJson = detailRes.ok ? await detailRes.json() : { data: null };
-      const detail = detailJson?.data || null;
-
-      // Populate family dropdown
-      const familyOptions = families.map((t: any) => ({
-        value: t.slug,
-        label: t.name,
-      }));
-      populateDropdown(
-        "choose-family",
-        familyOptions,
-        detail?.tree?.slug || slug,
-      );
-
-      // Populate person dropdown
-      if (detail && detail.people.length > 0) {
-        const personOptions = detail.people.map((p: any) => ({
-          value: String(p.id),
-          label: p.displayName,
-        }));
-
-        const defId = detail.tree.defaultMainPersonId ?? null;
-        const initialMainId = defId
-          ? String(defId)
-          : String(detail.people[0]?.id || "");
-
-        populateDropdown("main-person", personOptions, initialMainId);
-
-        // Trigger main person change event
-        if (initialMainId) {
-          const mainInput = document.querySelector(
-            'input[name="main-person"]',
-          ) as HTMLInputElement | null;
-          if (mainInput) {
-            mainInput.value = initialMainId;
-            mainInput.dispatchEvent(new Event("change", { bubbles: true }));
-          }
-        }
-      } else {
-        // No people in this tree
-        populateDropdown("main-person", [], "");
-        const mainInput = document.querySelector(
-          'input[name="main-person"]',
-        ) as HTMLInputElement | null;
-        if (mainInput) {
-          mainInput.value = "";
-        }
-        const placeholder = document.querySelector(
-          '.tech-dropdown-container[data-name="main-person"] .selected-text',
-        );
-        if (placeholder) {
-          placeholder.textContent = "No people found";
-        }
-      }
-
-      // Update title and description
-      if (detail) {
-        if (titleEl) titleEl.textContent = detail.tree.name || slug;
-        if (descEl)
-          descEl.textContent =
-            detail.tree.description ||
-            "No description provided for this family tree.";
-      } else {
-        if (descEl) descEl.textContent = "Family tree not found.";
-      }
-
-      // Store detail on window for PersonInfoPanel
-      (window as any).__familyDetail = detail;
-    } catch (err) {
-      console.error("Failed to load family data:", err);
-      if (errorEl) errorEl.classList.remove("hidden");
-      if (descEl) descEl.textContent = "Failed to load family details.";
-    }
-  }
-
-  loadFamilySlugData();
-  document.addEventListener("astro:page-load", loadFamilySlugData);
-</script>
