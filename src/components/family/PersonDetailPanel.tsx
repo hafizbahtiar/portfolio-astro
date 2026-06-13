@@ -3,6 +3,7 @@ import type {
   PublicFamilyPerson,
   PublicFamilyTreeDetail,
 } from "../../lib/family-privacy";
+import { displayYear } from "../../lib/family-format";
 
 const REL_LABEL: Record<string, string> = {
   parent: "Parent",
@@ -23,9 +24,9 @@ const initials = (name: string) =>
 
 const formatDate = (iso: string | null, yearOnly: boolean) => {
   if (!iso) return "-";
+  if (yearOnly) return displayYear(iso) ?? iso;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
-  if (yearOnly) return String(date.getFullYear());
   return date.toLocaleDateString("en-MY", {
     year: "numeric",
     month: "short",

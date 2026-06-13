@@ -1,6 +1,7 @@
 import type { Data } from "family-chart";
 import type { PublicFamilyTreeDetail } from "./family-privacy";
 import type { FamilyTreeDetail } from "../types/family";
+import { displayYear } from "./family-format";
 
 export const mapGender = (gender: string): "M" | "F" =>
   gender === "female" ? "F" : "M";
@@ -39,12 +40,8 @@ export const buildChartData = (
             ""
           ).trim(),
           name: person.displayName,
-          birthday: person.birthDate
-            ? new Date(person.birthDate).getFullYear().toString()
-            : undefined,
-          death: person.deathDate
-            ? new Date(person.deathDate).getFullYear().toString()
-            : undefined,
+          birthday: displayYear(person.birthDate) ?? undefined,
+          death: displayYear(person.deathDate) ?? undefined,
           status: person.isLiving ? "Living" : "Deceased",
           living: person.isLiving,
           avatar: person.photoUrl || undefined,

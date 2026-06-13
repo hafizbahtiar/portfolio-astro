@@ -36,10 +36,12 @@ export interface PublicFamilyTreeDetail {
 
 const yearOnly = (value: string | null) => {
   if (!value) return null;
-  const date = new Date(value);
-  if (!Number.isNaN(date.getTime())) return String(date.getFullYear());
+  // Read the year textually first so the reduction is timezone-safe even if
+  // SSR runs outside UTC; fall back to Date parsing for unusual formats.
   const match = value.match(/\b(\d{4})\b/);
-  return match ? match[1] : null;
+  if (match) return match[1];
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : String(date.getFullYear());
 };
 
 export function sanitizeFamilyDetailForPublic(

@@ -1,5 +1,6 @@
 import React from "react";
 import type { PublicFamilyTreeDetail } from "../../lib/family-privacy";
+import { displayYear } from "../../lib/family-format";
 
 const initials = (name: string) =>
   name
@@ -69,7 +70,7 @@ export const FamilyListView = ({ detail, selectedId, onSelect }: Props) => {
               </span>
               <span className="block text-xs text-slate-500 dark:text-slate-400">
                 {person.birthDate
-                  ? `b. ${new Date(person.birthDate).getFullYear()}`
+                  ? `b. ${displayYear(person.birthDate)}`
                   : "Birth year unknown"}
                 {!person.isLiving ? " · deceased" : ""}
                 {` · ${relationshipCount.get(person.id) ?? 0} relations`}

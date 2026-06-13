@@ -1,5 +1,6 @@
 import React, { useId, useMemo, useRef, useState } from "react";
 import type { PublicFamilyPerson } from "../../lib/family-privacy";
+import { displayYear } from "../../lib/family-format";
 
 interface Props {
   people: PublicFamilyPerson[];
@@ -111,7 +112,7 @@ export const PersonSearch = ({ people, onSelect }: Props) => {
               {person.displayName}
               {person.birthDate && (
                 <span className="ml-2 text-xs text-slate-400">
-                  b. {new Date(person.birthDate).getFullYear()}
+                  b. {displayYear(person.birthDate)}
                 </span>
               )}
             </li>
