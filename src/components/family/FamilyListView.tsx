@@ -1,6 +1,7 @@
 import React from "react";
 import type { PublicFamilyTreeDetail } from "../../lib/family-privacy";
 import { displayYear } from "../../lib/family-format";
+import { buildRelationCounts } from "../../lib/family-relationships";
 
 const initials = (name: string) =>
   name
@@ -17,17 +18,7 @@ interface Props {
 }
 
 export const FamilyListView = ({ detail, selectedId, onSelect }: Props) => {
-  const relationshipCount = new Map<number, number>();
-  for (const relationship of detail.relationships) {
-    relationshipCount.set(
-      relationship.personId,
-      (relationshipCount.get(relationship.personId) ?? 0) + 1,
-    );
-    relationshipCount.set(
-      relationship.relatedPersonId,
-      (relationshipCount.get(relationship.relatedPersonId) ?? 0) + 1,
-    );
-  }
+  const relationshipCount = buildRelationCounts(detail);
 
   const people = [...detail.people].sort((left, right) =>
     left.displayName.localeCompare(right.displayName),
