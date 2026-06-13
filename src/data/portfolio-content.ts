@@ -5,9 +5,9 @@ import type { Experience } from "../types/experiences";
  * Curated portfolio content.
  *
  * Two jobs:
- * 1. FALLBACK — if the API is unreachable or empty, public pages render this
+ * 1. FALLBACK - if the API is unreachable or empty, public pages render this
  *    instead of an error/empty state. The public site must never look broken.
- * 2. COPY OVERRIDES — project descriptions here follow the
+ * 2. COPY OVERRIDES - project descriptions here follow the
  *    Problem → What I built → Tech → Impact format and take precedence over
  *    API copy for matching slugs (see lib/public-content.ts).
  */
@@ -18,12 +18,12 @@ export const FALLBACK_PROJECTS: Project[] = [
     {
         id: 1,
         slug: "qiubbx",
-        title: "QIUBBX — Zero-Commission Halal Marketplace",
+        title: "QIUBBX - Zero-Commission Halal Marketplace",
         description:
-            "Marketplace sellers lose a cut of every sale to platform commissions. QIUBBX is a zero-commission Halal marketplace — I built the storefront and seller experience as a Next.js PWA with AI-powered analytics, multi-currency payments, and integrated logistics. Sellers keep 100% of their earnings on a platform built for ethical commerce.",
+            "Marketplace sellers lose a cut of every sale to platform commissions. QIUBBX is a zero-commission Halal marketplace - I built the storefront and seller experience as a Next.js PWA with AI-powered analytics, multi-currency payments, and integrated logistics. Sellers keep 100% of their earnings on a platform built for ethical commerce.",
         imageUrl:
             "https://www.qiubbx.com/_next/image?url=%2Fassets%2Fimages%2Flogos%2Flogo_text_light.png&w=256&q=75",
-        // The source asset is a small text lockup, not a screenshot — render
+        // The source asset is a small text lockup, not a screenshot - render
         // it contained on a light surface, never object-cover full-bleed.
         imageVariant: "width-banner",
         technologies: [
@@ -50,9 +50,9 @@ export const FALLBACK_PROJECTS: Project[] = [
     {
         id: 2,
         slug: "com-invois",
-        title: "Invois — Offline-First Invoice App",
+        title: "Invois - Offline-First Invoice App",
         description:
-            "Freelancers often need to issue invoices on the spot — with or without a connection. I designed and shipped Invois, an offline-first Flutter app with local ObjectBox storage, client management, and high-quality PDF export, published on Google Play. Works 100% offline with a small APK and instant startup.",
+            "Freelancers often need to issue invoices on the spot - with or without a connection. I designed and shipped Invois, an offline-first Flutter app with local ObjectBox storage, client management, and high-quality PDF export, published on Google Play. Works 100% offline with a small APK and instant startup.",
         imageUrl: "/images/projects/invois/invois.png",
         imageVariant: "logo",
         technologies: [
@@ -78,7 +78,7 @@ export const FALLBACK_PROJECTS: Project[] = [
     {
         id: 3,
         slug: "eppp-dbkl",
-        title: "ePerolehan DBKL — Government Procurement",
+        title: "ePerolehan DBKL - Government Procurement",
         description:
             "Kuala Lumpur City Hall (DBKL) needed to digitize its tender procurement process. I work on the platform's Flutter mobile app and Laravel services, letting registered vendors browse and purchase tenders and track project progress. A live government platform serving real procurement workflows.",
         imageUrl:
@@ -100,9 +100,9 @@ export const FALLBACK_PROJECTS: Project[] = [
     {
         id: 4,
         slug: "sf-cit-receipt-book",
-        title: "CIT Receipt Book — Audit-Ready Operations",
+        title: "CIT Receipt Book - Audit-Ready Operations",
         description:
-            "Cash-in-transit operations ran on paper receipt books that were slow to audit. I built a web system that digitizes the entire receipt lifecycle on CodeIgniter and PostgreSQL, with a Kotlin companion app — making every transaction trackable and audit-ready for compliance.",
+            "Cash-in-transit operations ran on paper receipt books that were slow to audit. I built a web system that digitizes the entire receipt lifecycle on CodeIgniter and PostgreSQL, with a Kotlin companion app - making every transaction trackable and audit-ready for compliance.",
         imageUrl:
             "https://cit.securiforce.net/app-assets/logo/9a6cefbceff3cf135b0b90cc9058c0c1.png",
         imageVariant: "logo",
@@ -122,9 +122,9 @@ export const FALLBACK_PROJECTS: Project[] = [
     {
         id: 5,
         slug: "jom-dapur",
-        title: "Jom Dapur — Food Delivery Platform",
+        title: "Jom Dapur - Food Delivery Platform",
         description:
-            "Local restaurants needed a delivery channel of their own, in the spirit of Grab and Foodpanda. I built the customer app in React Native and the Node.js/Express backend on MongoDB — with real-time order tracking over Socket.io and Stripe payments. An end-to-end delivery platform shipped by a small team.",
+            "Local restaurants needed a delivery channel of their own, in the spirit of Grab and Foodpanda. I built the customer app in React Native and the Node.js/Express backend on MongoDB - with real-time order tracking over Socket.io and Stripe payments. An end-to-end delivery platform shipped by a small team.",
         imageUrl: "/images/projects/jom-dapur.jpg",
         imageVariant: "logo",
         technologies: [
@@ -150,11 +150,11 @@ export const FALLBACK_PROJECTS: Project[] = [
     {
         id: 6,
         slug: "jd-management",
-        title: "JD Management — Operations Dashboard",
+        title: "JD Management - Operations Dashboard",
         description:
-            "Operating a delivery platform needs more than an app — it needs visibility. I built Jom Dapur's admin dashboard in React with Node.js APIs: live operational metrics, financial reporting, and investor-facing KPIs behind role-based access control.",
+            "Operating a delivery platform needs more than an app - it needs visibility. I built Jom Dapur's admin dashboard in React with Node.js APIs: live operational metrics, financial reporting, and investor-facing KPIs behind role-based access control.",
         imageUrl: "/images/projects/jd-management.png",
-        // The asset is a square logo, not a dashboard screenshot — composed
+        // The asset is a square logo, not a dashboard screenshot - composed
         // preview treatment, same as the other logo-only projects.
         imageVariant: "logo",
         technologies: [
@@ -180,9 +180,9 @@ export const FALLBACK_PROJECTS: Project[] = [
     {
         id: 7,
         slug: "jd-delivery",
-        title: "JD Delivery — Rider App",
+        title: "JD Delivery - Rider App",
         description:
-            "Riders are the moving part of any delivery platform. I built the React Native rider app: real-time order assignment, GPS navigation, earnings tracking, and push notifications — wired to the same Node.js backend powering the rest of the ecosystem.",
+            "Riders are the moving part of any delivery platform. I built the React Native rider app: real-time order assignment, GPS navigation, earnings tracking, and push notifications - wired to the same Node.js backend powering the rest of the ecosystem.",
         imageUrl: "/images/projects/jom-dapur.jpg",
         imageVariant: "logo",
         technologies: [
@@ -207,9 +207,9 @@ export const FALLBACK_PROJECTS: Project[] = [
     {
         id: 8,
         slug: "wetrack-system",
-        title: "Wetrack — Secure Code Automation",
+        title: "Wetrack - Secure Code Automation",
         description:
-            "CIT technicians had to phone the command center for lock codes at every security layer. Wetrack automates secure code delivery and tracking across cash centers and ATM branches — built on CodeIgniter and PostgreSQL with a Kotlin device app. Fewer calls, tighter security, faster routes.",
+            "CIT technicians had to phone the command center for lock codes at every security layer. Wetrack automates secure code delivery and tracking across cash centers and ATM branches - built on CodeIgniter and PostgreSQL with a Kotlin device app. Fewer calls, tighter security, faster routes.",
         imageUrl:
             "https://cit.securiforce.net/app-assets/logo/9a6cefbceff3cf135b0b90cc9058c0c1.png",
         imageVariant: "logo",
@@ -229,7 +229,7 @@ export const FALLBACK_PROJECTS: Project[] = [
     {
         id: 9,
         slug: "fasttrack-system",
-        title: "Fasttrack — Client Ordering Portal",
+        title: "Fasttrack - Client Ordering Portal",
         description:
             "Corporate clients booked cash-in-transit services through calls and paperwork. Fasttrack is a client-facing ordering portal on CodeIgniter 4 and PostgreSQL that streamlines service booking end to end.",
         imageUrl:
@@ -280,7 +280,7 @@ export const FALLBACK_EXPERIENCES: Experience[] = [
         longitude: 101.69440540132585,
         projectIds: [4, 8, 9],
         description:
-            "Delivered security and logistics platforms for cash-in-transit operations — receipt digitization, secure code automation, and client ordering portals.",
+            "Delivered security and logistics platforms for cash-in-transit operations - receipt digitization, secure code automation, and client ordering portals.",
         displayOrder: 2,
         createdAt: TS,
         updatedAt: TS,
@@ -314,7 +314,7 @@ export const FALLBACK_EXPERIENCES: Experience[] = [
         longitude: 101.67055660869626,
         projectIds: [],
         description:
-            "Supported site testing operations and lab instrumentation workflows — where I started automating reports and found my way into software.",
+            "Supported site testing operations and lab instrumentation workflows - where I started automating reports and found my way into software.",
         displayOrder: 4,
         createdAt: TS,
         updatedAt: TS,
