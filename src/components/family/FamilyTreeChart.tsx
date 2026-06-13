@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Chart, Data } from "family-chart";
 import "family-chart/styles/family-chart.css";
 import type { FamilyGender, FamilyTreeDetail } from "../../types/family";
-import { getPublicFamilyTreeBySlug, getPublicFamilyTrees, getPublicFamilyTreesByGlobalKey } from "../../lib/family";
+import { buildChartData } from "../../lib/chart-data";
 
 interface FamilyTreeChartProps {
   detail: FamilyTreeDetail;
@@ -13,6 +13,7 @@ interface FamilyTreeChartProps {
   showSiblings?: boolean;
   sortChildrenBy?: "label" | "metadata.birth_order";
   sortAscending?: boolean;
+  /** Deprecated no-op kept so existing admin builder props remain compatible. */
   enableCrossTreeNavigation?: boolean;
   onSelectPerson?: (personId: number, label: string) => void;
   enableInlineAdd?: boolean;
@@ -29,95 +30,6 @@ interface FamilyTreeChartProps {
   }) => Promise<void>;
 }
 
-const mapGender = (gender: string): "M" | "F" => {
-  if (gender === "female") return "F";
-  return "M";
-};
-
-const splitDisplayName = (displayName: string) => {
-  const parts = displayName.trim().split(/\s+/);
-  if (parts.length <= 1) {
-    return { firstName: displayName.trim(), lastName: "" };
-  }
-  return {
-    firstName: parts[0],
-    lastName: parts.slice(1).join(" "),
-  };
-};
-
-const buildChartData = (detail: FamilyTreeDetail): Data => {
-  const personMap = new Map(
-    detail.people.map((person) => [
-      String(person.id),
-      {
-        id: String(person.id),
-        data: {
-          label: person.displayName,
-          global_key: person.globalKey || undefined,
-          metadata: person.metadata || null,
-          "first name": (
-            person.firstName ||
-            splitDisplayName(person.displayName).firstName ||
-            person.displayName
-          ).trim(),
-          "last name": (
-            person.lastName ||
-            splitDisplayName(person.displayName).lastName ||
-            ""
-          ).trim(),
-          name: person.displayName,
-          birthday: person.birthDate
-            ? new Date(person.birthDate).getFullYear().toString()
-            : undefined,
-          death: person.deathDate
-            ? new Date(person.deathDate).getFullYear().toString()
-            : undefined,
-          status: person.isLiving ? "Living" : "Deceased",
-          living: person.isLiving,
-          avatar: person.photoUrl || undefined,
-          gender: mapGender(person.gender),
-        },
-        rels: {
-          parents: [] as string[],
-          spouses: [] as string[],
-          children: [] as string[],
-        },
-      },
-    ]),
-  );
-
-  for (const rel of detail.relationships) {
-    const from = personMap.get(String(rel.personId));
-    const to = personMap.get(String(rel.relatedPersonId));
-    if (!from || !to) continue;
-
-    if (rel.relationshipType === "spouse") {
-      from.rels.spouses.push(to.id);
-      to.rels.spouses.push(from.id);
-      continue;
-    }
-
-    if (rel.relationshipType === "parent" || rel.relationshipType === "adoptive_parent") {
-      from.rels.children.push(to.id);
-      to.rels.parents.push(from.id);
-      continue;
-    }
-
-    if (rel.relationshipType === "child" || rel.relationshipType === "adopted_child") {
-      from.rels.parents.push(to.id);
-      to.rels.children.push(from.id);
-    }
-  }
-
-  for (const person of personMap.values()) {
-    person.rels.parents = [...new Set(person.rels.parents)];
-    person.rels.spouses = [...new Set(person.rels.spouses)];
-    person.rels.children = [...new Set(person.rels.children)];
-  }
-
-  return Array.from(personMap.values());
-};
-
 export const FamilyTreeChart = ({
   detail,
   currentSlug,
@@ -127,7 +39,6 @@ export const FamilyTreeChart = ({
   showSiblings,
   sortChildrenBy,
   sortAscending = true,
-  enableCrossTreeNavigation = true,
   onSelectPerson,
   enableInlineAdd = false,
   onInlineCreateRelative,
@@ -139,12 +50,11 @@ export const FamilyTreeChart = ({
   const onInlineCreateRelativeRef = useRef<typeof onInlineCreateRelative>(
     onInlineCreateRelative,
   );
+  const chartHandlersRef = useRef<typeof import("family-chart").handlers | null>(
+    null,
+  );
   const selectedMainIdRef = useRef<string>("");
-  const selectedFamilySlugRef = useRef(currentSlug);
-  const enableCrossTreeNavigationRef = useRef(enableCrossTreeNavigation);
   const [selectedMainId, setSelectedMainId] = useState<string>("");
-  const [dynamicDetail, setDynamicDetail] = useState<FamilyTreeDetail | null>(null);
-  const spacingRef = useRef<{ x: number; y: number }>({ x: 250, y: 150 });
   const dataRef = useRef<Data>([]);
   const baselineRef = useRef<Data>([]);
   const showSpousesRef = useRef<boolean>(true);
@@ -176,25 +86,6 @@ export const FamilyTreeChart = ({
   };
 
   useEffect(() => {
-    // Support late-arriving data from window global (combined family page) or custom event
-    const win = window as any;
-    if ((!detail || detail.people.length === 0) && win.__combinedFamilyDetail) {
-      setDynamicDetail(win.__combinedFamilyDetail);
-    }
-    const handler = (e: CustomEvent<FamilyTreeDetail>) => {
-      if (e.detail) setDynamicDetail(e.detail);
-    };
-    window.addEventListener("family:set-data", handler as EventListener);
-    return () => window.removeEventListener("family:set-data", handler as EventListener);
-  }, []);
-
-  const effectiveDetail = dynamicDetail || detail;
-
-  useEffect(() => {
-    selectedFamilySlugRef.current = currentSlug;
-  }, [currentSlug]);
-
-  useEffect(() => {
     onSelectPersonRef.current = onSelectPerson;
   }, [onSelectPerson]);
 
@@ -206,12 +97,7 @@ export const FamilyTreeChart = ({
     selectedMainIdRef.current = selectedMainId;
   }, [selectedMainId]);
 
-  useEffect(() => {
-    enableCrossTreeNavigationRef.current = enableCrossTreeNavigation;
-  }, [enableCrossTreeNavigation]);
-
-
-  const chartData = useMemo(() => buildChartData(effectiveDetail), [effectiveDetail]);
+  const chartData = useMemo(() => buildChartData(detail), [detail]);
 
   const applyZoom = (chart: Chart, treePosition: "fit" | "inherit" = "inherit") => {
     chart.updateTree({
@@ -227,8 +113,10 @@ export const FamilyTreeChart = ({
     let destroyed = false;
 
     const render = async () => {
-      const { createChart } = await import("family-chart");
+      const familyChart = await import("family-chart");
       if (destroyed) return;
+      const { createChart } = familyChart;
+      chartHandlersRef.current = familyChart.handlers;
 
       container.innerHTML = "";
 
@@ -236,27 +124,24 @@ export const FamilyTreeChart = ({
         .setTransitionTime(1000)
         .setCardXSpacing(250)
         .setCardYSpacing(150);
-      spacingRef.current = { x: 250, y: 150 };
 
       chartRef.current = chart;
       baselineRef.current = chartData;
       dataRef.current = applySpouseFilter(chartData);
       (window as any).familyChartApi = {
         zoomIn: () => {
-          const nx = Math.min(spacingRef.current.x + 20, 360);
-          const ny = Math.min(spacingRef.current.y + 15, 240);
-          spacingRef.current = { x: nx, y: ny };
-          chart.setCardXSpacing(nx);
-          chart.setCardYSpacing(ny);
-          chart.updateTree({ tree_position: "inherit", transition_time: 250 });
+          chartHandlersRef.current?.manualZoom({
+            amount: 1.25,
+            svg: chart.svg,
+            transition_time: 250,
+          });
         },
         zoomOut: () => {
-          const nx = Math.max(spacingRef.current.x - 20, 140);
-          const ny = Math.max(spacingRef.current.y - 15, 90);
-          spacingRef.current = { x: nx, y: ny };
-          chart.setCardXSpacing(nx);
-          chart.setCardYSpacing(ny);
-          chart.updateTree({ tree_position: "inherit", transition_time: 250 });
+          chartHandlersRef.current?.manualZoom({
+            amount: 0.8,
+            svg: chart.svg,
+            transition_time: 250,
+          });
         },
         fit: () => {
           chart.updateTree({ tree_position: "fit", transition_time: 300 });
@@ -417,132 +302,11 @@ export const FamilyTreeChart = ({
             editTreeRef.current.addRelative(mainDatum);
           }
         }
-        if (!enableCrossTreeNavigationRef.current) {
-          return;
-        }
-        const strictKey =
-          (d.data.global_key && String(d.data.global_key).toLowerCase()) ||
-          (d.data.metadata && (d.data.metadata as any).global_id && String((d.data.metadata as any).global_id).toLowerCase()) ||
-          "";
-        if (strictKey) {
-          const treesByKey = await getPublicFamilyTreesByGlobalKey(strictKey);
-          if (treesByKey.length > 0) {
-            const details = await Promise.all(
-              treesByKey.map(async (t) => {
-                const det = await getPublicFamilyTreeBySlug(t.slug);
-                return det ? { slug: t.slug, detail: det } : null;
-              })
-            );
-            const candidates = (details.filter(Boolean) as Array<{ slug: string; detail: FamilyTreeDetail }>).filter(
-              (x) => x.slug !== selectedFamilySlugRef.current
-            );
-            const scored = candidates
-              .map((c) => {
-                const me = c.detail.people.find((p) => {
-                  const key =
-                    (p.globalKey && p.globalKey.toLowerCase()) ||
-                    ((p.metadata && (p.metadata as any).global_id && String((p.metadata as any).global_id).toLowerCase())) ||
-                    "";
-                  return key === strictKey;
-                });
-                const pid = me ? me.id : null;
-                if (!pid) {
-                  return { slug: c.slug, detail: c.detail, score: -1, parents: 0, children: 0, spouses: 0 };
-                }
-                const parents = c.detail.relationships.filter(
-                  (r) => r.relationshipType === "parent" && r.relatedPersonId === pid
-                ).length;
-                const children = c.detail.relationships.filter(
-                  (r) => r.relationshipType === "child" && r.relatedPersonId === pid
-                ).length;
-                const spouses = c.detail.relationships.filter(
-                  (r) => r.relationshipType === "spouse" && (r.personId === pid || r.relatedPersonId === pid)
-                ).length;
-                const score = parents * 100 + children * 10 + spouses; // prioritize parents
-                return { slug: c.slug, detail: c.detail, score, parents, children, spouses };
-              })
-              .sort((a, b) => b.score - a.score);
-            const target = scored[0] || null;
-            if (target) {
-              const newData = buildChartData(target.detail);
-              baselineRef.current = newData;
-              const out = applySpouseFilter(newData);
-              dataRef.current = out;
-              chart.updateData(out);
-              const person = target.detail.people.find((p) => {
-                const key =
-                  (p.globalKey && p.globalKey.toLowerCase()) ||
-                  ((p.metadata && (p.metadata as any).global_id && String((p.metadata as any).global_id).toLowerCase())) ||
-                  "";
-                return key === strictKey;
-              });
-              const newMainId = person ? String(person.id) : newData[0]?.id || id;
-              setSelectedMainId(newMainId);
-              selectedMainIdRef.current = newMainId;
-              selectedFamilySlugRef.current = target.slug;
-              chart.updateMainId(newMainId);
-              chart.updateTree({ tree_position: "main_to_middle", transition_time: 350 });
-            }
-          }
-        } else {
-          const clickedLabel = String(d.data.label || d.data.name || "").toLowerCase();
-          const trees = await getPublicFamilyTrees();
-          const details = await Promise.all(
-            trees.map(async (t) => {
-              const det = await getPublicFamilyTreeBySlug(t.slug);
-              return { slug: t.slug, detail: det };
-            })
-          );
-          const candidates = details
-            .filter((x) => {
-              const det = x.detail;
-              if (!det) return false;
-              return det.people.some((p) => p.displayName.toLowerCase() === clickedLabel);
-            })
-            .filter((x) => x.slug !== selectedFamilySlugRef.current);
-          const scored = candidates
-            .map((c) => {
-              const me = c.detail?.people.find((p) => p.displayName.toLowerCase() === clickedLabel);
-              const pid = me ? me.id : null;
-              if (!pid || !c.detail) {
-                return { slug: c.slug, detail: c.detail!, score: -1, parents: 0, children: 0, spouses: 0 };
-              }
-              const parents = c.detail.relationships.filter(
-                (r) => r.relationshipType === "parent" && r.relatedPersonId === pid
-              ).length;
-              const children = c.detail.relationships.filter(
-                (r) => r.relationshipType === "child" && r.relatedPersonId === pid
-              ).length;
-              const spouses = c.detail.relationships.filter(
-                (r) => r.relationshipType === "spouse" && (r.personId === pid || r.relatedPersonId === pid)
-              ).length;
-              const score = parents * 100 + children * 10 + spouses;
-              return { slug: c.slug, detail: c.detail, score, parents, children, spouses };
-            })
-            .sort((a, b) => b.score - a.score);
-          const target = scored[0] || null;
-          if (target) {
-            const newData = buildChartData(target.detail);
-            baselineRef.current = newData;
-            const out = applySpouseFilter(newData);
-            dataRef.current = out;
-            chart.updateData(out);
-            const person = target.detail.people.find((p) => p.displayName.toLowerCase() === clickedLabel);
-            const newMainId = person ? String(person.id) : newData[0]?.id || id;
-            setSelectedMainId(newMainId);
-            selectedMainIdRef.current = newMainId;
-            selectedFamilySlugRef.current = target.slug;
-            chart.updateMainId(newMainId);
-            chart.updateTree({ tree_position: "main_to_middle", transition_time: 350 });
-            const spouseOptions2 = getSpouseOptions(newMainId);
-            window.dispatchEvent(new CustomEvent("family:on-spouses", { detail: { options: spouseOptions2 } }));
-          }
-        }
       });
       chart.setOrientationVertical();
       applyZoom(chart, "fit");
       let initialMainId = chartData[0]?.id || "";
-      const defaultId = (effectiveDetail as any)?.tree?.defaultMainPersonId ?? null;
+      const defaultId = detail.tree.defaultMainPersonId ?? null;
       if (defaultId) {
         const defNode = chartData.find((n) => n.id === String(defaultId));
         if (defNode) initialMainId = defNode.id;
@@ -574,7 +338,7 @@ export const FamilyTreeChart = ({
     render().catch((error) => {
       console.error("Failed to render family chart:", error);
     });
-  }, [chartData, effectiveDetail]);
+  }, [chartData, detail]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -589,7 +353,7 @@ export const FamilyTreeChart = ({
     const hasCurrentMain = currentMainId
       ? out.some((node) => node.id === currentMainId)
       : false;
-    const defaultId = (effectiveDetail as any)?.tree?.defaultMainPersonId ?? null;
+    const defaultId = detail.tree.defaultMainPersonId ?? null;
     const defaultMainId =
       defaultId && out.some((node) => node.id === String(defaultId))
         ? String(defaultId)
@@ -603,10 +367,6 @@ export const FamilyTreeChart = ({
     if (nextMainId !== selectedMainIdRef.current) {
       setSelectedMainId(nextMainId);
       selectedMainIdRef.current = nextMainId;
-    }
-
-    if (currentSlug !== selectedFamilySlugRef.current) {
-      selectedFamilySlugRef.current = currentSlug;
     }
 
     chart.updateMainId(nextMainId);
@@ -637,7 +397,7 @@ export const FamilyTreeChart = ({
     window.dispatchEvent(
       new CustomEvent("family:on-spouses", { detail: { options: spouseOptions } }),
     );
-  }, [chartData, currentSlug, effectiveDetail]);
+  }, [chartData, currentSlug, detail]);
 
   useEffect(() => {
     return () => {
@@ -646,6 +406,7 @@ export const FamilyTreeChart = ({
       }
       editTreeRef.current = null;
       chartRef.current = null;
+      chartHandlersRef.current = null;
       if (containerRef.current) {
         containerRef.current.innerHTML = "";
       }
@@ -692,22 +453,20 @@ export const FamilyTreeChart = ({
     const onZoomIn = () => {
       const chart = chartRef.current;
       if (!chart) return;
-      const nx = Math.min(spacingRef.current.x + 20, 360);
-      const ny = Math.min(spacingRef.current.y + 15, 240);
-      spacingRef.current = { x: nx, y: ny };
-      chart.setCardXSpacing(nx);
-      chart.setCardYSpacing(ny);
-      chart.updateTree({ tree_position: "inherit", transition_time: 250 });
+      chartHandlersRef.current?.manualZoom({
+        amount: 1.25,
+        svg: chart.svg,
+        transition_time: 250,
+      });
     };
     const onZoomOut = () => {
       const chart = chartRef.current;
       if (!chart) return;
-      const nx = Math.max(spacingRef.current.x - 20, 140);
-      const ny = Math.max(spacingRef.current.y - 15, 90);
-      spacingRef.current = { x: nx, y: ny };
-      chart.setCardXSpacing(nx);
-      chart.setCardYSpacing(ny);
-      chart.updateTree({ tree_position: "inherit", transition_time: 250 });
+      chartHandlersRef.current?.manualZoom({
+        amount: 0.8,
+        svg: chart.svg,
+        transition_time: 250,
+      });
     };
     const onFit = () => {
       const chart = chartRef.current;

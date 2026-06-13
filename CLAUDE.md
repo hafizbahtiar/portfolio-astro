@@ -59,17 +59,25 @@ Custom Astro components with their own inline `<script>` blocks that set up even
 
 ### Family tree (`src/components/family/`)
 
-Uses the `family-chart` library (always renders dark, `bg-[#212121]` wrapper). `FamilyTreeChart.tsx` is the main chart component — it uses `h-full w-full` and must sit inside a parent with a fixed height. It communicates via `window.dispatchEvent` custom events:
+Uses the `family-chart` library with light/dark theme overrides in `src/styles/family-chart-theme.css`.
+
+Public pages use `FamilyExplorer.tsx` as a single React island. Data is fetched in Astro frontmatter at request time and passed as props; selection, search, deep links, zoom, orientation, list fallback, and details are all props/state-driven. `src/hooks/useFamilyChart.ts` owns public chart lifecycle and uses the library's real d3 zoom handlers.
+
+`FamilyTreeChart.tsx` is now the legacy/admin chart wrapper. It still uses `h-full w-full` and must sit inside a parent with a fixed height. It retains the admin window-event contract:
 
 - `family:set-main` → moves chart focus to a person
 - `family:on-main-changed` → fired by chart when main person changes (guard against infinite loop: check `if (mainInput.value === String(id)) return` before re-dispatching)
 - `family:zoom-in/out`, `family:fit`, `family:center-main`, `family:set-orientation`
 
-`PersonInfoPanel.tsx` listens to `family:on-main-changed` and displays the selected person's details from the pre-loaded `detail` prop.
+The shared chart data transform lives in `src/lib/chart-data.ts`.
 
 ### Public family pages (`src/pages/family/`)
 
-`family/index.astro` and `family/[slug]/index.astro` both use `prerender = true` and fetch all family data at **build time** — data is embedded in HTML, no client-side API calls, no CORS issues. The `CombinedFamilyExplorer` component exists but is NOT used on public pages for this reason.
+`family/index.astro` and `family/[slug]/index.astro` use `prerender = false` and fetch public family data at request time through `src/lib/family.ts`. Public family fetches intentionally avoid `noCache` query params and avoid the shared no-store `ApiClient` path so the backend's KV/HTTP cache remains effective.
+
+`/family` builds the combined view server-side via `src/lib/family-merge.ts` and `src/data/family.ts`. Keep `/family` unlisted from the public navbar unless the privacy decision changes.
+
+Before public family data is passed to React islands, `src/lib/family-privacy.ts` maps backend data into a strict public DTO. It strips notes, metadata, timestamps, tree IDs, relationship IDs, relationship dates, and admin/backend fields, and sanitizes living-person birth dates to year-only strings so full living birth dates are not serialized to the browser.
 
 ### `container-main`
 
