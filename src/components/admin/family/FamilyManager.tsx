@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { familyService } from "../../../lib/family";
-import { FamilyTreeChart } from "../../family/FamilyTreeChart";
+import { FamilyTreeChart } from "./FamilyTreeChart";
 import type {
   CreateFamilyPersonPayload,
   CreateFamilyRelationshipPayload,

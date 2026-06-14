@@ -10,7 +10,7 @@ import type {
   FamilyTreeDetail,
   UpdateFamilyTreePayload,
 } from "../../../types/family";
-import { FamilyTreeChart } from "../../family/FamilyTreeChart";
+import { FamilyTreeChart } from "./FamilyTreeChart";
 
 type BuilderMode = "new" | "edit";
 type RelationAction = "father" | "mother" | "spouse" | "son" | "daughter" | null;

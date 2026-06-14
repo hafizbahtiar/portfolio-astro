@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Chart, Data } from "family-chart";
 import "family-chart/styles/family-chart.css";
-import type { FamilyGender, FamilyTreeDetail } from "../../types/family";
-import { buildChartData } from "../../lib/chart-data";
+import type { FamilyGender, FamilyTreeDetail } from "../../../types/family";
+import { buildChartData } from "../../../lib/chart-data";
 
 /**
  * Default readable zoom for the admin builder: center the focused person at 1:1.
