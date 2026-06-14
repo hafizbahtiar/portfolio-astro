@@ -1155,7 +1155,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
               <div className="space-y-4">
-                <div className="rounded-xl border border-gray-700 bg-gray-900/30 p-3">
+                <div className="h-[70vh] min-h-[520px] rounded-xl border border-gray-700 bg-gray-900/30 p-3">
                   <FamilyTreeChart
                     detail={detail}
                     currentSlug={detail.tree.slug}
