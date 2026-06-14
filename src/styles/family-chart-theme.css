@@ -51,22 +51,30 @@
    Give the chart canvas and package-generated edit form deliberate contrast.
    Scoped to .family-chart--admin so the public /family chart is untouched. */
 .family-chart--admin {
-  background-color: #0b1220;
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    rgba(148, 163, 184, 0.1) 1px,
-    transparent 0
-  );
-  background-size: 22px 22px;
+  background-color: #f1f5f9;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(14, 165, 233, 0.16) 1px, transparent 0),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(241, 245, 249, 0));
+  background-size: 22px 22px, 100% 100%;
+}
+
+.dark .family-chart--admin {
+  background-color: #111827;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.12) 1px, transparent 0),
+    radial-gradient(circle at 50% 0, rgba(34, 211, 238, 0.1), transparent 34%);
 }
 
 .family-chart--admin .f3 {
-  --f3-card-bg: #1e2a3d;
-  --f3-card-text: #f1f5f9;
-  --f3-card-sub: #93a4bd;
-  --f3-card-border: #3a4d6b;
-  --f3-card-main: #22d3ee;
-  --f3-link: #6b7d99;
+  --female-color: #c98aa0;
+  --male-color: #5b8bd0;
+  --genderless-color: #94a3b8;
+  --f3-card-bg: #ffffff;
+  --f3-card-text: #0f172a;
+  --f3-card-sub: #64748b;
+  --f3-card-border: #dbeafe;
+  --f3-card-main: #0891b2;
+  --f3-link: #94a3b8;
   --background-color: #ffffff;
   --text-color: #0f172a;
   --f3-form-bg: #ffffff;
@@ -79,6 +87,12 @@
 }
 
 .dark .family-chart--admin .f3 {
+  --f3-card-bg: #1e2a3d;
+  --f3-card-text: #f1f5f9;
+  --f3-card-sub: #93a4bd;
+  --f3-card-border: #3a4d6b;
+  --f3-card-main: #22d3ee;
+  --f3-link: #6b7d99;
   --background-color: #0f172a;
   --text-color: #f1f5f9;
   --f3-form-bg: #0f172a;
@@ -97,6 +111,9 @@
 .family-chart--admin .f3 div.card-inner {
   background: var(--f3-card-bg);
   border: 1px solid var(--f3-card-border);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+}
+.dark .family-chart--admin .f3 div.card-inner {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 .family-chart--admin .f3 div.card-inner:not(.card-image-circle) {
@@ -107,16 +124,30 @@
   height: 92px !important;
   min-height: 92px !important;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.9),
+    0 10px 28px rgba(15, 23, 42, 0.16);
+}
+.dark .family-chart--admin .f3 div.card-image-circle {
+  box-shadow:
+    0 0 0 3px rgba(15, 23, 42, 0.85),
+    0 1px 3px rgba(0, 0, 0, 0.5);
 }
 .family-chart--admin .f3 div.card-image-circle div.card-label {
   bottom: -12px;
   max-width: 190px;
   min-height: 24px;
-  background: rgba(11, 18, 32, 0.82);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   color: var(--f3-card-text);
   font-size: 13px;
   line-height: 24px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+}
+.dark .family-chart--admin .f3 div.card-image-circle div.card-label {
+  border-color: rgba(51, 65, 85, 0.9);
+  background: rgba(11, 18, 32, 0.82);
+  box-shadow: none;
 }
 .family-chart--admin .f3 div.card-image-circle .person-icon {
   width: 100% !important;
@@ -145,48 +176,92 @@
 /* Selected / main person: cyan ring. */
 .family-chart--admin .f3 .card-main div.card-inner {
   border-color: var(--f3-card-main);
+  box-shadow:
+    0 0 0 2px rgba(8, 145, 178, 0.68),
+    0 10px 28px rgba(8, 145, 178, 0.18);
+}
+.dark .family-chart--admin .f3 .card-main div.card-inner {
   box-shadow: 0 0 0 2px var(--f3-card-main), 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 .family-chart--admin .f3 div.card-inner.f3-path-to-main {
-  outline: 3px solid rgba(125, 211, 252, 0.72);
+  outline: 3px solid rgba(14, 165, 233, 0.35);
+}
+.dark .family-chart--admin .f3 div.card-inner.f3-path-to-main {
+  outline-color: rgba(125, 211, 252, 0.72);
 }
 
 /* "Add relative" placeholder cards: visible but calm. */
 .family-chart--admin .f3 .card-to-add div.card-inner,
 .family-chart--admin .f3 .card-new-rel div.card-inner {
-  background: rgba(34, 211, 238, 0.08);
-  border: 1px dashed rgba(34, 211, 238, 0.5);
+  background: rgba(240, 249, 255, 0.92);
+  border: 1px dashed rgba(14, 165, 233, 0.48);
   border-radius: 10px;
-  color: #67e8f9;
+  color: #0369a1;
   cursor: pointer;
   opacity: 1;
 }
 .family-chart--admin .f3 .card-to-add div.card-inner .card-label,
 .family-chart--admin .f3 .card-new-rel div.card-inner .card-label {
-  color: #67e8f9;
+  color: #0369a1;
 }
 .family-chart--admin .f3 .card-to-add .person-icon,
 .family-chart--admin .f3 .card-new-rel .person-icon {
-  color: #67e8f9;
+  color: #0284c7;
 }
 .family-chart--admin .f3 .card-new-rel.card-female div.card-inner {
-  border-color: rgba(201, 138, 160, 0.62);
-  color: #f0abc0;
+  background: rgba(255, 241, 242, 0.92);
+  border-color: rgba(244, 63, 94, 0.38);
+  color: #be123c;
 }
 .family-chart--admin .f3 .card-new-rel.card-female div.card-inner .card-label,
 .family-chart--admin .f3 .card-new-rel.card-female .person-icon {
-  color: #f0abc0;
+  color: #be123c;
 }
 .family-chart--admin .f3 .card-new-rel.card-male div.card-inner {
-  border-color: rgba(91, 139, 208, 0.68);
-  color: #93c5fd;
+  background: rgba(239, 246, 255, 0.92);
+  border-color: rgba(37, 99, 235, 0.36);
+  color: #1d4ed8;
 }
 .family-chart--admin .f3 .card-new-rel.card-male div.card-inner .card-label,
 .family-chart--admin .f3 .card-new-rel.card-male .person-icon {
-  color: #93c5fd;
+  color: #1d4ed8;
 }
 .family-chart--admin .f3 .card-new-rel:hover div.card-inner,
 .family-chart--admin .f3 .card-to-add:hover div.card-inner {
+  background: rgba(224, 242, 254, 0.96);
+}
+.dark .family-chart--admin .f3 .card-to-add div.card-inner,
+.dark .family-chart--admin .f3 .card-new-rel div.card-inner {
+  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(34, 211, 238, 0.5);
+  color: #67e8f9;
+}
+.dark .family-chart--admin .f3 .card-to-add div.card-inner .card-label,
+.dark .family-chart--admin .f3 .card-new-rel div.card-inner .card-label,
+.dark .family-chart--admin .f3 .card-to-add .person-icon,
+.dark .family-chart--admin .f3 .card-new-rel .person-icon {
+  color: #67e8f9;
+}
+.dark .family-chart--admin .f3 .card-new-rel.card-female div.card-inner {
+  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(201, 138, 160, 0.62);
+  color: #f0abc0;
+}
+.dark .family-chart--admin .f3 .card-new-rel.card-female div.card-inner .card-label,
+.dark .family-chart--admin .f3 .card-new-rel.card-female .person-icon {
+  color: #f0abc0;
+}
+.dark .family-chart--admin .f3 .card-new-rel.card-male div.card-inner {
+  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(91, 139, 208, 0.68);
+  color: #93c5fd;
+}
+.dark .family-chart--admin .f3 .card-new-rel.card-male div.card-inner .card-label,
+.dark .family-chart--admin .f3 .card-new-rel.card-male .person-icon {
+  color: #93c5fd;
+}
+.dark .family-chart--admin .f3 .card-new-rel:hover div.card-inner,
+.dark .family-chart--admin .f3 .card-to-add:hover div.card-inner {
   background: rgba(34, 211, 238, 0.14);
 }
 

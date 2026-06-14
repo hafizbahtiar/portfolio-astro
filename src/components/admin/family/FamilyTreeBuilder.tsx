@@ -46,25 +46,39 @@ const genderSelectOptions = genderOptions.map((gender) => ({
   label: gender,
 }));
 
+const initials = (name: string) =>
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("");
+
+const builderShellClass =
+  "admin-family-builder rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-sm shadow-slate-200/70 dark:border-slate-700 dark:bg-slate-900/30 dark:shadow-none md:p-5";
 const sectionCardClass =
-  "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/60";
+  "rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 md:p-5";
 const insetPanelClass =
-  "rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/35";
+  "rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/55";
 const inputClass =
-  "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-100 dark:placeholder:text-slate-500";
+  "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-500";
 const monoInputClass = `${inputClass} font-mono text-xs`;
 const labelClass =
-  "block font-mono text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400";
+  "block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400";
 const eyebrowClass =
-  "font-mono text-sm font-semibold text-cyan-700 dark:text-cyan-400";
+  "text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-400";
 const headingClass = "text-slate-900 dark:text-slate-100";
 const bodyTextClass = "text-slate-600 dark:text-slate-400";
 const toolbarButtonClass =
-  "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-800";
+  "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-cyan-400 hover:bg-cyan-50/60 hover:text-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-200 dark:hover:border-cyan-500/60 dark:hover:bg-cyan-500/10 dark:hover:text-cyan-200";
 const emptyStateClass =
   "rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400";
 const errorClass =
   "rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300";
+const selectedPillClass =
+  "rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-sm font-medium text-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300";
+const canvasFrameClass =
+  "h-[70vh] min-h-[520px] rounded-xl border border-slate-200 bg-family-canvas p-3 shadow-inner shadow-slate-200/80 dark:border-slate-700 dark:shadow-none";
 
 const relationActionStyles: Record<RelativeAction, {
   card: string;
@@ -181,12 +195,12 @@ const CheckboxField = ({
         id={buttonId}
         type="button"
         onClick={() => onChange(!checked)}
-        className="group flex w-full items-center justify-between rounded-lg border border-slate-300 bg-white px-4 py-2 text-left text-slate-900 outline-none transition-colors hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-100 dark:hover:border-cyan-500/50"
+        className="group flex w-full items-center justify-between rounded-lg border border-slate-300 bg-white px-4 py-2 text-left text-slate-900 outline-none transition-colors hover:border-cyan-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-900/60 dark:text-slate-100 dark:hover:border-cyan-500/50"
       >
-        <span className="truncate font-mono text-sm text-slate-700 transition-colors group-hover:text-blue-700 dark:text-slate-300 dark:group-hover:text-cyan-400">
+        <span className="truncate text-sm text-slate-700 transition-colors group-hover:text-cyan-700 dark:text-slate-300 dark:group-hover:text-cyan-400">
           {checked ? `${label}: ON` : `${label}: OFF`}
         </span>
-        <div className="flex items-center text-slate-400 transition-colors group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-cyan-500">
+        <div className="flex items-center text-slate-400 transition-colors group-hover:text-cyan-600 dark:text-slate-500 dark:group-hover:text-cyan-500">
           <svg
             className="w-4 h-4"
             fill="none"
@@ -768,7 +782,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
 
   if (mode === "new") {
     return (
-      <div className="space-y-6">
+      <div className={`${builderShellClass} space-y-6`}>
         {error && (
           <div className={errorClass}>
             {error}
@@ -781,7 +795,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
             className={`${sectionCardClass} space-y-6 p-6`}
           >
             <div>
-              <p className={eyebrowClass}>~/family/new</p>
+              <p className={eyebrowClass}>Family setup</p>
               <h2 className={`mt-2 text-2xl font-bold ${headingClass}`}>
                 Create Family Tree
               </h2>
@@ -932,7 +946,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
           </form>
 
           <aside className={`${sectionCardClass} p-6`}>
-            <p className={eyebrowClass}>~/builder-notes</p>
+            <p className={eyebrowClass}>Builder notes</p>
             <h3 className={`mt-2 text-xl font-semibold ${headingClass}`}>
               Why Separate `new` And `edit`
             </h3>
@@ -956,7 +970,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`${builderShellClass} space-y-6`}>
       {error && (
         <div className={errorClass}>
           {error}
@@ -976,7 +990,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
           <section className={sectionCardClass}>
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className={eyebrowClass}>~/tree-config</p>
+                <p className={eyebrowClass}>Tree config</p>
                 <h2 className={`mt-2 text-xl font-semibold ${headingClass}`}>
                   {detail.tree.name}
                 </h2>
@@ -1070,7 +1084,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
           <section className={`${sectionCardClass} space-y-4`}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className={eyebrowClass}>~/visual-builder</p>
+                <p className={eyebrowClass}>Visual builder</p>
                 <h2 className={`mt-2 text-xl font-semibold ${headingClass}`}>
                   Tree Canvas
                 </h2>
@@ -1139,7 +1153,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                     here like the family-chart builder flow.
                   </p>
                 </div>
-                <div className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-sm font-medium text-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300">
+                <div className={selectedPillClass}>
                   {selectedPerson
                     ? `Selected: ${selectedPerson.displayName}`
                     : "Select a person in the canvas"}
@@ -1207,7 +1221,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
               <div className="space-y-4">
-                <div className="h-[70vh] min-h-[520px] rounded-xl border border-slate-200 bg-slate-100/70 p-3 dark:border-slate-700 dark:bg-slate-900/30">
+                <div className={canvasFrameClass}>
                   <FamilyTreeChart
                     detail={detail}
                     currentSlug={detail.tree.slug}
@@ -1252,7 +1266,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                 ) : (
                   <>
                     <div>
-                      <p className={eyebrowClass}>~/inspector</p>
+                      <p className={eyebrowClass}>Inspector</p>
                       <h2 className={`mt-2 text-lg font-semibold ${headingClass}`}>
                         {selectedAction ? relationTitle : selectedPerson.displayName}
                       </h2>
@@ -1261,6 +1275,39 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                           ? "Create a related person directly from the selected node."
                           : "Edit the selected person and use quick actions to grow the tree."}
                       </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/70">
+                      {selectedPerson.photoUrl ? (
+                        <img
+                          src={selectedPerson.photoUrl}
+                          alt=""
+                          width={48}
+                          height={48}
+                          loading="lazy"
+                          className="h-12 w-12 rounded-full border border-slate-200 object-cover dark:border-slate-600"
+                        />
+                      ) : (
+                        <div
+                          aria-hidden="true"
+                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-sm font-semibold text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300"
+                        >
+                          {initials(selectedPerson.displayName)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className={`truncate text-sm font-semibold ${headingClass}`}>
+                          {selectedPerson.displayName}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-2">
+                          <span className="rounded-full bg-white px-2 py-0.5 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900/60 dark:text-slate-300 dark:ring-slate-700">
+                            {selectedPerson.gender}
+                          </span>
+                          <span className="rounded-full bg-white px-2 py-0.5 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900/60 dark:text-slate-300 dark:ring-slate-700">
+                            {selectedPerson.isLiving ? "Living" : "Deceased"}
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
                     {!selectedAction ? (
