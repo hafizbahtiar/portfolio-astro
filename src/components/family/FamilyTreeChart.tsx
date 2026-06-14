@@ -176,10 +176,16 @@ export const FamilyTreeChart = ({
         },
       };
 
+      // Match the public /family ("Fable 5") person-card design: circular avatar
+      // when a photo exists, rounded rect fallback when it does not, name + birth
+      // year, and hover-path-to-main. Add-relative editing cards are kept.
       const card = chart.setCardHtml();
+      card.setStyle("imageCircleRect");
+      card.setCardImageField("avatar");
+      card.setOnHoverPathToMain();
       if (useLabelOnly) {
         card.setCardDisplay([["label"]]);
-        card.setCardDim({ h: 70 });
+        card.setCardDim({ w: 220, h: 80 });
       } else {
         card.setCardDisplay([["first name", "last name"], ["birthday"]]);
         card.setCardDim({ w: 220, h: 80 });
@@ -553,7 +559,7 @@ export const FamilyTreeChart = ({
   }
 
   return (
-    <div className="family-chart--admin h-full w-full min-h-[480px] rounded-xl border border-slate-700 overflow-hidden">
+    <div className="family-chart--admin h-full w-full min-h-[480px] overflow-hidden rounded-xl border border-slate-700">
       <div ref={containerRef} className="f3 h-full w-full" />
     </div>
   );
