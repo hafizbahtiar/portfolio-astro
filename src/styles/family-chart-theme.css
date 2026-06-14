@@ -46,3 +46,76 @@
   border-color: var(--f3-card-main);
   box-shadow: 0 0 0 1px var(--f3-card-main);
 }
+
+/* ── Admin family builder ──────────────────────────────────────────────────
+   The admin builder is always-dark. Give it a deliberate, higher-contrast
+   canvas and cards so the tree reads clearly instead of gray-on-gray.
+   Scoped to .family-chart--admin so the public /family chart is untouched. */
+.family-chart--admin {
+  background-color: #0b1220;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(148, 163, 184, 0.1) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+}
+
+.family-chart--admin .f3 {
+  --f3-card-bg: #1e2a3d;
+  --f3-card-text: #f1f5f9;
+  --f3-card-sub: #93a4bd;
+  --f3-card-border: #3a4d6b;
+  --f3-card-main: #22d3ee;
+  --f3-link: #6b7d99;
+}
+
+/* Cards clearly separated from the canvas. */
+.family-chart--admin .f3 div.card-inner {
+  background: var(--f3-card-bg);
+  border: 1px solid var(--f3-card-border);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.family-chart--admin .f3 div.card {
+  color: var(--f3-card-text);
+}
+.family-chart--admin .f3 div.card-label {
+  color: var(--f3-card-sub);
+}
+
+/* Subtle gender accent (intentional, not neon). */
+.family-chart--admin .f3 .card-male div.card-inner {
+  border-left: 3px solid #5b8bd0;
+}
+.family-chart--admin .f3 .card-female div.card-inner {
+  border-left: 3px solid #c98aa0;
+}
+.family-chart--admin .f3 .card-genderless div.card-inner {
+  border-left: 3px solid #64748b;
+}
+
+/* Selected / main person: cyan ring. */
+.family-chart--admin .f3 .card-main div.card-inner {
+  border-color: var(--f3-card-main);
+  box-shadow: 0 0 0 2px var(--f3-card-main), 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* "Add relative" placeholder cards: visible but calm. */
+.family-chart--admin .f3 .card-to-add div.card-inner,
+.family-chart--admin .f3 .card-new-rel div.card-inner {
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px dashed rgba(34, 211, 238, 0.5);
+  color: #67e8f9;
+}
+
+/* Connector links brighter on the dark canvas. */
+.family-chart--admin .f3 .link {
+  stroke: var(--f3-link);
+  stroke-width: 1.5px;
+}
+
+/* Avatar placeholder icon. */
+.family-chart--admin .f3 .person-icon {
+  color: #64748b;
+}
