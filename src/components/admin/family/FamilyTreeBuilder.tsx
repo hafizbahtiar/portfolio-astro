@@ -1225,16 +1225,22 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
 
                 <div className={insetPanelClass}>
                   <h3 className={`text-sm font-semibold ${headingClass}`}>Relationships</h3>
-                  <div className="mt-3 max-h-60 space-y-2 overflow-y-auto pr-1">
-                    {detail.relationships.map((relationship) => (
-                      <div
-                        key={relationship.id}
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
-                      >
-                        {buildRelationshipSummary(relationship, peopleById)}
-                      </div>
-                    ))}
-                  </div>
+                  {detail.relationships.length === 0 ? (
+                    <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400">
+                      No relationships have been added yet.
+                    </div>
+                  ) : (
+                    <div className="mt-3 max-h-60 space-y-2 overflow-y-auto pr-1">
+                      {detail.relationships.map((relationship) => (
+                        <div
+                          key={relationship.id}
+                          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition-colors hover:border-cyan-200 hover:bg-cyan-50/50 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800/60"
+                        >
+                          {buildRelationshipSummary(relationship, peopleById)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 

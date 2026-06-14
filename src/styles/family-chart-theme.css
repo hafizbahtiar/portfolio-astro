@@ -48,8 +48,7 @@
 }
 
 /* ── Admin family builder ──────────────────────────────────────────────────
-   The admin builder is always-dark. Give it a deliberate, higher-contrast
-   canvas and cards so the tree reads clearly instead of gray-on-gray.
+   Give the chart canvas and package-generated edit form deliberate contrast.
    Scoped to .family-chart--admin so the public /family chart is untouched. */
 .family-chart--admin {
   background-color: #0b1220;
@@ -68,6 +67,27 @@
   --f3-card-border: #3a4d6b;
   --f3-card-main: #22d3ee;
   --f3-link: #6b7d99;
+  --background-color: #ffffff;
+  --text-color: #0f172a;
+  --f3-form-bg: #ffffff;
+  --f3-form-surface: #f8fafc;
+  --f3-form-text: #0f172a;
+  --f3-form-muted: #64748b;
+  --f3-form-border: #e2e8f0;
+  --f3-form-input: #ffffff;
+  --f3-form-focus: #38bdf8;
+}
+
+.dark .family-chart--admin .f3 {
+  --background-color: #0f172a;
+  --text-color: #f1f5f9;
+  --f3-form-bg: #0f172a;
+  --f3-form-surface: rgba(15, 23, 42, 0.72);
+  --f3-form-text: #f1f5f9;
+  --f3-form-muted: #94a3b8;
+  --f3-form-border: #334155;
+  --f3-form-input: rgba(15, 23, 42, 0.78);
+  --f3-form-focus: #22d3ee;
 }
 
 /* Cards clearly separated from the canvas. Following the Fable 5 public card
@@ -183,4 +203,236 @@
 /* Avatar placeholder icon. */
 .family-chart--admin .f3 .person-icon {
   color: #64748b;
+}
+
+/* Package-generated add/edit relative form. */
+.family-chart--admin .f3-form-cont {
+  width: 0;
+  border-left: 1px solid var(--f3-form-border);
+  background: var(--f3-form-bg);
+  color: var(--f3-form-text);
+  box-shadow: -12px 0 32px rgba(15, 23, 42, 0.18);
+}
+
+.family-chart--admin .f3-form-cont.opened {
+  width: min(380px, 100%);
+}
+
+.family-chart--admin .f3-form {
+  min-height: 100%;
+  padding: 24px;
+  color: var(--f3-form-text);
+}
+
+.family-chart--admin .f3-form-title {
+  margin: 0 34px 18px;
+  color: var(--f3-form-text);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.family-chart--admin .f3-close-btn {
+  left: auto;
+  right: 16px;
+  top: 14px;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--f3-form-muted);
+  font-size: 24px;
+  line-height: 1;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.family-chart--admin .f3-close-btn:hover {
+  background: var(--f3-form-surface);
+  color: var(--f3-form-text);
+}
+
+.family-chart--admin .f3-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0 0 18px;
+  border-bottom: 1px solid var(--f3-form-border);
+  padding-bottom: 16px;
+}
+
+.family-chart--admin .f3-radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--f3-form-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.family-chart--admin .f3-radio-group input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--f3-form-focus);
+}
+
+.family-chart--admin .f3-form-field {
+  margin-bottom: 14px;
+}
+
+.family-chart--admin .f3-info-field-label,
+.family-chart--admin .f3-form-field label,
+.family-chart--admin .f3-link-existing-relative label {
+  margin-bottom: 6px;
+  color: var(--f3-form-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 1;
+  text-transform: uppercase;
+}
+
+.family-chart--admin .f3-form input[type="text"],
+.family-chart--admin .f3-form textarea,
+.family-chart--admin .f3-form select,
+.family-chart--admin .f3-link-existing-relative select {
+  width: 100%;
+  margin: 0;
+  border: 1px solid var(--f3-form-border);
+  border-radius: 10px;
+  background: var(--f3-form-input);
+  color: var(--f3-form-text);
+  font-size: 14px;
+  line-height: 1.4;
+  outline: none;
+  padding: 10px 12px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.family-chart--admin .f3-form input[type="text"]::placeholder,
+.family-chart--admin .f3-form textarea::placeholder {
+  color: #94a3b8;
+}
+
+.dark .family-chart--admin .f3-form input[type="text"]::placeholder,
+.dark .family-chart--admin .f3-form textarea::placeholder {
+  color: #64748b;
+}
+
+.family-chart--admin .f3-form input[type="text"]:focus,
+.family-chart--admin .f3-form textarea:focus,
+.family-chart--admin .f3-form select:focus,
+.family-chart--admin .f3-link-existing-relative select:focus {
+  border-color: var(--f3-form-focus);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.22);
+}
+
+.family-chart--admin .f3-info-field-value {
+  border-bottom: 1px solid var(--f3-form-border);
+  color: var(--f3-form-text);
+}
+
+.family-chart--admin .f3-form hr {
+  border-color: var(--f3-form-border);
+  opacity: 1;
+}
+
+.family-chart--admin .f3-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.family-chart--admin .f3-form button {
+  min-height: 40px;
+  margin: 0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 16px;
+}
+
+.family-chart--admin .f3-form button[type="submit"] {
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.family-chart--admin .f3-form button[type="submit"]:hover {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+}
+
+.dark .family-chart--admin .f3-form button[type="submit"] {
+  border-color: #0891b2;
+  background: #0891b2;
+}
+
+.dark .family-chart--admin .f3-form button[type="submit"]:hover {
+  border-color: #06b6d4;
+  background: #06b6d4;
+}
+
+.family-chart--admin .f3-form .f3-cancel-btn {
+  border: 1px solid var(--f3-form-border);
+  background: var(--f3-form-bg);
+  color: var(--f3-form-text);
+}
+
+.family-chart--admin .f3-form .f3-cancel-btn:hover {
+  background: var(--f3-form-surface);
+}
+
+.family-chart--admin .f3-form .f3-delete-btn {
+  border-color: rgba(239, 68, 68, 0.38);
+  background: rgba(254, 242, 242, 0.9);
+  color: #b91c1c;
+}
+
+.family-chart--admin .f3-form .f3-delete-btn:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.dark .family-chart--admin .f3-form .f3-delete-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+
+.family-chart--admin .f3-form .f3-delete-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.family-chart--admin .f3-form .f3-remove-relative-btn {
+  border-color: var(--f3-form-border);
+  color: var(--f3-form-text);
+}
+
+.family-chart--admin .f3-form .f3-remove-relative-btn:hover,
+.family-chart--admin .f3-form .f3-remove-relative-btn.active {
+  background: var(--f3-form-surface);
+  border-color: var(--f3-form-focus);
+  color: var(--f3-form-text);
+}
+
+.family-chart--admin .f3-edit-btn,
+.family-chart--admin .f3-add-relative-btn {
+  color: var(--f3-form-muted);
+}
+
+.family-chart--admin .f3-edit-btn:hover,
+.family-chart--admin .f3-add-relative-btn:hover {
+  color: var(--f3-form-text);
 }
