@@ -331,3 +331,22 @@ export const PROJECT_COPY: Record<
         { title: p.title, description: p.description, imageVariant: p.imageVariant },
     ]),
 );
+
+/**
+ * Per-slug link overrides — STOPGAP until the structured `project_links` model
+ * (admin-managed, status-aware) ships in the admin/backend phase.
+ *
+ * The production DB still carries links that 404 or no longer resolve. Until an
+ * admin can mark a link hidden/disabled, we sanitize them here so the public
+ * site never renders a broken "Source Code" / "Live Demo" CTA. An empty string
+ * means "hide this CTA". Verified 2026-06-16:
+ *   - com-invois: github.com/hafizbahtiar/invoice → 404; Play Store com.invois → 404
+ *   - fasttrack-system: github.com/hafizbahtiar/fasttrack-system → 404; fasttrack-system.com → unreachable
+ */
+export const PROJECT_LINK_OVERRIDES: Record<
+    string,
+    { githubUrl?: string; liveUrl?: string }
+> = {
+    "com-invois": { githubUrl: "", liveUrl: "" },
+    "fasttrack-system": { githubUrl: "", liveUrl: "" },
+};

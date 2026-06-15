@@ -5,6 +5,7 @@ import {
     FALLBACK_PROJECTS,
     FALLBACK_EXPERIENCES,
     PROJECT_COPY,
+    PROJECT_LINK_OVERRIDES,
 } from "../data/portfolio-content";
 
 /**
@@ -31,6 +32,32 @@ async function fetchJson<T>(path: string): Promise<T | null> {
     }
 }
 
+/**
+ * Apply curated copy + link sanitization to a single API project record.
+ * Used by both the list and detail loaders so the public site renders one
+ * consistent, trusted view of every project.
+ */
+export function curateProject(project: Project): Project {
+    const copy = PROJECT_COPY[project.slug];
+    const links = PROJECT_LINK_OVERRIDES[project.slug];
+    return {
+        ...project,
+        ...(copy
+            ? {
+                title: copy.title ?? project.title,
+                description: copy.description,
+                imageVariant: copy.imageVariant ?? project.imageVariant,
+            }
+            : {}),
+        ...(links
+            ? {
+                githubUrl: links.githubUrl ?? project.githubUrl,
+                liveUrl: links.liveUrl ?? project.liveUrl,
+            }
+            : {}),
+    };
+}
+
 function sortProjects(projects: Project[]): Project[] {
     return projects
         .slice()
@@ -45,22 +72,26 @@ function sortProjects(projects: Project[]): Project[] {
 
 export async function getPublicProjects(): Promise<Project[]> {
     const data = await fetchJson<Project[]>("projects");
-    if (!data || data.length === 0) return sortProjects(FALLBACK_PROJECTS);
+    if (!data || data.length === 0)
+        return sortProjects(FALLBACK_PROJECTS.map(curateProject));
 
-    // Apply curated Problem → Built → Tech → Impact copy over API records.
-    return sortProjects(
-        data.map((project) => {
-            const copy = PROJECT_COPY[project.slug];
-            return copy
-                ? {
-                    ...project,
-                    title: copy.title ?? project.title,
-                    description: copy.description,
-                    imageVariant: copy.imageVariant ?? project.imageVariant,
-                }
-                : project;
-        }),
-    );
+    // Apply curated copy + link sanitization over API records.
+    return sortProjects(data.map(curateProject));
+}
+
+/**
+ * Curated single-project loader for the public detail page. Never throws.
+ * Falls back to curated static content when the API is unreachable so a known
+ * slug never 404s just because the backend is briefly down.
+ */
+export async function getPublicProjectBySlug(
+    slug: string,
+): Promise<Project | null> {
+    const data = await fetchJson<Project>(`projects/${slug}`);
+    if (data) return curateProject(data);
+
+    const fallback = FALLBACK_PROJECTS.find((p) => p.slug === slug);
+    return fallback ? curateProject(fallback) : null;
 }
 
 export async function getPublicExperiences(): Promise<Experience[]> {

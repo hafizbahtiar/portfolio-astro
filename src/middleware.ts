@@ -41,7 +41,18 @@ const SECURITY_HEADERS: Record<string, string> = {
   ].join("; "),
 };
 
-export const onRequest: MiddlewareHandler = async (_context, next) => {
+export const onRequest: MiddlewareHandler = async (context, next) => {
+  // Canonicalize www → apex with a 301. Both hostnames currently serve 200,
+  // producing duplicate URLs; the canonical <link> already points to the apex,
+  // this removes the duplicate at the source for SSR HTML. The authoritative
+  // fix is a Cloudflare Redirect Rule (www.hafizbahtiar.com/* → apex), which
+  // also covers static assets — see docs/reports/public-portfolio-audit.md.
+  const url = context.url;
+  if (url.hostname === "www.hafizbahtiar.com") {
+    url.hostname = "hafizbahtiar.com";
+    return context.redirect(url.toString(), 301);
+  }
+
   const response = await next();
 
   // Only decorate HTML documents — never JSON/asset responses the Worker emits.
