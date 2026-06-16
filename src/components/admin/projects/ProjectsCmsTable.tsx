@@ -93,7 +93,12 @@ export const ProjectsCmsTable = () => {
     setBusyId(p.id);
     try {
       const res = await fn();
-      if (res === null) throw new Error(`${label} failed`);
+      if (res === null) {
+        // null = not found (404) or session expired (401 → ApiClient redirects
+        // to /login). Not a business-rule rejection, so don't say "blocked".
+        showToast({ type: "error", title: `Could not ${label.toLowerCase()}`, message: `"${p.title}" was not found, or your session expired.` });
+        return;
+      }
       showToast({ type: "success", title: `${label} succeeded`, message: `"${p.title}"` });
       await loadAll();
     } catch (e) {

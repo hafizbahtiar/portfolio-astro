@@ -166,7 +166,12 @@ export function ProjectEditor({ projectId }: { projectId?: number }) {
     setSaving(true);
     try {
       const res = await fn();
-      if (res === null) throw new Error(`${label} failed`);
+      if (res === null) {
+        // null = not found (404) or session expired (401 → redirect to /login),
+        // not a business-rule rejection.
+        showToast({ type: "error", title: `Could not ${label.toLowerCase()}`, message: "Project not found, or your session expired." });
+        return;
+      }
       showToast({ type: "success", title: `${label} succeeded` });
       await loadDetail(false);
     } catch (e) { showToast({ type: "error", title: `${label} blocked`, message: extractApiError(e).message }); }
