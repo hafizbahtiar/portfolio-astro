@@ -76,3 +76,28 @@ Admin:
 - Real screenshot galleries authored via admin (carousels are empty until then).
 - `PROJECT_LINK_OVERRIDES` (frontend) can be retired once production runs on `project_links` and is confirmed stable.
 - Admin interactive browser click-through remains the one locally-unverified seam (auth needs a real browser).
+
+---
+
+## 7. Post-rollout status (2026-06-17 release — EXECUTED)
+
+- **Live versions:** `hono-workers` Worker `ce27f22c`; `portfolio-astro` Worker `6fb74a01`. Deployed from branch `portfolio-admin-backend` (`hono-workers` HEAD `47b6921`, `portfolio-astro` HEAD `49602a1`).
+- Prod D1: migration `010` + seeds `007`/`008` applied & verified (9 projects, children populated, broken links hidden, flagship narrative present). Backup: `/Users/hafiz/Developments/backup-pre-cms-2026-06-17.sql`.
+- Public smoke re-verified green; `www → apex` 301 works (path + query preserved) via middleware.
+- **Production admin browser smoke: PENDING owner** — interactive login needs a real browser; the prod owner API correctly rejects non-production-signed tokens (401), confirming auth is secure.
+- Branch is ahead of `main`: `hono-workers` 7 commits, `portfolio-astro` 9 commits. No existing git tags in either repo.
+
+### Owner production admin smoke (do in a browser)
+Log into `https://hafizbahtiar.com/admin` → table loads → **create a temporary draft** (`zz-prod-smoke`) → edit Basics → add a section / feature / tech / link → add a URL media asset → confirm **visible media without alt blocks publish** → add alt → **publish** → preview the public page → **unpublish** → **archive** → then **delete** the test draft (or leave it archived and note it). Do not touch real published projects.
+
+## 8. Merge-to-main plan (run AFTER a 24–72h stable window + green prod admin smoke — NOT yet executed)
+
+For each repo (`hono-workers`, then `portfolio-astro`):
+1. Confirm clean working tree and the branch is current.
+2. `git checkout main`
+3. `git merge --no-ff portfolio-admin-backend -m "merge: project CMS upgrade"` — **no-ff, no squash** to preserve the staged rollout history.
+4. *(Optional; no prior tag convention exists)* annotate a release tag on the merge commit: `git tag -a cms-v1 -m "Project CMS upgrade (migration 010, seeds 007/008)"`.
+5. Push when ready (separate, deliberate): `git push origin main` (and `git push origin cms-v1`).
+6. Re-point future production deploys to `main`. **Merging does not change the running production** — Workers are version-pinned, so no redeploy is required merely to merge; the live site keeps serving `ce27f22c`/`6fb74a01` until the next intentional deploy.
+
+**Guards:** do not merge until the owner's prod admin browser smoke is green and the site has been stable for the window; keep the D1 backup until confident; **do not remove `PROJECT_LINK_OVERRIDES`** until a stable window confirms `project_links` drives all production CTAs (then remove it in a small follow-up).
