@@ -10,7 +10,7 @@ import type {
   FamilyTreeDetail,
   UpdateFamilyTreePayload,
 } from "../../../types/family";
-import { FamilyTreeChart } from "../../family/FamilyTreeChart";
+import { FamilyTreeChart } from "./FamilyTreeChart";
 
 type BuilderMode = "new" | "edit";
 type RelationAction = "father" | "mother" | "spouse" | "son" | "daughter" | null;
@@ -45,6 +45,72 @@ const genderSelectOptions = genderOptions.map((gender) => ({
   value: gender,
   label: gender,
 }));
+
+const initials = (name: string) =>
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("");
+
+const builderShellClass =
+  "admin-family-builder rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-sm shadow-slate-200/70 dark:border-slate-700 dark:bg-slate-900/30 dark:shadow-none md:p-5";
+const sectionCardClass =
+  "rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 md:p-5";
+const insetPanelClass =
+  "rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/55";
+const inputClass =
+  "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder:text-slate-500";
+const monoInputClass = `${inputClass} font-mono text-xs`;
+const labelClass =
+  "block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400";
+const eyebrowClass =
+  "text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-400";
+const headingClass = "text-slate-900 dark:text-slate-100";
+const bodyTextClass = "text-slate-600 dark:text-slate-400";
+const toolbarButtonClass =
+  "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-cyan-400 hover:bg-cyan-50/60 hover:text-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-200 dark:hover:border-cyan-500/60 dark:hover:bg-cyan-500/10 dark:hover:text-cyan-200";
+const emptyStateClass =
+  "rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400";
+const errorClass =
+  "rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300";
+const selectedPillClass =
+  "rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-sm font-medium text-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300";
+const canvasFrameClass =
+  "h-[70vh] min-h-[520px] rounded-xl border border-slate-200 bg-family-canvas p-3 shadow-inner shadow-slate-200/80 dark:border-slate-700 dark:shadow-none";
+
+const relationActionStyles: Record<RelativeAction, {
+  card: string;
+  title: string;
+  compact: string;
+}> = {
+  father: {
+    card: "border-blue-200 bg-blue-50/70 hover:border-blue-300 hover:bg-blue-100/70 focus:ring-blue-500/20 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20",
+    title: "text-blue-700 dark:text-cyan-300",
+    compact: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 focus:ring-blue-500/20 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20",
+  },
+  mother: {
+    card: "border-rose-200 bg-rose-50/70 hover:border-rose-300 hover:bg-rose-100/70 focus:ring-rose-500/20 dark:border-pink-500/30 dark:bg-pink-500/10 dark:hover:bg-pink-500/20",
+    title: "text-rose-700 dark:text-pink-300",
+    compact: "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 focus:ring-rose-500/20 dark:border-pink-500/30 dark:bg-pink-500/10 dark:text-pink-300 dark:hover:bg-pink-500/20",
+  },
+  spouse: {
+    card: "border-amber-200 bg-amber-50/70 hover:border-amber-300 hover:bg-amber-100/70 focus:ring-amber-500/20 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:bg-amber-500/20",
+    title: "text-amber-700 dark:text-amber-300",
+    compact: "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 focus:ring-amber-500/20 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20",
+  },
+  son: {
+    card: "border-blue-200 bg-blue-50/70 hover:border-blue-300 hover:bg-blue-100/70 focus:ring-blue-500/20 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20",
+    title: "text-blue-700 dark:text-cyan-300",
+    compact: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 focus:ring-blue-500/20 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20",
+  },
+  daughter: {
+    card: "border-rose-200 bg-rose-50/70 hover:border-rose-300 hover:bg-rose-100/70 focus:ring-rose-500/20 dark:border-pink-500/30 dark:bg-pink-500/10 dark:hover:bg-pink-500/20",
+    title: "text-rose-700 dark:text-pink-300",
+    compact: "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 focus:ring-rose-500/20 dark:border-pink-500/30 dark:bg-pink-500/10 dark:text-pink-300 dark:hover:bg-pink-500/20",
+  },
+};
 
 const normalizeText = (value?: string | null) => {
   if (value === undefined || value === null) return null;
@@ -91,7 +157,7 @@ const TechDateField = ({
     <div className="space-y-2">
       <label
         htmlFor={inputId}
-        className="block text-sm font-medium text-gray-400 font-mono tracking-wide"
+        className={labelClass}
       >
         {`// ${label}`}
       </label>
@@ -100,7 +166,7 @@ const TechDateField = ({
         type="date"
         value={value || ""}
         onChange={(e) => onChange(e.target.value || null)}
-        className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all font-mono text-sm"
+        className={`${inputClass} font-mono`}
       />
     </div>
   );
@@ -121,7 +187,7 @@ const CheckboxField = ({
     <div className="space-y-2">
       <label
         htmlFor={buttonId}
-        className="block text-sm font-medium text-gray-400 font-mono tracking-wide"
+        className={labelClass}
       >
         {`// ${label}`}
       </label>
@@ -129,12 +195,12 @@ const CheckboxField = ({
         id={buttonId}
         type="button"
         onClick={() => onChange(!checked)}
-        className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-left text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all flex justify-between items-center group hover:border-cyan-500/50"
+        className="group flex w-full items-center justify-between rounded-lg border border-slate-300 bg-white px-4 py-2 text-left text-slate-900 outline-none transition-colors hover:border-cyan-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-600 dark:bg-slate-900/60 dark:text-slate-100 dark:hover:border-cyan-500/50"
       >
-        <span className="font-mono text-sm text-gray-300 group-hover:text-cyan-400 transition-colors truncate">
+        <span className="truncate text-sm text-slate-700 transition-colors group-hover:text-cyan-700 dark:text-slate-300 dark:group-hover:text-cyan-400">
           {checked ? `${label}: ON` : `${label}: OFF`}
         </span>
-        <div className="flex items-center text-gray-500 group-hover:text-cyan-500 transition-colors">
+        <div className="flex items-center text-slate-400 transition-colors group-hover:text-cyan-600 dark:text-slate-500 dark:group-hover:text-cyan-500">
           <svg
             className="w-4 h-4"
             fill="none"
@@ -716,9 +782,9 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
 
   if (mode === "new") {
     return (
-      <div className="space-y-6">
+      <div className={`${builderShellClass} space-y-6`}>
         {error && (
-          <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          <div className={errorClass}>
             {error}
           </div>
         )}
@@ -726,14 +792,14 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
           <form
             onSubmit={handleCreateTree}
-            className="space-y-6 rounded-2xl border border-gray-700 bg-gray-800/40 p-6"
+            className={`${sectionCardClass} space-y-6 p-6`}
           >
             <div>
-              <p className="font-mono text-sm text-cyan-400">~/family/new</p>
-              <h2 className="mt-2 text-2xl font-bold text-white">
+              <p className={eyebrowClass}>Family setup</p>
+              <h2 className={`mt-2 text-2xl font-bold ${headingClass}`}>
                 Create Family Tree
               </h2>
-              <p className="mt-2 text-sm text-gray-400">
+              <p className={`mt-2 text-sm ${bodyTextClass}`}>
                 Start with the tree details, then optionally add the first person
                 so the builder can open with a focused root card.
               </p>
@@ -748,7 +814,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   setTreeForm((prev) => ({ ...prev, name: e.target.value }))
                 }
                 required
-                className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                className={inputClass}
               />
               <input
                 type="text"
@@ -758,7 +824,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   setTreeForm((prev) => ({ ...prev, slug: e.target.value }))
                 }
                 required
-                className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                className={inputClass}
               />
             </div>
             <textarea
@@ -768,7 +834,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
               onChange={(e) =>
                 setTreeForm((prev) => ({ ...prev, description: e.target.value }))
               }
-              className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+              className={inputClass}
             />
             <CheckboxField
               label="Public tree"
@@ -778,9 +844,9 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
               }
             />
 
-            <div className="rounded-xl border border-gray-700 bg-gray-900/30 p-5">
-              <h3 className="text-lg font-semibold text-white">Starter Person</h3>
-              <p className="mt-1 text-sm text-gray-400">
+            <div className={`${insetPanelClass} p-5`}>
+              <h3 className={`text-lg font-semibold ${headingClass}`}>Starter Person</h3>
+              <p className={`mt-1 text-sm ${bodyTextClass}`}>
                 Optional, but recommended so the edit builder opens with the first
                 card already connected to the tree.
               </p>
@@ -795,7 +861,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                       displayName: e.target.value,
                     }))
                   }
-                  className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                  className={inputClass}
                 />
                 <Select
                   value={rootPersonForm.gender || "unknown"}
@@ -818,7 +884,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                       firstName: e.target.value,
                     }))
                   }
-                  className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                  className={inputClass}
                 />
                 <input
                   type="text"
@@ -830,7 +896,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                       lastName: e.target.value,
                     }))
                   }
-                  className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                  className={inputClass}
                 />
                 <TechDateField
                   label="Birth Date"
@@ -858,7 +924,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                 placeholder="Metadata JSON"
                 value={rootMetadataInput}
                 onChange={(e) => setRootMetadataInput(e.target.value)}
-                className="mt-3 w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 font-mono text-xs text-white outline-none focus:border-cyan-500"
+                className={`mt-3 ${monoInputClass}`}
               />
             </div>
 
@@ -879,12 +945,12 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
             </div>
           </form>
 
-          <aside className="rounded-2xl border border-gray-700 bg-gray-800/40 p-6">
-            <p className="font-mono text-sm text-cyan-400">~/builder-notes</p>
-            <h3 className="mt-2 text-xl font-semibold text-white">
+          <aside className={`${sectionCardClass} p-6`}>
+            <p className={eyebrowClass}>Builder notes</p>
+            <h3 className={`mt-2 text-xl font-semibold ${headingClass}`}>
               Why Separate `new` And `edit`
             </h3>
-            <ul className="mt-4 space-y-3 text-sm text-gray-400">
+            <ul className={`mt-4 space-y-3 text-sm ${bodyTextClass}`}>
               <li>
                 `new` stays focused on tree setup and the first root card.
               </li>
@@ -904,53 +970,53 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`${builderShellClass} space-y-6`}>
       {error && (
-        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className={errorClass}>
           {error}
         </div>
       )}
 
       {isLoading ? (
-        <div className="rounded-xl border border-gray-700 bg-gray-800/40 p-8 text-sm text-gray-400">
+        <div className={emptyStateClass}>
           Loading family builder...
         </div>
       ) : !detail || !treeId ? (
-        <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-8 text-sm text-red-300">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300">
           Family tree detail not available.
         </div>
       ) : (
         <div className="space-y-6">
-          <section className="rounded-2xl border border-gray-700 bg-gray-800/40 p-5">
+          <section className={sectionCardClass}>
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className="font-mono text-sm text-cyan-400">~/tree-config</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">
+                <p className={eyebrowClass}>Tree config</p>
+                <h2 className={`mt-2 text-xl font-semibold ${headingClass}`}>
                   {detail.tree.name}
                 </h2>
-                <p className="mt-1 text-sm text-gray-400">
+                <p className={`mt-1 text-sm ${bodyTextClass}`}>
                   Tree settings stay in one top row so the builder canvas and
                   inspector below can stay focused.
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-lg border border-gray-700 bg-gray-900/40 px-3 py-3">
-                  <div className="text-lg font-semibold text-white">{stats.people}</div>
-                  <div className="text-[11px] uppercase tracking-wide text-gray-400">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-700 dark:bg-slate-900/40">
+                  <div className={`text-lg font-semibold ${headingClass}`}>{stats.people}</div>
+                  <div className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     People
                   </div>
                 </div>
-                <div className="rounded-lg border border-gray-700 bg-gray-900/40 px-3 py-3">
-                  <div className="text-lg font-semibold text-white">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-700 dark:bg-slate-900/40">
+                  <div className={`text-lg font-semibold ${headingClass}`}>
                     {stats.relationships}
                   </div>
-                  <div className="text-[11px] uppercase tracking-wide text-gray-400">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Links
                   </div>
                 </div>
-                <div className="rounded-lg border border-gray-700 bg-gray-900/40 px-3 py-3">
-                  <div className="text-lg font-semibold text-white">{stats.living}</div>
-                  <div className="text-[11px] uppercase tracking-wide text-gray-400">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-700 dark:bg-slate-900/40">
+                  <div className={`text-lg font-semibold ${headingClass}`}>{stats.living}</div>
+                  <div className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Living
                   </div>
                 </div>
@@ -964,7 +1030,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                 onChange={(e) =>
                   setTreeForm((prev) => ({ ...prev, name: e.target.value }))
                 }
-                className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                className={inputClass}
               />
               <input
                 type="text"
@@ -972,7 +1038,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                 onChange={(e) =>
                   setTreeForm((prev) => ({ ...prev, slug: e.target.value }))
                 }
-                className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                className={inputClass}
               />
               <textarea
                 rows={2}
@@ -983,7 +1049,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                     description: e.target.value,
                   }))
                 }
-                className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                className={inputClass}
               />
               <CheckboxField
                 label="Public tree"
@@ -1015,14 +1081,14 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
             </form>
           </section>
 
-          <section className="space-y-4 rounded-2xl border border-gray-700 bg-gray-800/40 p-5">
+          <section className={`${sectionCardClass} space-y-4`}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="font-mono text-sm text-cyan-400">~/visual-builder</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">
+                <p className={eyebrowClass}>Visual builder</p>
+                <h2 className={`mt-2 text-xl font-semibold ${headingClass}`}>
                   Tree Canvas
                 </h2>
-                <p className="mt-1 text-sm text-gray-400">
+                <p className={`mt-1 text-sm ${bodyTextClass}`}>
                   Click a card to focus and open the inspector. This matches the
                   flexible editing flow you were pointing at in the family-chart
                   demo.
@@ -1034,7 +1100,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   onClick={() =>
                     window.dispatchEvent(new CustomEvent("family:fit"))
                   }
-                  className="rounded-md border border-gray-600 px-3 py-2 text-sm text-gray-200 transition hover:bg-gray-700/60"
+                  className={toolbarButtonClass}
                 >
                   Fit
                 </button>
@@ -1043,7 +1109,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   onClick={() =>
                     window.dispatchEvent(new CustomEvent("family:center-main"))
                   }
-                  className="rounded-md border border-gray-600 px-3 py-2 text-sm text-gray-200 transition hover:bg-gray-700/60"
+                  className={toolbarButtonClass}
                 >
                   Center Main
                 </button>
@@ -1056,7 +1122,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                       }),
                     )
                   }
-                  className="rounded-md border border-gray-600 px-3 py-2 text-sm text-gray-200 transition hover:bg-gray-700/60"
+                  className={toolbarButtonClass}
                 >
                   Vertical
                 </button>
@@ -1069,25 +1135,25 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                       }),
                     )
                   }
-                  className="rounded-md border border-gray-600 px-3 py-2 text-sm text-gray-200 transition hover:bg-gray-700/60"
+                  className={toolbarButtonClass}
                 >
                   Horizontal
                 </button>
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-700 bg-gray-900/30 p-4">
+            <div className={insetPanelClass}>
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-white">
+                  <h3 className={`text-sm font-semibold ${headingClass}`}>
                     Canvas Actions
                   </h3>
-                  <p className="mt-1 text-sm text-gray-400">
+                  <p className={`mt-1 text-sm ${bodyTextClass}`}>
                     Select a person directly on the tree, then add relatives from
                     here like the family-chart builder flow.
                   </p>
                 </div>
-                <div className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-sm text-cyan-300">
+                <div className={selectedPillClass}>
                   {selectedPerson
                     ? `Selected: ${selectedPerson.displayName}`
                     : "Select a person in the canvas"}
@@ -1099,10 +1165,10 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   type="button"
                   onClick={() => beginRelationAction("father")}
                   disabled={!selectedPerson}
-                  className="rounded-xl border border-cyan-500/30 border-dashed bg-cyan-500/5 px-4 py-4 text-left transition hover:bg-cyan-500/10 disabled:opacity-40"
+                  className={`rounded-xl border border-dashed px-4 py-4 text-left transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${relationActionStyles.father.card}`}
                 >
-                  <div className="text-lg font-semibold text-cyan-300">+ Add Father</div>
-                  <div className="mt-1 text-xs text-gray-400">
+                  <div className={`text-lg font-semibold ${relationActionStyles.father.title}`}>+ Add Father</div>
+                  <div className={`mt-1 text-xs ${bodyTextClass}`}>
                     Attach a father to the selected person
                   </div>
                 </button>
@@ -1110,10 +1176,10 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   type="button"
                   onClick={() => beginRelationAction("mother")}
                   disabled={!selectedPerson}
-                  className="rounded-xl border border-pink-500/30 border-dashed bg-pink-500/5 px-4 py-4 text-left transition hover:bg-pink-500/10 disabled:opacity-40"
+                  className={`rounded-xl border border-dashed px-4 py-4 text-left transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${relationActionStyles.mother.card}`}
                 >
-                  <div className="text-lg font-semibold text-pink-300">+ Add Mother</div>
-                  <div className="mt-1 text-xs text-gray-400">
+                  <div className={`text-lg font-semibold ${relationActionStyles.mother.title}`}>+ Add Mother</div>
+                  <div className={`mt-1 text-xs ${bodyTextClass}`}>
                     Attach a mother to the selected person
                   </div>
                 </button>
@@ -1121,10 +1187,10 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   type="button"
                   onClick={() => beginRelationAction("spouse")}
                   disabled={!selectedPerson}
-                  className="rounded-xl border border-amber-500/30 border-dashed bg-amber-500/5 px-4 py-4 text-left transition hover:bg-amber-500/10 disabled:opacity-40"
+                  className={`rounded-xl border border-dashed px-4 py-4 text-left transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${relationActionStyles.spouse.card}`}
                 >
-                  <div className="text-lg font-semibold text-amber-300">+ Add Spouse</div>
-                  <div className="mt-1 text-xs text-gray-400">
+                  <div className={`text-lg font-semibold ${relationActionStyles.spouse.title}`}>+ Add Spouse</div>
+                  <div className={`mt-1 text-xs ${bodyTextClass}`}>
                     Link a spouse directly from the canvas
                   </div>
                 </button>
@@ -1132,10 +1198,10 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   type="button"
                   onClick={() => beginRelationAction("son")}
                   disabled={!selectedPerson}
-                  className="rounded-xl border border-cyan-500/30 border-dashed bg-cyan-500/5 px-4 py-4 text-left transition hover:bg-cyan-500/10 disabled:opacity-40"
+                  className={`rounded-xl border border-dashed px-4 py-4 text-left transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${relationActionStyles.son.card}`}
                 >
-                  <div className="text-lg font-semibold text-cyan-300">+ Add Son</div>
-                  <div className="mt-1 text-xs text-gray-400">
+                  <div className={`text-lg font-semibold ${relationActionStyles.son.title}`}>+ Add Son</div>
+                  <div className={`mt-1 text-xs ${bodyTextClass}`}>
                     Add a son under the selected person
                   </div>
                 </button>
@@ -1143,10 +1209,10 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   type="button"
                   onClick={() => beginRelationAction("daughter")}
                   disabled={!selectedPerson}
-                  className="rounded-xl border border-pink-500/30 border-dashed bg-pink-500/5 px-4 py-4 text-left transition hover:bg-pink-500/10 disabled:opacity-40"
+                  className={`rounded-xl border border-dashed px-4 py-4 text-left transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${relationActionStyles.daughter.card}`}
                 >
-                  <div className="text-lg font-semibold text-pink-300">+ Add Daughter</div>
-                  <div className="mt-1 text-xs text-gray-400">
+                  <div className={`text-lg font-semibold ${relationActionStyles.daughter.title}`}>+ Add Daughter</div>
+                  <div className={`mt-1 text-xs ${bodyTextClass}`}>
                     Add a daughter under the selected person
                   </div>
                 </button>
@@ -1155,7 +1221,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
               <div className="space-y-4">
-                <div className="rounded-xl border border-gray-700 bg-gray-900/30 p-3">
+                <div className={canvasFrameClass}>
                   <FamilyTreeChart
                     detail={detail}
                     currentSlug={detail.tree.slug}
@@ -1171,38 +1237,77 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                   />
                 </div>
 
-                <div className="rounded-xl border border-gray-700 bg-gray-900/30 p-4">
-                  <h3 className="text-sm font-semibold text-white">Relationships</h3>
-                  <div className="mt-3 max-h-60 space-y-2 overflow-y-auto pr-1">
-                    {detail.relationships.map((relationship) => (
-                      <div
-                        key={relationship.id}
-                        className="rounded-lg border border-gray-700 bg-gray-900/40 px-3 py-2 text-sm text-gray-300"
-                      >
-                        {buildRelationshipSummary(relationship, peopleById)}
-                      </div>
-                    ))}
-                  </div>
+                <div className={insetPanelClass}>
+                  <h3 className={`text-sm font-semibold ${headingClass}`}>Relationships</h3>
+                  {detail.relationships.length === 0 ? (
+                    <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white px-3 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400">
+                      No relationships have been added yet.
+                    </div>
+                  ) : (
+                    <div className="mt-3 max-h-60 space-y-2 overflow-y-auto pr-1">
+                      {detail.relationships.map((relationship) => (
+                        <div
+                          key={relationship.id}
+                          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition-colors hover:border-cyan-200 hover:bg-cyan-50/50 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800/60"
+                        >
+                          {buildRelationshipSummary(relationship, peopleById)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <aside className="space-y-5 rounded-xl border border-gray-700 bg-gray-900/30 p-4 xl:sticky xl:top-5">
+              <aside className="space-y-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/35 xl:sticky xl:top-5">
                 {!selectedPerson ? (
-                  <div className="rounded-xl border border-gray-700 bg-gray-900/40 p-5 text-sm text-gray-400">
+                  <div className={emptyStateClass}>
                     Select a person from the chart to open the inspector.
                   </div>
                 ) : (
                   <>
                     <div>
-                      <p className="font-mono text-sm text-cyan-400">~/inspector</p>
-                      <h2 className="mt-2 text-lg font-semibold text-white">
+                      <p className={eyebrowClass}>Inspector</p>
+                      <h2 className={`mt-2 text-lg font-semibold ${headingClass}`}>
                         {selectedAction ? relationTitle : selectedPerson.displayName}
                       </h2>
-                      <p className="mt-1 text-sm text-gray-400">
+                      <p className={`mt-1 text-sm ${bodyTextClass}`}>
                         {selectedAction
                           ? "Create a related person directly from the selected node."
                           : "Edit the selected person and use quick actions to grow the tree."}
                       </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/70">
+                      {selectedPerson.photoUrl ? (
+                        <img
+                          src={selectedPerson.photoUrl}
+                          alt=""
+                          width={48}
+                          height={48}
+                          loading="lazy"
+                          className="h-12 w-12 rounded-full border border-slate-200 object-cover dark:border-slate-600"
+                        />
+                      ) : (
+                        <div
+                          aria-hidden="true"
+                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-sm font-semibold text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300"
+                        >
+                          {initials(selectedPerson.displayName)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className={`truncate text-sm font-semibold ${headingClass}`}>
+                          {selectedPerson.displayName}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-2">
+                          <span className="rounded-full bg-white px-2 py-0.5 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900/60 dark:text-slate-300 dark:ring-slate-700">
+                            {selectedPerson.gender}
+                          </span>
+                          <span className="rounded-full bg-white px-2 py-0.5 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900/60 dark:text-slate-300 dark:ring-slate-700">
+                            {selectedPerson.isLiving ? "Living" : "Deceased"}
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
                     {!selectedAction ? (
@@ -1211,35 +1316,35 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                           <button
                             type="button"
                             onClick={() => beginRelationAction("father")}
-                            className="rounded-md border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/20"
+                            className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 ${relationActionStyles.father.compact}`}
                           >
                             Add Father
                           </button>
                           <button
                             type="button"
                             onClick={() => beginRelationAction("mother")}
-                            className="rounded-md border border-pink-500/30 bg-pink-500/10 px-3 py-2 text-sm font-semibold text-pink-300 transition hover:bg-pink-500/20"
+                            className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 ${relationActionStyles.mother.compact}`}
                           >
                             Add Mother
                           </button>
                           <button
                             type="button"
                             onClick={() => beginRelationAction("son")}
-                            className="rounded-md border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/20"
+                            className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 ${relationActionStyles.son.compact}`}
                           >
                             Add Son
                           </button>
                           <button
                             type="button"
                             onClick={() => beginRelationAction("daughter")}
-                            className="rounded-md border border-pink-500/30 bg-pink-500/10 px-3 py-2 text-sm font-semibold text-pink-300 transition hover:bg-pink-500/20"
+                            className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 ${relationActionStyles.daughter.compact}`}
                           >
                             Add Daughter
                           </button>
                           <button
                             type="button"
                             onClick={() => beginRelationAction("spouse")}
-                            className="col-span-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/20"
+                            className={`col-span-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 ${relationActionStyles.spouse.compact}`}
                           >
                             Add Spouse
                           </button>
@@ -1256,7 +1361,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                               }))
                             }
                             required
-                            className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                            className={inputClass}
                           />
                           <div className="grid grid-cols-2 gap-3">
                             <input
@@ -1269,7 +1374,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                                   firstName: e.target.value,
                                 }))
                               }
-                              className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                              className={inputClass}
                             />
                             <input
                               type="text"
@@ -1281,7 +1386,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                                   lastName: e.target.value,
                                 }))
                               }
-                              className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                              className={inputClass}
                             />
                           </div>
                           <div className="grid grid-cols-2 gap-3">
@@ -1337,14 +1442,14 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                                 notes: e.target.value,
                               }))
                             }
-                            className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                            className={inputClass}
                           />
                           <textarea
                             rows={3}
                             placeholder="Metadata JSON"
                             value={personMetadataInput}
                             onChange={(e) => setPersonMetadataInput(e.target.value)}
-                            className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 font-mono text-xs text-white outline-none focus:border-cyan-500"
+                            className={monoInputClass}
                           />
                           <div className="flex flex-wrap items-center gap-2">
                             <button
@@ -1362,7 +1467,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                                   defaultMainPersonId: selectedPerson.id,
                                 }))
                               }
-                              className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/20"
+                              className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 ${relationActionStyles.spouse.compact}`}
                             >
                               Set As Main
                             </button>
@@ -1390,7 +1495,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                           }
                           required
                           placeholder="Display Name"
-                          className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                          className={inputClass}
                         />
                         <div className="grid grid-cols-2 gap-3">
                           <input
@@ -1403,7 +1508,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                                 firstName: e.target.value,
                               }))
                             }
-                            className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                            className={inputClass}
                           />
                           <input
                             type="text"
@@ -1415,7 +1520,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                                 lastName: e.target.value,
                               }))
                             }
-                            className="rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                            className={inputClass}
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
@@ -1471,14 +1576,14 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                               notes: e.target.value,
                             }))
                           }
-                          className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
+                          className={inputClass}
                         />
                         <textarea
                           rows={3}
                           placeholder="Metadata JSON"
                           value={personMetadataInput}
                           onChange={(e) => setPersonMetadataInput(e.target.value)}
-                          className="w-full rounded-md border border-gray-700 bg-gray-900/50 px-3 py-2 font-mono text-xs text-white outline-none focus:border-cyan-500"
+                          className={monoInputClass}
                         />
                         <div className="flex flex-wrap items-center gap-2">
                           <button

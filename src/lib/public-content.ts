@@ -1,10 +1,12 @@
 import type { Project } from "../types/project";
 import type { Experience } from "../types/experiences";
+import type { PublicProjectDetail } from "../types/project-cms";
 import { API_BASE_URL } from "./config";
 import {
     FALLBACK_PROJECTS,
     FALLBACK_EXPERIENCES,
     PROJECT_COPY,
+    PROJECT_LINK_OVERRIDES,
 } from "../data/portfolio-content";
 
 /**
@@ -31,6 +33,32 @@ async function fetchJson<T>(path: string): Promise<T | null> {
     }
 }
 
+/**
+ * Apply curated copy + link sanitization to a single API project record.
+ * Used by both the list and detail loaders so the public site renders one
+ * consistent, trusted view of every project.
+ */
+export function curateProject(project: Project): Project {
+    const copy = PROJECT_COPY[project.slug];
+    const links = PROJECT_LINK_OVERRIDES[project.slug];
+    return {
+        ...project,
+        ...(copy
+            ? {
+                title: copy.title ?? project.title,
+                description: copy.description,
+                imageVariant: copy.imageVariant ?? project.imageVariant,
+            }
+            : {}),
+        ...(links
+            ? {
+                githubUrl: links.githubUrl ?? project.githubUrl,
+                liveUrl: links.liveUrl ?? project.liveUrl,
+            }
+            : {}),
+    };
+}
+
 function sortProjects(projects: Project[]): Project[] {
     return projects
         .slice()
@@ -45,22 +73,68 @@ function sortProjects(projects: Project[]): Project[] {
 
 export async function getPublicProjects(): Promise<Project[]> {
     const data = await fetchJson<Project[]>("projects");
-    if (!data || data.length === 0) return sortProjects(FALLBACK_PROJECTS);
+    if (!data || data.length === 0)
+        return sortProjects(FALLBACK_PROJECTS.map(curateProject));
 
-    // Apply curated Problem → Built → Tech → Impact copy over API records.
-    return sortProjects(
-        data.map((project) => {
-            const copy = PROJECT_COPY[project.slug];
-            return copy
-                ? {
-                    ...project,
-                    title: copy.title ?? project.title,
-                    description: copy.description,
-                    imageVariant: copy.imageVariant ?? project.imageVariant,
-                }
-                : project;
-        }),
-    );
+    // Apply curated copy + link sanitization over API records.
+    return sortProjects(data.map(curateProject));
+}
+
+/**
+ * Structured public detail loader. Reads the composed public DTO (sections,
+ * features, tech, links, media) from the API. Applies the curated copy override
+ * (title/description/imageVariant) to preserve polished copy. When the API is
+ * unreachable, wraps the curated static fallback with empty children so the
+ * page still renders (hero + description + flat features/tech). Never throws.
+ *
+ * CTAs are rendered from the structured `links` array (active+public only), so
+ * broken/hidden links are excluded by the data layer — see the backfill seed.
+ */
+export async function getPublicProjectDetail(
+    slug: string,
+): Promise<PublicProjectDetail | null> {
+    const data = await fetchJson<PublicProjectDetail>(`projects/${slug}`);
+    if (data) {
+        const copy = PROJECT_COPY[data.slug];
+        return copy
+            ? {
+                ...data,
+                title: copy.title ?? data.title,
+                description: copy.description,
+                imageVariant: copy.imageVariant ?? data.imageVariant,
+            }
+            : data;
+    }
+
+    const fb = FALLBACK_PROJECTS.find((p) => p.slug === slug);
+    if (!fb) return null;
+    const c = curateProject(fb);
+    return {
+        ...c,
+        imageVariant: c.imageVariant ?? null,
+        features: c.features ?? null,
+        tags: c.tags ?? null,
+        status: c.status ?? null,
+        subtitle: null,
+        summary: null,
+        projectScope: null,
+        clientName: null,
+        isConfidential: false,
+        problem: null,
+        solution: null,
+        contribution: null,
+        architectureNotes: null,
+        resultSummary: null,
+        fullDescription: null,
+        publishedAt: null,
+        cover: null,
+        ogImage: null,
+        media: [],
+        sections: [],
+        featureList: [],
+        techStacks: [],
+        links: [],
+    } as PublicProjectDetail;
 }
 
 export async function getPublicExperiences(): Promise<Experience[]> {

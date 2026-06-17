@@ -28,20 +28,31 @@ const SECURITY_HEADERS: Record<string, string> = {
     // static.cloudflareinsights.com (script) + cloudflareinsights.com
     // (beacon POST): Cloudflare Web Analytics is auto-injected by Cloudflare,
     // so the CSP must allow it or analytics silently fails.
-    // www.google.com + www.gstatic.com (script) and frame-src www.google.com:
-    // Google reCAPTCHA on /login.
+    // www.google.com + www.gstatic.com (script/connect) and frame-src
+    // www.google.com: Google reCAPTCHA on /login and contact.
     "script-src 'self' 'unsafe-inline' blob: https://static.cloudflareinsights.com https://www.google.com https://www.gstatic.com",
     "frame-src 'self' https://www.google.com",
     "worker-src 'self' blob:",
     // In dev the API runs on localhost:8787 — without this, the CSP silently
     // blocks every admin fetch during local development.
-    `connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com${
+    `connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://www.google.com https://www.gstatic.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com${
       import.meta.env.DEV ? " http://localhost:8787" : ""
     }`,
   ].join("; "),
 };
 
-export const onRequest: MiddlewareHandler = async (_context, next) => {
+export const onRequest: MiddlewareHandler = async (context, next) => {
+  // Canonicalize www → apex with a 301. Both hostnames currently serve 200,
+  // producing duplicate URLs; the canonical <link> already points to the apex,
+  // this removes the duplicate at the source for SSR HTML. The authoritative
+  // fix is a Cloudflare Redirect Rule (www.hafizbahtiar.com/* → apex), which
+  // also covers static assets — see docs/reports/public-portfolio-audit.md.
+  const url = context.url;
+  if (url.hostname === "www.hafizbahtiar.com") {
+    url.hostname = "hafizbahtiar.com";
+    return context.redirect(url.toString(), 301);
+  }
+
   const response = await next();
 
   // Only decorate HTML documents — never JSON/asset responses the Worker emits.

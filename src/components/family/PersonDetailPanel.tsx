@@ -4,15 +4,10 @@ import type {
   PublicFamilyTreeDetail,
 } from "../../lib/family-privacy";
 import { displayYear } from "../../lib/family-format";
-
-const REL_LABEL: Record<string, string> = {
-  parent: "Parent",
-  adoptive_parent: "Adoptive parent",
-  child: "Child",
-  adopted_child: "Adopted child",
-  spouse: "Spouse",
-  sibling: "Sibling",
-};
+import {
+  getPersonRelationshipGroups,
+  getRelationKey,
+} from "../../lib/family-relationships";
 
 const initials = (name: string) =>
   name
@@ -64,31 +59,10 @@ export const PersonDetailPanel = ({
     return () => window.removeEventListener("keydown", onKey);
   }, [asSheet, person, onClose]);
 
-  const nameById = useMemo(
-    () => new Map(detail.people.map((familyPerson) => [familyPerson.id, familyPerson.displayName])),
-    [detail],
+  const relationshipGroups = useMemo(
+    () => (person ? getPersonRelationshipGroups(detail, person) : []),
+    [detail, person],
   );
-
-  const relationships = useMemo(() => {
-    if (!person) return [];
-    return detail.relationships
-      .filter(
-        (relationship) =>
-          relationship.personId === person.id ||
-          relationship.relatedPersonId === person.id,
-      )
-      .map((relationship) => {
-        const otherId =
-          relationship.personId === person.id
-            ? relationship.relatedPersonId
-            : relationship.personId;
-        return {
-          label: REL_LABEL[relationship.relationshipType] ?? relationship.relationshipType,
-          name: nameById.get(otherId) ?? `#${otherId}`,
-          id: otherId,
-        };
-      });
-  }, [detail, person, nameById]);
 
   if (!person) {
     return (
@@ -145,26 +119,39 @@ export const PersonDetailPanel = ({
         )}
       </dl>
 
-      {relationships.length > 0 && (
-        <div className="space-y-1.5 border-t border-slate-100 pt-3 dark:border-slate-700">
+      {relationshipGroups.length > 0 && (
+        <div className="space-y-2 border-t border-slate-100 pt-3 dark:border-slate-700">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Relationships
           </p>
-          {relationships.map((relationship, index) => (
-            <button
-              key={`${relationship.id}-${relationship.label}-${index}`}
-              type="button"
-              onClick={() => onSelectPerson(relationship.id)}
-              className="-mx-1 flex w-full items-baseline gap-2 rounded px-1 text-left text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:hover:bg-slate-700/50"
-            >
-              <span className="w-24 shrink-0 text-xs text-slate-400 dark:text-slate-500">
-                {relationship.label}
-              </span>
-              <span className="text-cyan-700 dark:text-cyan-400">
-                {relationship.name}
-              </span>
-            </button>
-          ))}
+          <table className="w-full border-collapse text-sm">
+            <tbody>
+              {relationshipGroups.map((group) => (
+                <tr key={group.key} className="align-top">
+                  <th
+                    scope="row"
+                    className="w-24 py-1 pr-3 text-left text-xs font-medium text-slate-400 dark:text-slate-500"
+                  >
+                    {group.label}
+                  </th>
+                  <td className="py-1">
+                    <div className="flex flex-wrap gap-x-2 gap-y-1">
+                      {group.people.map((related) => (
+                        <button
+                          key={getRelationKey(related)}
+                          type="button"
+                          onClick={() => onSelectPerson(related.id)}
+                          className="-mx-1 rounded px-1 text-left text-cyan-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:text-cyan-400 dark:hover:bg-slate-700/50"
+                        >
+                          {related.displayName}
+                        </button>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </>

@@ -59,6 +59,16 @@ Custom Astro components with their own inline `<script>` blocks that set up even
 
 ### Family tree (`src/components/family/`)
 
+> **Read the memory brain before touching Family module code.** Future Claude/Opus/Codex sessions
+> must read these first — they capture privacy invariants, the merge identity model, the admin/public
+> boundary, and hard "never" rules (no remote D1 migration, no PII in the public DTO, no name-based merge):
+> - `docs/brain/family-module-brain.md`
+> - `docs/brain/family-module-agent-rules.md`
+> - `docs/architecture/family-module-architecture.md`
+>
+> Note: the public **backend** API is **not** privacy-sanitized — the whitelist in `family-privacy.ts`
+> only protects the rendered page, not direct API callers. See the brain doc (§7).
+
 Uses the `family-chart` library with light/dark theme overrides in `src/styles/family-chart-theme.css`.
 
 Public pages use `FamilyExplorer.tsx` as a single React island. Data is fetched in Astro frontmatter at request time and passed as props; selection, search, deep links, zoom, orientation, list fallback, and details are all props/state-driven. `src/hooks/useFamilyChart.ts` owns public chart lifecycle and uses the library's real d3 zoom handlers.

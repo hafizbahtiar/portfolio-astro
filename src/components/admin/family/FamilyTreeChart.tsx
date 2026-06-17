@@ -1,8 +1,22 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Chart, Data } from "family-chart";
 import "family-chart/styles/family-chart.css";
-import type { FamilyGender, FamilyTreeDetail } from "../../types/family";
-import { buildChartData } from "../../lib/chart-data";
+import type { FamilyGender, FamilyTreeDetail } from "../../../types/family";
+import { buildChartData } from "../../../lib/chart-data";
+
+/**
+ * Default readable zoom for the admin builder: center the focused person at 1:1.
+ * A full "fit" shrinks a multi-generation tree until the nodes are unreadable, so
+ * the builder defaults to centering on the main person instead of fitting all.
+ */
+const READABLE_SCALE = 1;
+
+const centerOnMain = (chart: Chart, transitionTime = 0) =>
+  chart.updateTree({
+    tree_position: "main_to_middle",
+    scale: READABLE_SCALE,
+    transition_time: transitionTime,
+  });
 
 interface FamilyTreeChartProps {
   detail: FamilyTreeDetail;
@@ -53,6 +67,7 @@ export const FamilyTreeChart = ({
   const chartHandlersRef = useRef<typeof import("family-chart").handlers | null>(
     null,
   );
+  const resizeCleanupRef = useRef<(() => void) | null>(null);
   const selectedMainIdRef = useRef<string>("");
   const [selectedMainId, setSelectedMainId] = useState<string>("");
   const dataRef = useRef<Data>([]);
@@ -98,13 +113,6 @@ export const FamilyTreeChart = ({
   }, [selectedMainId]);
 
   const chartData = useMemo(() => buildChartData(detail), [detail]);
-
-  const applyZoom = (chart: Chart, treePosition: "fit" | "inherit" = "inherit") => {
-    chart.updateTree({
-      tree_position: treePosition,
-      transition_time: 250,
-    });
-  };
 
   useEffect(() => {
     const container = containerRef.current;
@@ -152,7 +160,7 @@ export const FamilyTreeChart = ({
         setOrientation: (vertical: boolean) => {
           if (vertical) chart.setOrientationVertical();
           else chart.setOrientationHorizontal();
-          chart.updateTree({ tree_position: "fit", transition_time: 300 });
+          centerOnMain(chart, 300);
         },
         getSpousesOfMain: () => {
           return getSpouseOptions(selectedMainIdRef.current);
@@ -168,12 +176,19 @@ export const FamilyTreeChart = ({
         },
       };
 
+      // Match the public /family ("Fable 5") person-card design: circular avatar
+      // when a photo exists, rounded rect fallback when it does not, name + birth
+      // year, and hover-path-to-main. Add-relative editing cards are kept.
       const card = chart.setCardHtml();
+      card.setStyle("imageCircleRect");
+      card.setCardImageField("avatar");
+      card.setOnHoverPathToMain();
       if (useLabelOnly) {
         card.setCardDisplay([["label"]]);
-        card.setCardDim({ h: 70 });
+        card.setCardDim({ w: 220, h: 80 });
       } else {
         card.setCardDisplay([["first name", "last name"], ["birthday"]]);
+        card.setCardDim({ w: 220, h: 80 });
       }
       chart.setDuplicateBranchToggle(true);
       if (typeof ancestryDepth === "number") {
@@ -304,7 +319,6 @@ export const FamilyTreeChart = ({
         }
       });
       chart.setOrientationVertical();
-      applyZoom(chart, "fit");
       let initialMainId = chartData[0]?.id || "";
       const defaultId = detail.tree.defaultMainPersonId ?? null;
       if (defaultId) {
@@ -314,11 +328,40 @@ export const FamilyTreeChart = ({
       setSelectedMainId(initialMainId);
       selectedMainIdRef.current = initialMainId;
       chart.updateMainId(initialMainId);
-      chart.updateTree({
-        initial: true,
-        tree_position: "fit",
-        transition_time: 500,
-      });
+      // Render once, then center the focused person at a readable 1:1 scale.
+      // (A full "fit" shrinks a multi-generation tree until nodes are unreadable.)
+      chart.updateTree({ initial: true, transition_time: 0 });
+      centerOnMain(chart, 0);
+
+      // family-chart does not auto-refit on container size changes. Re-center the
+      // main person when the canvas is first laid out or resized (window resize,
+      // sidebar toggle), which also covers init before the container has real size.
+      if (typeof ResizeObserver !== "undefined") {
+        let raf = 0;
+        let lastW = 0;
+        let lastH = 0;
+        const observer = new ResizeObserver(() => {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(() => {
+            if (destroyed || chartRef.current !== chart) return;
+            const rect = container.getBoundingClientRect();
+            if (rect.width < 2 || rect.height < 2) return;
+            if (
+              Math.abs(rect.width - lastW) < 2 &&
+              Math.abs(rect.height - lastH) < 2
+            )
+              return;
+            lastW = rect.width;
+            lastH = rect.height;
+            centerOnMain(chart, 0);
+          });
+        });
+        observer.observe(container);
+        resizeCleanupRef.current = () => {
+          cancelAnimationFrame(raf);
+          observer.disconnect();
+        };
+      }
       const initNode = chartData.find((n) => n.id === initialMainId);
       const initLabel = initNode ? ((initNode.data as any).label || (initNode.data as any).name || "") : "";
       window.dispatchEvent(new CustomEvent("family:on-main-changed", { detail: { id: initialMainId, label: initLabel } }));
@@ -401,6 +444,8 @@ export const FamilyTreeChart = ({
 
   useEffect(() => {
     return () => {
+      resizeCleanupRef.current?.();
+      resizeCleanupRef.current = null;
       if (editTreeRef.current?.destroy) {
         editTreeRef.current.destroy();
       }
@@ -487,7 +532,7 @@ export const FamilyTreeChart = ({
       } else {
         chart.setOrientationHorizontal();
       }
-      chart.updateTree({ tree_position: "fit", transition_time: 300 });
+      centerOnMain(chart, 300);
     };
     window.addEventListener("family:zoom-in", onZoomIn as EventListener);
     window.addEventListener("family:zoom-out", onZoomOut as EventListener);
@@ -514,7 +559,7 @@ export const FamilyTreeChart = ({
   }
 
   return (
-    <div className="h-full w-full min-h-[480px] rounded-xl border border-slate-700 bg-family-canvas overflow-hidden">
+    <div className="family-chart--admin h-full w-full min-h-[480px] overflow-hidden rounded-xl border border-slate-200 bg-family-canvas shadow-sm dark:border-slate-700 dark:shadow-none">
       <div ref={containerRef} className="f3 h-full w-full" />
     </div>
   );
