@@ -2,6 +2,7 @@
 export const prerender = false;
 import ProjectLayout from "../../../layouts/ProjectLayout.astro";
 import JsonLd from "../../../components/seo/JsonLd.astro";
+import MediaCarousel from "../../../components/project/MediaCarousel.astro";
 import { getPublicProjectDetail } from "../../../lib/public-content";
 import { projectsService } from "../../../lib/projects";
 import type { ProjectLinkType } from "../../../types/project-cms";
@@ -83,13 +84,23 @@ const infoStats = [
   { label: "Status", value: formatStatus(project.status) },
 ].filter((s) => s.value) as { label: string; value: string }[];
 
+// Gallery media (screenshots/video/diagrams) drives the carousel. cover/logo/og
+// are hero/branding, not carousel items. When gallery media exists we show the
+// carousel; otherwise fall back to the single cover/logo/placeholder treatment.
+const GALLERY_TYPES = ["screenshot", "video", "architecture_diagram"];
+const galleryMedia = (project.media ?? []).filter((m) =>
+  GALLERY_TYPES.includes(m.mediaType),
+);
+const hasGallery = galleryMedia.length > 0;
+
 const showBanner =
+  !hasGallery &&
   !!coverUrl &&
   (!project.imageVariant ||
     project.imageVariant === "banner" ||
     project.imageVariant === "width-banner");
-const showLogo = project.imageVariant === "logo" && !!coverUrl;
-const showMediaFallback = !showBanner && !showLogo;
+const showLogo = !hasGallery && project.imageVariant === "logo" && !!coverUrl;
+const showMediaFallback = !hasGallery && !showBanner && !showLogo;
 const hasLegal = !!(policy?.privacyPolicy || policy?.termsAndConditions);
 
 // CTAs come exclusively from structured project_links (active + public only;
@@ -188,7 +199,8 @@ const projectSchema = {
       )}
     </div>
 
-    <!-- Media (single cover; the carousel island augments this when gallery media exists) -->
+    <!-- Media: carousel when gallery media exists, else single cover/logo/placeholder -->
+    {hasGallery && <MediaCarousel items={galleryMedia} title={project.title} />}
     {showBanner && (
       <div class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 mb-6 bg-white dark:bg-slate-800">
         <img src={coverUrl} alt={project.cover?.alt ?? project.title} class="w-full h-44 sm:h-60 object-contain" loading="eager" decoding="async" />
