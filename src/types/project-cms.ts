@@ -293,3 +293,86 @@ export interface ApiErrorData {
   message?: string;
   field?: string;
 }
+
+// ---- Public (unauthenticated) project detail DTO ----
+// Mirrors hono-workers toPublicProjectDetail: confidential clientName is null,
+// links are active+public only, children are visible-only.
+export interface PublicMediaItem {
+  id: number;
+  mediaType: MediaType;
+  url: string;
+  alt: string | null;
+  caption: string | null;
+  deviceFrame: DeviceFrame;
+  width: number | null;
+  height: number | null;
+  blurhash: string | null;
+  sortOrder: number;
+  isFeatured: boolean;
+}
+export interface PublicSectionItem {
+  sectionType: string;
+  title: string | null;
+  body: string | null;
+  sortOrder: number;
+}
+export interface PublicFeatureItem {
+  title: string;
+  description: string | null;
+  icon: string | null;
+  sortOrder: number;
+}
+export interface PublicTechItem {
+  name: string;
+  category: string | null;
+  icon: string | null;
+  color: string | null;
+  isPrimary: boolean;
+  sortOrder: number;
+}
+export interface PublicLinkItem {
+  label: string;
+  url: string;
+  linkType: ProjectLinkType;
+  sortOrder: number;
+}
+export interface PublicProjectDetail {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  imageVariant?: ImageVariant | null;
+  technologies: string[];
+  githubUrl: string;
+  liveUrl: string;
+  year: number;
+  role: string;
+  projectType: ProjectType;
+  features?: string[] | null;
+  tags?: string[] | null;
+  status?: ProjectStatus | null;
+  featured: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  subtitle: string | null;
+  summary: string | null;
+  projectScope: string | null;
+  clientName: string | null;
+  isConfidential: boolean;
+  problem: string | null;
+  solution: string | null;
+  contribution: string | null;
+  architectureNotes: string | null;
+  resultSummary: string | null;
+  fullDescription: string | null;
+  publishedAt: string | null;
+  cover: PublicMediaItem | null;
+  ogImage: PublicMediaItem | null;
+  media: PublicMediaItem[];
+  sections: PublicSectionItem[];
+  featureList: PublicFeatureItem[];
+  techStacks: PublicTechItem[];
+  links: PublicLinkItem[];
+}

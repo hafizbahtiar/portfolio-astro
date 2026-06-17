@@ -1,5 +1,6 @@
 import type { Project } from "../types/project";
 import type { Experience } from "../types/experiences";
+import type { PublicProjectDetail } from "../types/project-cms";
 import { API_BASE_URL } from "./config";
 import {
     FALLBACK_PROJECTS,
@@ -80,18 +81,60 @@ export async function getPublicProjects(): Promise<Project[]> {
 }
 
 /**
- * Curated single-project loader for the public detail page. Never throws.
- * Falls back to curated static content when the API is unreachable so a known
- * slug never 404s just because the backend is briefly down.
+ * Structured public detail loader. Reads the composed public DTO (sections,
+ * features, tech, links, media) from the API. Applies the curated copy override
+ * (title/description/imageVariant) to preserve polished copy. When the API is
+ * unreachable, wraps the curated static fallback with empty children so the
+ * page still renders (hero + description + flat features/tech). Never throws.
+ *
+ * CTAs are rendered from the structured `links` array (active+public only), so
+ * broken/hidden links are excluded by the data layer — see the backfill seed.
  */
-export async function getPublicProjectBySlug(
+export async function getPublicProjectDetail(
     slug: string,
-): Promise<Project | null> {
-    const data = await fetchJson<Project>(`projects/${slug}`);
-    if (data) return curateProject(data);
+): Promise<PublicProjectDetail | null> {
+    const data = await fetchJson<PublicProjectDetail>(`projects/${slug}`);
+    if (data) {
+        const copy = PROJECT_COPY[data.slug];
+        return copy
+            ? {
+                ...data,
+                title: copy.title ?? data.title,
+                description: copy.description,
+                imageVariant: copy.imageVariant ?? data.imageVariant,
+            }
+            : data;
+    }
 
-    const fallback = FALLBACK_PROJECTS.find((p) => p.slug === slug);
-    return fallback ? curateProject(fallback) : null;
+    const fb = FALLBACK_PROJECTS.find((p) => p.slug === slug);
+    if (!fb) return null;
+    const c = curateProject(fb);
+    return {
+        ...c,
+        imageVariant: c.imageVariant ?? null,
+        features: c.features ?? null,
+        tags: c.tags ?? null,
+        status: c.status ?? null,
+        subtitle: null,
+        summary: null,
+        projectScope: null,
+        clientName: null,
+        isConfidential: false,
+        problem: null,
+        solution: null,
+        contribution: null,
+        architectureNotes: null,
+        resultSummary: null,
+        fullDescription: null,
+        publishedAt: null,
+        cover: null,
+        ogImage: null,
+        media: [],
+        sections: [],
+        featureList: [],
+        techStacks: [],
+        links: [],
+    } as PublicProjectDetail;
 }
 
 export async function getPublicExperiences(): Promise<Experience[]> {
