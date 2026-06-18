@@ -88,8 +88,11 @@
     "yjs": "^13.6.29"
   },
   "overrides": {
-    "vite": "^7.3.2",
-    "@tiptap/*": "3.23.6"
+    "vite": "^7.3.5",
+    "@tiptap/*": "3.23.6",
+    "esbuild": "^0.28.1",
+    "ws": "^8.21.0",
+    "yaml": "^2.8.3"
   },
   "devDependencies": {
     "@types/node": "^25.0.10",
