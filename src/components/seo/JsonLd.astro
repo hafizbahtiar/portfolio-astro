@@ -2,6 +2,9 @@
 interface Props {
   schema: Record<string, unknown>;
 }
+import { serializeJsonForHtml } from "../../lib/sanitize";
+
 const { schema } = Astro.props;
+const serializedSchema = serializeJsonForHtml(schema);
 ---
-<script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
+<script type="application/ld+json" set:html={serializedSchema} is:inline />

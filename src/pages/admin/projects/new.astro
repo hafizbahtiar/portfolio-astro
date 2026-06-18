@@ -1,129 +1,26 @@
 ---
 import PrivateLayout from "../../../layouts/PrivateLayout.astro";
 import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
-import ProjectForm from "../../../components/admin/projects/ProjectForm.astro";
-
-const typeOptions = [
-  { value: "personal", label: "Personal" },
-  { value: "business", label: "Business" },
-  { value: "work", label: "Work" },
-];
-
-const statusOptions = [
-  { value: "completed", label: "Completed" },
-  { value: "in-progress", label: "In Progress" },
-  { value: "maintained", label: "Maintained" },
-];
-
-const imageVariantOptions = [
-  { value: "banner", label: "Banner (Default)" },
-  { value: "logo", label: "Logo" },
-  { value: "width-banner", label: "Full Width Banner" },
-];
+import AlertToast from "../../../components/ui/AlertToast.astro";
+import { ProjectEditor } from "../../../components/admin/projects/ProjectEditor";
 ---
 
 <PrivateLayout title="New Project">
   <div class="space-y-6">
     <AdminPageHeader
       title="New Project"
-      description="Create a new project entry"
+      description="Create a draft. Case study, media, tech, links and publishing unlock after it's created."
     >
       <a
         slot="actions"
         href="/admin/projects"
         class="admin-btn admin-btn-secondary"
       >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-        </svg>
         Back to list
       </a>
     </AdminPageHeader>
 
-    <form id="project-form" class="space-y-8">
-      <ProjectForm
-        submitLabel="CREATE PROJECT"
-        typeOptions={typeOptions}
-        statusOptions={statusOptions}
-        imageVariantOptions={imageVariantOptions}
-        imageVariantValue="banner"
-        yearValue={new Date().getFullYear()}
-        displayOrderValue={0}
-      />
-    </form>
+    <ProjectEditor client:load />
   </div>
+  <AlertToast id="admin-alert" />
 </PrivateLayout>
-
-<script>
-  import { projectsService } from "../../../lib/projects";
-  import { setupFormGuard } from "../../../lib/form-guard";
-
-  const form = document.getElementById("project-form") as HTMLFormElement;
-  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
-
-  let formGuard: ReturnType<typeof setupFormGuard> | null = null;
-
-  if (form) {
-    formGuard = setupFormGuard(form);
-  }
-
-  form?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!submitBtn) return;
-
-    const originalContent = submitBtn.innerHTML;
-    submitBtn.innerHTML = "SAVING...";
-    submitBtn.disabled = true;
-
-    const formData = new FormData(form);
-    const data: any = {};
-
-    // Process form data
-    formData.forEach((value, key) => {
-      if (key === "technologies" || key === "tags") {
-        data[key] = (value as string)
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean);
-      } else if (key === "year" || key === "displayOrder") {
-        data[key] = Number(value);
-      } else if (key === "featured") {
-        data[key] = true;
-      } else {
-        data[key] = value;
-      }
-    });
-
-    // Handle unchecked checkbox (formData doesn't include it)
-    if (!formData.has("featured")) {
-      data.featured = false;
-    }
-
-    try {
-      const result = await projectsService.createProject(data);
-      if (result) {
-        // Clear guard before redirecting
-        formGuard?.updateInitialState();
-        alert("Project created successfully!");
-        window.location.href = "/admin/projects";
-      } else {
-        throw new Error("Failed to create project");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Failed to create project. Please try again.");
-    } finally {
-      submitBtn.innerHTML = originalContent;
-      submitBtn.disabled = false;
-    }
-  });
-</script>

@@ -138,6 +138,13 @@ export class ApiClient {
         });
     }
 
+    async patch<T>(endpoint: string, body: any): Promise<T | null> {
+        return this.request<T>(endpoint, {
+            method: 'PATCH',
+            body: JSON.stringify(body),
+        });
+    }
+
     async delete<T>(endpoint: string): Promise<T | null> {
         return this.request<T>(endpoint, { method: 'DELETE' });
     }
