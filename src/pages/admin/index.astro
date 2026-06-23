@@ -24,7 +24,7 @@ const cardClass = "admin-card";
   <!-- KPI cards -->
   <div
     id="dash-kpis"
-    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 transition-opacity duration-300"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8 transition-opacity duration-300"
     data-loading="true"
   >
     <a
@@ -108,6 +108,23 @@ const cardClass = "admin-card";
         >
       </div>
     </a>
+
+    <div class={cardClass}>
+      <h3 class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+        Resume Downloads
+      </h3>
+      <div class="mt-2 flex items-baseline justify-between">
+        <span
+          id="kpi-resume"
+          class="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums"
+          >—</span
+        >
+        <span
+          class="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-900 text-cyan-500 dark:text-cyan-400"
+          >downloads</span
+        >
+      </div>
+    </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -195,6 +212,18 @@ const cardClass = "admin-card";
       </div>
     </div>
   </div>
+
+  <div class={`${cardClass} mt-8`}>
+    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
+      Recent resume downloads
+    </h2>
+    <p class="text-xs text-slate-400 dark:text-slate-500 mb-5">
+      Most recent download clicks · time, IP, country, device
+    </p>
+    <ul id="recent-downloads" class="space-y-2">
+      <li class="text-sm text-slate-400 dark:text-slate-500">Loading…</li>
+    </ul>
+  </div>
 </PrivateLayout>
 
 <script>
@@ -203,6 +232,7 @@ const cardClass = "admin-card";
     DashboardOverview,
     DashboardRecentProject,
     DashboardRecentContact,
+    DashboardRecentDownload,
   } from "../../lib/dashboard";
 
   function timeAgo(iso: string): string {
@@ -309,6 +339,82 @@ const cardClass = "admin-card";
     }
   }
 
+  // Best-effort 2-letter country code → flag emoji (regional indicators).
+  function countryFlag(code: string | null): string {
+    if (!code || !/^[A-Za-z]{2}$/.test(code)) return code ?? "";
+    const cc = code.toUpperCase();
+    return String.fromCodePoint(
+      0x1f1e6 + cc.charCodeAt(0) - 65,
+      0x1f1e6 + cc.charCodeAt(1) - 65,
+    );
+  }
+
+  // Best-effort "Browser/OS" label from a user-agent string (display only).
+  function shortDevice(ua: string): string {
+    if (!ua) return "Unknown";
+    const browser = /Edg/.test(ua)
+      ? "Edge"
+      : /OPR|Opera/.test(ua)
+        ? "Opera"
+        : /Chrome/.test(ua)
+          ? "Chrome"
+          : /Firefox/.test(ua)
+            ? "Firefox"
+            : /Safari/.test(ua)
+              ? "Safari"
+              : "Browser";
+    const os = /Windows/.test(ua)
+      ? "Windows"
+      : /Android/.test(ua)
+        ? "Android"
+        : /iPhone|iPad|iOS/.test(ua)
+          ? "iOS"
+          : /Mac OS X|Macintosh/.test(ua)
+            ? "Mac"
+            : /Linux/.test(ua)
+              ? "Linux"
+              : "";
+    return os ? `${browser}/${os}` : browser;
+  }
+
+  // textContent only — ipAddress/userAgent/country originate from request
+  // headers an attacker fully controls, so never use innerHTML here.
+  function renderDownloads(list: DashboardRecentDownload[]) {
+    const ul = document.getElementById("recent-downloads");
+    if (!ul) return;
+    ul.replaceChildren();
+    if (!list.length) {
+      const li = document.createElement("li");
+      li.className = "text-sm text-slate-400 dark:text-slate-500";
+      li.textContent = "No downloads yet.";
+      ul.appendChild(li);
+      return;
+    }
+    for (const d of list) {
+      const li = document.createElement("li");
+
+      const top = document.createElement("div");
+      top.className = "flex items-center justify-between gap-3";
+      const ip = document.createElement("span");
+      ip.className =
+        "text-sm font-mono text-slate-700 dark:text-slate-200 truncate";
+      ip.textContent = d.ipAddress || "unknown";
+      const when = document.createElement("span");
+      when.className = "text-xs text-slate-400 dark:text-slate-500 shrink-0";
+      when.textContent = timeAgo(d.createdAt);
+      top.append(ip, when);
+
+      const meta = document.createElement("div");
+      meta.className = "text-xs text-slate-500 dark:text-slate-400 truncate";
+      meta.textContent = [countryFlag(d.country), shortDevice(d.userAgent)]
+        .filter(Boolean)
+        .join(" · ");
+
+      li.append(top, meta);
+      ul.appendChild(li);
+    }
+  }
+
   function paint(data: DashboardOverview) {
     // KPI cards
     setText("kpi-projects", data.projects.total);
@@ -317,6 +423,7 @@ const cardClass = "admin-card";
     setText("kpi-messages-sub", `${data.contacts.new} new`);
     setText("kpi-blog", data.blog.total);
     setText("kpi-experiences", data.experiences.total);
+    setText("kpi-resume", data.resumeDownloads?.total ?? 0);
 
     // Contact status breakdown
     const s = data.contacts.stats;
@@ -330,6 +437,7 @@ const cardClass = "admin-card";
 
     renderProjects(data.projects.recent ?? []);
     renderMessages(data.contacts.recent ?? []);
+    renderDownloads(data.resumeDownloads?.recent ?? []);
   }
 
   async function loadDashboard() {
