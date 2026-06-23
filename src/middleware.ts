@@ -35,8 +35,7 @@ const SECURITY_HEADERS: Record<string, string> = {
     "worker-src 'self' blob:",
     // In dev the API runs on localhost:8787 — without this, the CSP silently
     // blocks every admin fetch during local development.
-    `connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://www.google.com https://www.gstatic.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com${
-      import.meta.env.DEV ? " http://localhost:8787" : ""
+    `connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://www.google.com https://www.gstatic.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com${import.meta.env.DEV ? " http://localhost:8787" : ""
     }`,
   ].join("; "),
 };
@@ -51,6 +50,27 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   if (url.hostname === "www.hafizbahtiar.com") {
     url.hostname = "hafizbahtiar.com";
     return context.redirect(url.toString(), 301);
+  }
+
+  // Admin shell gate — defense-in-depth + UX, NOT a security boundary.
+  //
+  // The real auth tokens (access_token/refresh_token) are httpOnly cookies on
+  // the API domain, so this frontend Worker cannot verify auth server-side.
+  // `session_active` is a non-httpOnly flag the client sets at login
+  // (src/lib/auth.ts) with the SAME ~7-day lifetime as the backend session —
+  // and the backend session is NOT sliding-extended on refresh (hono-workers
+  // /auth/refresh inherits the original absolute expiry), so the flag and the
+  // session expire in lockstep. Gating on it therefore never forces a
+  // premature re-login: once it is gone the silent-refresh path would fail
+  // anyway, so this only removes the brief flash of the empty admin shell
+  // before PrivateLayout's client-side guardAuth redirects.
+  //
+  // The flag is client-settable, so this is not access control: every admin
+  // page still fetches its data client-side behind the backend's real auth.
+  const path = url.pathname;
+  const isAdminRoute = path === "/admin" || path.startsWith("/admin/");
+  if (isAdminRoute && context.cookies.get("session_active")?.value !== "1") {
+    return context.redirect("/login", 302);
   }
 
   const response = await next();
