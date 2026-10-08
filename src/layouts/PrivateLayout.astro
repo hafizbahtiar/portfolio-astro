@@ -59,12 +59,12 @@ const { title, description } = Astro.props;
             !authService.isAuthenticated() &&
             !(await authService.tryRefresh())
         ) {
-            window.location.replace("/login");
+            window.location.replace("/admin/login");
             return;
         }
         const me = await authService.me();
         if (!can(me, "admin.access")) {
-            window.location.replace(me ? homeFor(me) : "/login");
+            window.location.replace(me ? homeFor(me) : "/admin/login");
         }
     };
 

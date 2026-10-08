@@ -13,6 +13,7 @@ const mode =
   title={mode === "resend" ? "Resend confirmation" : "Create account"}
   description="Create a hafizbahtiar.com account to write blog posts and share quotes."
   variant="auth"
+  switchTo={{ href: "/login", label: "Sign in" }}
 >
   <RegisterForm client:load siteKey={siteKey} mode={mode} />
 </AccountLayout>

@@ -533,11 +533,11 @@ const currentPath = Astro.url.pathname;
         logoutConfirmBtn?.setAttribute("disabled", "true");
         logoutCancelBtn?.setAttribute("disabled", "true");
         await authService.logout();
-        window.location.replace("/login");
+        window.location.replace("/admin/login");
       } catch (error) {
         console.error("Logout failed", error);
         authService.clearAuthState();
-        window.location.replace("/login");
+        window.location.replace("/admin/login");
       } finally {
         logoutConfirmBtn?.removeAttribute("disabled");
         logoutCancelBtn?.removeAttribute("disabled");

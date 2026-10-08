@@ -72,12 +72,14 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   // The flag is client-settable, so this is not access control: every admin
   // page still fetches its data client-side behind the backend's real auth.
   const path = url.pathname;
-  const isAdminRoute = path === "/admin" || path.startsWith("/admin/");
+  // /admin/login is the admin sign-in page itself - never gate it.
+  const isAdminRoute =
+    (path === "/admin" || path.startsWith("/admin/")) && path !== "/admin/login";
   // /account/verify is the email-link landing page - reachable signed out.
   const isAccountRoute =
     (path === "/account" || path.startsWith("/account/")) && !path.startsWith("/account/verify");
   if ((isAdminRoute || isAccountRoute) && context.cookies.get("session_active")?.value !== "1") {
-    return context.redirect("/login", 302);
+    return context.redirect(isAdminRoute ? "/admin/login" : "/login", 302);
   }
 
   const response = await next();

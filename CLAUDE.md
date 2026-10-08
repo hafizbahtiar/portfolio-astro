@@ -34,7 +34,7 @@ The project uses SSR (`output: "server"`) via `@astrojs/cloudflare`. Pages that 
 - `PublicLayout.astro` - wraps CoreLayout with `Navbar`, `Footer`, `Background`.
 - `PrivateLayout.astro` - wraps CoreLayout with `AdminSidebar`, `AdminNavbar`. Follows the app theme (light/dark) like the public site - do **not** re-add a locked `dark` class; every admin class needs a light and a `dark:` variant.
 - `ProjectLayout.astro` - thin wrapper for the projects listing page.
-- `AccountLayout.astro` - the account area (`/login`, `/register`, `/account/*`): its own shell built on **shadcn/ui** components (React islands in `src/components/account/`), variants `auth` (centered card) and `app` (signed-in nav). Not the public gutters/hairlines. Colors stay gray/sky; shadcn token classes stay inside `src/components/shadcn/`.
+- `AccountLayout.astro` - the account area (`/login`, `/register`, `/account/*`): its own shell built on **shadcn/ui** components (React islands in `src/components/account/`), variants `auth` (full-width split: brand panel left, form right) and `app` (signed-in nav). Admin signs in separately at `/admin/login` (the original public-shell login page); `/admin/*` redirects there, `/account/*` to `/login`. Not the public gutters/hairlines. Colors stay gray/sky; shadcn token classes stay inside `src/components/shadcn/`.
 
 ### Dark mode
 

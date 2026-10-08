@@ -1,70 +1,143 @@
 ---
-// Account area (login, register, verify, /account/*): its own shell built on
+// Account area (public sign-in, register, verify, /account/*): its own shell built on
 // shadcn/ui components (src/components/shadcn/ui) - not the public site's
 // gutters/hairlines. Colors here are our gray/sky palette; shadcn token classes
-// stay inside src/components/shadcn/ (see its README).
+// stay inside src/components/shadcn/ (see its README). Admin signs in at
+// /admin/login (its own page), never here.
 import { Image } from "astro:assets";
+import { Check } from "lucide-react";
 import CoreLayout from "./CoreLayout.astro";
 import { AccountHeader } from "../components/account/AccountHeader";
 
 interface Props {
   title: string;
   description?: string;
-  /** "auth": one centered card (login/register/verify). "app": signed-in area with nav. */
+  /** "auth": full-width split - brand panel left, form right. "app": signed-in area with nav. */
   variant?: "auth" | "app";
+  /** auth only: the top-right link to the other auth page. */
+  switchTo?: { href: string; label: string };
 }
 
-const { title, description, variant = "app" } = Astro.props;
+const { title, description, variant = "app", switchTo } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const perks = [
+  "Write blog posts in Markdown",
+  "Share quotes worth keeping",
+  "Published straight away, moderated by people",
+];
 ---
 
 <CoreLayout
   title={`${title} | Hafiz Bahtiar`}
   description={description}
   noindex
-  class="font-inter bg-gray-50 text-gray-950 dark:bg-gray-950 dark:text-white"
+  class={`font-inter text-gray-950 dark:bg-gray-950 dark:text-white ${variant === "auth" ? "bg-white" : "bg-gray-50"}`}
 >
-  <header
-    class="border-b border-gray-950/5 bg-white dark:border-white/10 dark:bg-gray-900"
-  >
-    <div
-      class="mx-auto flex min-h-14 max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:px-6"
-    >
-      <a
-        href="/"
-        class="inline-flex items-center"
-        aria-label="Hafiz Bahtiar - home"
-      >
-        <Image
-          src="/brand/wordmark.svg"
-          alt="hafizbahtiar"
-          width={383}
-          height={120}
-          loading="eager"
-          class="h-7 w-auto"
-        />
-      </a>
-      {variant === "app" && <AccountHeader client:load path={path} />}
-    </div>
-  </header>
-
   {
     variant === "auth" ? (
-      <main class="flex grow items-center justify-center px-4 py-12">
-        <div class="w-full max-w-sm">
-          <slot />
-        </div>
-      </main>
+      <div class="grid min-h-svh lg:grid-cols-2">
+        <aside class="relative hidden flex-col justify-between overflow-hidden bg-gray-950 p-10 text-white lg:flex dark:border-r dark:border-white/10">
+          <div
+            class="pointer-events-none absolute inset-0 opacity-[0.08] bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-size-[48px_48px]"
+            aria-hidden="true"
+          />
+          <a
+            href="/"
+            class="relative inline-flex items-center"
+            aria-label="Hafiz Bahtiar - home"
+          >
+            <Image
+              src="/brand/wordmark.svg"
+              alt="hafizbahtiar"
+              width={383}
+              height={120}
+              loading="eager"
+              class="h-8 w-auto brightness-0 invert"
+            />
+          </a>
+          <div class="relative max-w-md">
+            <p class="font-mono text-xs tracking-widest text-sky-400 uppercase">
+              Community
+            </p>
+            <h2 class="mt-4 text-4xl font-medium tracking-tighter text-balance">
+              Write, share, and keep the good lines.
+            </h2>
+            <ul class="mt-8 grid gap-3 text-sm text-gray-300">
+              {perks.map((perk) => (
+                <li class="flex items-center gap-3">
+                  <Check className="h-4 w-4 text-sky-400" />
+                  {perk}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p class="relative text-xs text-gray-500">
+            &copy; {new Date().getFullYear()} Hafiz Bahtiar
+          </p>
+        </aside>
+
+        <main class="flex flex-col p-6 md:p-10">
+          <div class="flex items-center justify-between gap-4">
+            <a
+              href="/"
+              class="inline-flex items-center lg:invisible"
+              aria-label="Hafiz Bahtiar - home"
+            >
+              <Image
+                src="/brand/wordmark.svg"
+                alt="hafizbahtiar"
+                width={383}
+                height={120}
+                loading="eager"
+                class="h-7 w-auto"
+              />
+            </a>
+            {switchTo && (
+              <a
+                href={switchTo.href}
+                class="text-sm font-medium text-gray-600 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white"
+              >
+                {switchTo.label}
+              </a>
+            )}
+          </div>
+          <div class="flex grow items-center justify-center py-10">
+            <div class="w-full max-w-sm">
+              <slot />
+            </div>
+          </div>
+        </main>
+      </div>
     ) : (
-      <main class="mx-auto w-full max-w-5xl grow px-4 py-8 sm:px-6 sm:py-12">
-        <slot />
-      </main>
+      <>
+        <header class="border-b border-gray-950/5 bg-white dark:border-white/10 dark:bg-gray-900">
+          <div class="mx-auto flex min-h-14 max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:px-6">
+            <a
+              href="/"
+              class="inline-flex items-center"
+              aria-label="Hafiz Bahtiar - home"
+            >
+              <Image
+                src="/brand/wordmark.svg"
+                alt="hafizbahtiar"
+                width={383}
+                height={120}
+                loading="eager"
+                class="h-7 w-auto"
+              />
+            </a>
+            <AccountHeader client:load path={path} />
+          </div>
+        </header>
+        <main class="mx-auto w-full max-w-5xl grow px-4 py-8 sm:px-6 sm:py-12">
+          <slot />
+        </main>
+        <footer class="py-6 text-center text-xs text-gray-500 dark:text-gray-400">
+          <a href="/" class="hover:text-gray-950 dark:hover:text-white">
+            hafizbahtiar.com
+          </a>
+        </footer>
+      </>
     )
   }
-
-  <footer class="py-6 text-center text-xs text-gray-500 dark:text-gray-400">
-    <a href="/" class="hover:text-gray-950 dark:hover:text-white"
-      >hafizbahtiar.com</a
-    >
-  </footer>
 </CoreLayout>

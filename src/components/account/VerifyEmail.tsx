@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/shadcn/ui/button";
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/shadcn/ui/card";
 import { authService } from "../../lib/auth";
 
 // Landing page for the confirmation email. The token is POSTed from the browser
@@ -19,22 +18,22 @@ export function VerifyEmail() {
   }, []);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">
+    <div className="grid gap-6">
+      <div className="grid gap-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {state === "pending" ? "Confirming your email…" : state === "ok" ? "Email confirmed" : "Link not valid"}
-        </CardTitle>
-        <CardDescription>
+        </h1>
+        <p className="text-sm text-balance text-gray-600 dark:text-gray-400">
           {state === "ok" ? "You can sign in now." : state === "failed" ? "This link is invalid or has expired." : "One moment."}
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
       {state !== "pending" && (
-        <CardFooter>
+        <div>
           {state === "ok"
             ? <Button asChild className="w-full"><a href="/login">Sign in</a></Button>
             : <Button asChild variant="outline" className="w-full"><a href="/register?resend=1">Send a new link</a></Button>}
-        </CardFooter>
+        </div>
       )}
-    </Card>
+    </div>
   );
 }

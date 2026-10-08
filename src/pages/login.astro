@@ -10,6 +10,7 @@ const siteKey =
   title="Sign in"
   description="Sign in to your hafizbahtiar.com account."
   variant="auth"
+  switchTo={{ href: "/register", label: "Create account" }}
 >
   <LoginForm client:load siteKey={siteKey} />
 </AccountLayout>

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/shadcn/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/shadcn/ui/card";
 import { Input } from "@/components/shadcn/ui/input";
 import { Label } from "@/components/shadcn/ui/label";
 import { Alert, AlertDescription } from "@/components/shadcn/ui/alert";
@@ -43,8 +42,8 @@ export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "regist
       setError(
         message.toLowerCase().includes("captcha") ? "Spam check failed. Please reload the page and try again."
           : status === 429 ? "Too many attempts. Please wait a minute."
-          : status === 400 && message ? message.replace(/^\w+: /, "")
-          : "Something went wrong. Please try again.",
+            : status === 400 && message ? message.replace(/^\w+: /, "")
+              : "Something went wrong. Please try again.",
       );
     } finally {
       setBusy(false);
@@ -54,32 +53,32 @@ export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "regist
 
   if (sentTo) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Check your email</CardTitle>
-          <CardDescription>
+      <div className="grid gap-6">
+        <div className="grid gap-2 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
+          <p className="text-sm text-balance text-gray-600 dark:text-gray-400">
             If {sentTo} can be registered, a confirmation link is on its way. It expires in 24 hours.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
+          </p>
+        </div>
+        <div>
           <Button asChild variant="outline" className="w-full"><a href="/login">Back to sign in</a></Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [key]: e.target.value });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">{resend ? "Resend confirmation" : "Create an account"}</CardTitle>
-        <CardDescription>
+    <div className="grid gap-6">
+      <div className="grid gap-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">{resend ? "Resend confirmation" : "Create an account"}</h1>
+        <p className="text-sm text-balance text-gray-600 dark:text-gray-400">
           {resend ? "We'll send the confirmation link again." : "Write blog posts and share quotes. Posts go live straight away and are moderated."}
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
       <form onSubmit={submit} noValidate>
-        <CardContent className="grid gap-4">
+        <div className="grid gap-4">
           {error && (
             <Alert variant="destructive" aria-live="polite"><AlertDescription>{error}</AlertDescription></Alert>
           )}
@@ -100,16 +99,16 @@ export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "regist
             </div>
           )}
           {siteKey && <div id="turnstile-register" className="flex justify-center" />}
-        </CardContent>
-        <CardFooter className="mt-6 flex-col gap-3">
+        </div>
+        <div className="mt-6 flex flex-col gap-3">
           <Button type="submit" className="w-full" disabled={busy}>
             {busy ? "Sending..." : resend ? "Send link" : "Create account"}
           </Button>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Already have an account? <a href="/login" className="font-medium text-sky-600 hover:underline dark:text-sky-400">Sign in</a>
           </p>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
+    </div>
   );
 }

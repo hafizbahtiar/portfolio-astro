@@ -104,8 +104,8 @@ Never hand-edit those files - change the generator and re-run.
 
 ## Account area (`AccountLayout`)
 
-`/login`, `/register`, `/account/verify` and `/account/*` use `AccountLayout.astro`, not the public shell: a plain
-header + centered card (`auth`) or a nav + content column (`app`), built from **shadcn/ui** components
+`/login`, `/register`, `/account/verify` and `/account/*` use `AccountLayout.astro` (admin signs in at `/admin/login`, which keeps the public-shell look), not the public shell: a plain
+full-width split - dark brand panel left, form right (`auth`) - or a nav + content column (`app`), built from **shadcn/ui** components
 (`src/components/shadcn/ui/*` - button, input, label, textarea, card, alert, badge, separator, radio-group,
 alert-dialog). Page islands live in `src/components/account/`. Same gray/sky palette; never use shadcn token
 classes outside `src/components/shadcn/`.

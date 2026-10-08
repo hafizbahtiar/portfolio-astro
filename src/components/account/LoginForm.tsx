@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/shadcn/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/shadcn/ui/card";
 import { Input } from "@/components/shadcn/ui/input";
 import { Label } from "@/components/shadcn/ui/label";
 import { Alert, AlertDescription } from "@/components/shadcn/ui/alert";
@@ -87,13 +86,13 @@ export function LoginForm({ siteKey }: { siteKey: string }) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">Sign in</CardTitle>
-        <CardDescription>Welcome back to hafizbahtiar.com.</CardDescription>
-      </CardHeader>
+    <div className="grid gap-6">
+      <div className="grid gap-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+        <p className="text-sm text-balance text-gray-600 dark:text-gray-400">Welcome back to hafizbahtiar.com.</p>
+      </div>
       <form onSubmit={submit} noValidate>
-        <CardContent className="grid gap-4">
+        <div className="grid gap-4">
           {status && (
             <Alert variant={status.kind === "error" ? "destructive" : "default"} aria-live="polite">
               <AlertDescription>
@@ -121,14 +120,14 @@ export function LoginForm({ siteKey }: { siteKey: string }) {
             </div>
           </div>
           {siteKey && <div id="turnstile-login" className="flex justify-center" />}
-        </CardContent>
-        <CardFooter className="mt-6 flex-col gap-3">
+        </div>
+        <div className="mt-6 flex flex-col gap-3">
           <Button type="submit" className="w-full" disabled={busy}>{busy ? "Signing in..." : "Sign in"}</Button>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             No account yet? <a href="/register" className="font-medium text-sky-600 hover:underline dark:text-sky-400">Create one</a>
           </p>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
+    </div>
   );
 }
