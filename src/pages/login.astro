@@ -6,7 +6,6 @@ import {
   CircleX,
   Eye,
   EyeOff,
-  LoaderCircle,
 } from "lucide-react";
 import { Image } from "astro:assets";
 import CoreLayout from "../layouts/CoreLayout.astro";
@@ -87,7 +86,8 @@ const turnstileSiteKey =
               ><CircleCheck className="h-4 w-4" /></template
             >
             <template id="icon-spinner"
-              ><LoaderCircle className="h-4 w-4 animate-spin" /></template
+              ><span class="terminal-loader w-10" aria-hidden="true"
+              ></span></template
             >
             <template id="icon-check"><Check className="h-4 w-4" /></template>
             <template id="icon-eye"><Eye className="h-4 w-4" /></template>

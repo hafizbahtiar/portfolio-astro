@@ -1,5 +1,5 @@
 ---
-import { ArrowRight, Check, LoaderCircle } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import ResumeDownloadButton from "../ui/ResumeDownloadButton.astro";
 import SectionHeader from "../layout/SectionHeader.astro";
 import GithubCard from "../great-ui/GithubCard";
@@ -218,7 +218,8 @@ const turnstileSiteKey =
             )
           }
           <template id="icon-spinner"
-            ><LoaderCircle className="h-4 w-4 animate-spin" /></template
+            ><span class="terminal-loader w-10" aria-hidden="true"
+            ></span></template
           >
         </form>
       </div>

@@ -1,7 +1,7 @@
 // Source: https://www.great-ui.com/r/github-card.json (Great UI Custom License, see README).
 // Ported: no Next/ThemeProvider (theme = `.dark` on <html>), profile comes from props
 // (no api.github.com call), contributions are fetched on first hover/focus only,
-// gray palette, tilt off under prefers-reduced-motion, opens on keyboard focus too.
+// gray palette + sky calendar, tilt off under prefers-reduced-motion, opens on keyboard focus too.
 import React, { useState, useMemo, useRef } from "react";
 import {
   motion,
@@ -26,10 +26,11 @@ export interface GithubCardProps {
   labelClassName?: string;
 }
 
-// Tailwind gray-100/300/400/500/700 (light) and gray-800/700/500/400/300 (dark).
+// Level 0 = empty day in gray; levels 1-4 in the sky accent (Tailwind hex).
+// Light: gray-100, sky-200/300/500/700. Dark: gray-800, sky-900/700/500/400.
 const calendar = {
-  light: ["#f3f4f6", "#d1d5db", "#9ca3af", "#6b7280", "#374151"],
-  dark: ["#1f2937", "#374151", "#6b7280", "#9ca3af", "#d1d5db"],
+  light: ["#f3f4f6", "#bae6fd", "#7dd3fc", "#0ea5e9", "#0369a1"],
+  dark: ["#1f2937", "#0c4a6e", "#0369a1", "#0ea5e9", "#38bdf8"],
 };
 
 const DAYS = 119;

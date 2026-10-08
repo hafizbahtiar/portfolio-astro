@@ -6,7 +6,6 @@ import ContactSection from "../components/home/ContactSection.astro";
 import FeaturedProjects from "../components/home/FeaturedProjects.astro";
 import MapSection from "../components/home/MapSection.astro";
 import SectionHeader from "../components/layout/SectionHeader.astro";
-import TextOnPathScroll from "../components/great-ui/TextOnPathScroll";
 import {
 	getPublicProjects,
 	getPublicExperiences,
@@ -39,9 +38,6 @@ const latestPost =
 		.sort((a, b) =>
 			(b.publishedDate ?? "").localeCompare(a.publishedDate ?? ""),
 		)[0]?.title ?? null;
-
-const STACK_PATH_TEXT =
-	"FLUTTER • DART • HONO • CLOUDFLARE WORKERS • NODE.JS • ANDROID • KOTLIN • POSTGRESQL • TYPESCRIPT • RIVERPOD • OFFLINE-FIRST • ".repeat(2);
 
 const FIRST_DEV_ROLE_YEAR = 2020; // Jom Dapur, Sep 2020
 const yearsExperience = Math.max(
@@ -212,14 +208,6 @@ const websiteSchema = {
 		currentRole={currentRole}
 		latestProject={latestProject}
 		latestPost={latestPost}
-	/>
-
-	<!-- Stack on a scroll path (Great UI). Text = resume 4-4 skills, repeated so it
-	     covers the path for the whole scroll. -->
-	<TextOnPathScroll
-		client:visible
-		className="h-[250dvh]"
-		text={STACK_PATH_TEXT}
 	/>
 
 	<!-- Skills Section -->

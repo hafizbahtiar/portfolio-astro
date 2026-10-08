@@ -17,7 +17,6 @@ import {
     ChevronRight,
     ChevronsUpDown,
     Inbox,
-    Loader2,
     Search,
 } from "lucide-react";
 
@@ -140,7 +139,7 @@ export function DataTable<TData, TValue>({
 
     const loadingState = (
         <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-gray-500 dark:text-gray-400">
-            <Loader2 className="h-5 w-5 animate-spin text-sky-500" aria-hidden="true" />
+            <span className="terminal-loader" aria-hidden="true" />
             <p className="text-sm">Loading…</p>
         </div>
     );

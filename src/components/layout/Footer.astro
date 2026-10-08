@@ -1,6 +1,13 @@
 ---
 import { RESUME_URL } from "../../lib/constants";
+import TextReveal from "../great-ui/TextReveal";
 const currentYear = new Date().getFullYear();
+// Matches the copyright line's text-gray-600 / dark:text-gray-400; the footer sits
+// at the page bottom, so the reveal must finish low in the viewport.
+const footerReveal = {
+    color: ["#4b5563", "#9ca3af"] as [string, string],
+    offset: [1, 0.85] as [number, number],
+};
 
 type FooterLink = {
     text: string;
@@ -84,7 +91,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
                                                 : undefined
                                         }
                                         data-source={link.source}
-                                        class="text-sm/6 text-gray-700 transition-colors hover:text-gray-950 dark:text-gray-400 dark:hover:text-white"
+                                        class="link-reveal text-sm/6 text-gray-700 transition-colors hover:text-gray-950 dark:text-gray-400 dark:hover:text-white"
                                     >
                                         {link.text}
                                     </a>
@@ -192,10 +199,18 @@ const columns: { title: string; links: FooterLink[] }[] = [
         </div>
 
         <p class="text-sm/6 text-gray-600 dark:text-gray-400">
-            Copyright &copy; {currentYear} Hafiz Bahtiar
+            <TextReveal
+                client:visible
+                {...footerReveal}
+                text={`Copyright © ${currentYear} Hafiz Bahtiar`}
+            />
             <span class="mx-1.5 text-gray-400 dark:text-gray-600">&middot;</span
             >
-            Built with Astro + Cloudflare
+            <TextReveal
+                client:visible
+                {...footerReveal}
+                text="Built with Astro + Cloudflare"
+            />
         </p>
     </div>
 </footer>

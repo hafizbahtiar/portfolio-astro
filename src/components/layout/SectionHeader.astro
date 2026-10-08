@@ -1,5 +1,6 @@
 ---
 import Annot from "./Annot.astro";
+import TextReveal from "../great-ui/TextReveal";
 /**
  * tailwindcss.com section header: eyebrow row, heading row, faint class
  * annotation (live, see Annot.astro), lead row - each on its own full-bleed hairline row.
@@ -12,12 +13,7 @@ interface Props {
   as?: "h1" | "h2";
 }
 
-const {
-  eyebrow,
-  title,
-  description,
-  as: Heading = "h2",
-} = Astro.props;
+const { eyebrow, title, description, as: Heading = "h2" } = Astro.props;
 const hasAction = Astro.slots.has("action");
 ---
 
@@ -33,7 +29,8 @@ const hasAction = Astro.slots.has("action");
     <div
       class:list={[
         "container-main",
-        hasAction && "flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
+        hasAction &&
+          "flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
       ]}
     >
       <Heading
@@ -42,9 +39,15 @@ const hasAction = Astro.slots.has("action");
           Heading === "h1" ? "sm:text-6xl/[1.05]" : "sm:text-5xl/[1.05]",
         ]}
       >
-        {title}
+        <TextReveal client:visible text={title} />
       </Heading>
-      {hasAction && <div class="shrink-0 pb-1.5"><slot name="action" /></div>}
+      {
+        hasAction && (
+          <div class="shrink-0 pb-1.5">
+            <slot name="action" />
+          </div>
+        )
+      }
     </div>
   </div>
   {
@@ -52,9 +55,7 @@ const hasAction = Astro.slots.has("action");
       <>
         <Annot preset="lead" class="mt-4" />
         <div class="line-y">
-          <p class="lead container-main">
-            {description}
-          </p>
+          <p class="lead container-main">{description}</p>
         </div>
       </>
     )
