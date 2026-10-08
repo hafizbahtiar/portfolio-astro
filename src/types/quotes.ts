@@ -14,6 +14,11 @@ export interface Quote {
     tags: QuoteTag[];
     createdAt: string;
     updatedAt: string;
+    /** Display name of the registered user who shared it; absent for the owner's quotes. */
+    submittedBy?: string | null;
+    /** Own/admin views only: 'published' | 'rejected', and why. */
+    status?: string;
+    moderationReason?: string | null;
 }
 
 export interface CreateQuotePayload {

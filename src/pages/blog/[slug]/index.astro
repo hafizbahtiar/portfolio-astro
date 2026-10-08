@@ -4,7 +4,7 @@ export const prerender = false;
 import PublicLayout from "../../../layouts/PublicLayout.astro";
 import JsonLd from "../../../components/seo/JsonLd.astro";
 import { getPublicPostBySlug } from "../../../lib/public-content";
-import { sanitizeRichHtml } from "../../../lib/sanitize";
+import { renderUserMarkdown, sanitizeRichHtml } from "../../../lib/sanitize";
 import type { BlogSection, BlogChecklist } from "../../../types/blog";
 
 const slug = Astro.params.slug ?? "";
@@ -38,7 +38,9 @@ const articleSchema = {
   image: ogImageAbs,
   datePublished: publishedISO,
   dateModified: post.updatedAt ?? publishedISO,
-  author: { "@type": "Person", name: "Hafiz Bahtiar", url: siteOrigin.toString() },
+  author: post.authorName
+    ? { "@type": "Person", name: post.authorName }
+    : { "@type": "Person", name: "Hafiz Bahtiar", url: siteOrigin.toString() },
   publisher: {
     "@type": "Organization",
     name: "Hafiz Bahtiar",
@@ -53,9 +55,13 @@ const articleSchema = {
 
 const sections: BlogSection[] = post.sections ?? [];
 const checklist: BlogChecklist[] = post.checklist ?? [];
+// A registered user's post is markdown, rendered in the strict UGC mode.
+const userAuthor = post.authorName ?? null;
 const bodyHtml =
   sections.length === 0 && post.bodyContent
-    ? sanitizeRichHtml(post.bodyContent)
+    ? userAuthor
+      ? renderUserMarkdown(post.bodyContent)
+      : sanitizeRichHtml(post.bodyContent)
     : "";
 ---
 
@@ -108,20 +114,24 @@ const bodyHtml =
           <div class="flex gap-4">
             <span
               class="flex size-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-400 to-sky-600 text-base font-semibold text-white"
-              aria-hidden="true">HB</span
+              aria-hidden="true">{userAuthor ? userAuthor.slice(0, 1).toUpperCase() : "HB"}</span
             >
             <div
               class="flex flex-col justify-center gap-1 text-sm font-semibold"
             >
-              <div class="text-gray-950 dark:text-white">Hafiz Bahtiar</div>
+              <div class="text-gray-950 dark:text-white">{userAuthor ?? "Hafiz Bahtiar"}</div>
               <div>
-                <a
-                  href="https://github.com/hafizbahtiar"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-sky-500 hover:text-sky-600 dark:text-sky-400"
-                  >@hafizbahtiar</a
-                >
+                {userAuthor ? (
+                  <span class="font-normal text-gray-500 dark:text-gray-400">Community post</span>
+                ) : (
+                  <a
+                    href="https://github.com/hafizbahtiar"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-sky-500 hover:text-sky-600 dark:text-sky-400"
+                    >@hafizbahtiar</a
+                  >
+                )}
               </div>
             </div>
           </div>

@@ -60,6 +60,9 @@ const formatDate = (value: string) =>
                       <div class="mb-4 font-mono text-sm/6 font-medium tracking-widest text-gray-500 uppercase lg:hidden">
                         {date}
                       </div>
+                      {post.authorName && (
+                        <p class="mb-2 text-sm/6 text-gray-500 dark:text-gray-400">by {post.authorName}</p>
+                      )}
                       <a class="font-semibold" href={`/blog/${post.slug}`}>
                         {post.title}
                       </a>

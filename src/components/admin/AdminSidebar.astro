@@ -11,6 +11,8 @@ import {
   Quote,
   Scale,
   Settings,
+  ShieldAlert,
+  ShieldCheck,
   Tags,
   Terminal,
   TriangleAlert,
@@ -22,66 +24,97 @@ const links = [
   {
     text: "Dashboard",
     href: "/admin",
+    perm: "dashboard.read",
     icon: LayoutDashboard,
   },
   {
     text: "Projects",
     href: "/admin/projects",
+    perm: "projects.read",
     icon: Folder,
   },
   {
     text: "Tech Stack",
     href: "/admin/tech-stacks",
+    perm: "projects.read",
     icon: Layers,
   },
   {
     text: "Experiences",
     href: "/admin/experiences",
+    perm: "experiences.read",
     icon: Briefcase,
   },
   {
     text: "Family",
     href: "/admin/family",
+    perm: "family.read",
     icon: Users,
   },
   {
     text: "Blog",
     href: "/admin/blog",
+    perm: "blog.read",
     icon: Newspaper,
   },
   {
     text: "Quotes",
     href: "/admin/quotes",
+    perm: "quotes.read",
     icon: Quote,
   },
   {
     text: "Quote Tags",
     href: "/admin/quote-tags",
+    perm: "quotes.read",
     icon: Tags,
   },
   {
     text: "Policies",
     href: "/admin/policies",
+    perm: "projects.read",
     icon: Scale,
   },
   {
     text: "Contacts",
     href: "/admin/contact",
+    perm: "contact.read",
     icon: Inbox,
+  },
+  {
+    text: "Moderation",
+    href: "/admin/moderation",
+    perm: "moderation.read",
+    icon: ShieldAlert,
+  },
+  {
+    text: "Users",
+    href: "/admin/users",
+    perm: "users.read",
+    icon: Users,
+  },
+  {
+    text: "Roles",
+    href: "/admin/roles",
+    perm: "roles.read",
+    icon: ShieldCheck,
   },
   {
     text: "System Logs",
     href: "/admin/system",
+    perm: "audit.read",
     icon: Terminal,
   },
   {
     text: "Settings",
     href: "/admin/settings",
+    perm: "account.update",
     icon: Settings,
   },
   {
     text: "Profile",
     href: "/admin/profile",
+    perm: "profile.read",
     icon: CircleUser,
   },
 ];
@@ -89,8 +122,8 @@ const links = [
 const groups = [
   { label: "Overview", items: links.slice(0, 1) },
   { label: "Content", items: links.slice(1, 9) },
-  { label: "Inbox", items: links.slice(9, 10) },
-  { label: "System", items: links.slice(10) },
+  { label: "Inbox", items: links.slice(9, 11) }, // Contacts, Moderation
+  { label: "System", items: links.slice(11) }, // Users, Roles, System Logs, Settings, Profile
 ];
 
 const currentPath = Astro.url.pathname;
@@ -146,7 +179,7 @@ const currentPath = Astro.url.pathname;
     <nav class="grow px-3 py-4 overflow-y-auto">
       {
         groups.map((group) => (
-          <div class="mb-4 last:mb-0">
+          <div class="nav-group mb-4 last:mb-0">
             <p class="nav-group-label px-3 mb-1.5 font-mono text-xs font-medium uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400">
               {group.label}
             </p>
@@ -158,6 +191,7 @@ const currentPath = Astro.url.pathname;
                 return (
                   <a
                     href={link.href}
+                    data-perm={link.perm}
                     aria-label={link.text}
                     title={link.text}
                     aria-current={isActive ? "page" : undefined}
@@ -204,11 +238,17 @@ const currentPath = Astro.url.pathname;
             </div>
           </div>
           <div class="user-meta grow min-w-0">
-            <div class="text-gray-950 dark:text-white font-medium truncate">
+            <div
+              id="sidebar-user-name"
+              class="text-gray-950 dark:text-white font-medium truncate"
+            >
               Hafiz Bahtiar
             </div>
-            <div class="text-gray-500 dark:text-gray-500 text-xs truncate">
-              Super Admin
+            <div
+              id="sidebar-user-role"
+              class="text-gray-500 dark:text-gray-500 text-xs truncate capitalize"
+            >
+              Owner
             </div>
           </div>
         </div>
@@ -425,7 +465,28 @@ const currentPath = Astro.url.pathname;
     }
   }
 
-  import { authService } from "../../lib/auth";
+  import { authService, can } from "../../lib/auth";
+
+  // Hide nav items the caller lacks; a group with nothing left goes too. The owner
+  // sees no change. Cosmetic - the backend 403s anyway.
+  async function applyPermissions() {
+    const me = await authService.me();
+    if (!me) return;
+    document
+      .querySelectorAll<HTMLElement>("#admin-sidebar [data-perm]")
+      .forEach((a) => {
+        a.hidden = !can(me, a.dataset.perm!);
+      });
+    document
+      .querySelectorAll<HTMLElement>("#admin-sidebar .nav-group")
+      .forEach((g) => {
+        g.hidden = !g.querySelector("[data-perm]:not([hidden])");
+      });
+    const name = document.getElementById("sidebar-user-name");
+    const role = document.getElementById("sidebar-user-role");
+    if (name) name.textContent = me.name;
+    if (role) role.textContent = me.role;
+  }
 
   function bindLogoutModal() {
     const logoutBtn = document.getElementById("logout-btn");
@@ -505,6 +566,8 @@ const currentPath = Astro.url.pathname;
 
   bindLogoutModal();
   document.addEventListener("astro:page-load", bindLogoutModal);
+  void applyPermissions();
+  document.addEventListener("astro:page-load", () => void applyPermissions());
   document.addEventListener("astro:after-swap", bindLogoutModal);
 
   const STORAGE_KEY = "admin-sidebar-state";

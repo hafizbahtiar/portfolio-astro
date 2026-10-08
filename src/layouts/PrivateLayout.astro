@@ -47,16 +47,24 @@ const { title, description } = Astro.props;
 </CoreLayout>
 
 <script>
-    import { authService } from "../lib/auth";
+    import { authService, can, homeFor } from "../lib/auth";
 
     // Attempt a silent token refresh before deciding to redirect.
     // This handles the case where _accessToken is gone (new tab / page reload)
     // but a valid refresh_token httpOnly cookie still exists on the API domain.
+    // Then require admin.access: a signed-in public user is sent home. Cosmetic -
+    // the backend's /owner/* gate is the real wall.
     const guardAuth = async () => {
-        if (authService.isAuthenticated()) return;
-        const refreshed = await authService.tryRefresh();
-        if (!refreshed) {
+        if (
+            !authService.isAuthenticated() &&
+            !(await authService.tryRefresh())
+        ) {
             window.location.replace("/login");
+            return;
+        }
+        const me = await authService.me();
+        if (!can(me, "admin.access")) {
+            window.location.replace(me ? homeFor(me) : "/login");
         }
     };
 

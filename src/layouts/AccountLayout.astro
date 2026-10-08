@@ -1,0 +1,70 @@
+---
+// Account area (login, register, verify, /account/*): its own shell built on
+// shadcn/ui components (src/components/shadcn/ui) - not the public site's
+// gutters/hairlines. Colors here are our gray/sky palette; shadcn token classes
+// stay inside src/components/shadcn/ (see its README).
+import { Image } from "astro:assets";
+import CoreLayout from "./CoreLayout.astro";
+import { AccountHeader } from "../components/account/AccountHeader";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** "auth": one centered card (login/register/verify). "app": signed-in area with nav. */
+  variant?: "auth" | "app";
+}
+
+const { title, description, variant = "app" } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+---
+
+<CoreLayout
+  title={`${title} | Hafiz Bahtiar`}
+  description={description}
+  noindex
+  class="font-inter bg-gray-50 text-gray-950 dark:bg-gray-950 dark:text-white"
+>
+  <header
+    class="border-b border-gray-950/5 bg-white dark:border-white/10 dark:bg-gray-900"
+  >
+    <div
+      class="mx-auto flex min-h-14 max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:px-6"
+    >
+      <a
+        href="/"
+        class="inline-flex items-center"
+        aria-label="Hafiz Bahtiar - home"
+      >
+        <Image
+          src="/brand/wordmark.svg"
+          alt="hafizbahtiar"
+          width={383}
+          height={120}
+          loading="eager"
+          class="h-7 w-auto"
+        />
+      </a>
+      {variant === "app" && <AccountHeader client:load path={path} />}
+    </div>
+  </header>
+
+  {
+    variant === "auth" ? (
+      <main class="flex grow items-center justify-center px-4 py-12">
+        <div class="w-full max-w-sm">
+          <slot />
+        </div>
+      </main>
+    ) : (
+      <main class="mx-auto w-full max-w-5xl grow px-4 py-8 sm:px-6 sm:py-12">
+        <slot />
+      </main>
+    )
+  }
+
+  <footer class="py-6 text-center text-xs text-gray-500 dark:text-gray-400">
+    <a href="/" class="hover:text-gray-950 dark:hover:text-white"
+      >hafizbahtiar.com</a
+    >
+  </footer>
+</CoreLayout>

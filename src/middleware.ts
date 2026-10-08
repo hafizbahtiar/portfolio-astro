@@ -73,7 +73,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   // page still fetches its data client-side behind the backend's real auth.
   const path = url.pathname;
   const isAdminRoute = path === "/admin" || path.startsWith("/admin/");
-  if (isAdminRoute && context.cookies.get("session_active")?.value !== "1") {
+  // /account/verify is the email-link landing page - reachable signed out.
+  const isAccountRoute =
+    (path === "/account" || path.startsWith("/account/")) && !path.startsWith("/account/verify");
+  if ((isAdminRoute || isAccountRoute) && context.cookies.get("session_active")?.value !== "1") {
     return context.redirect("/login", 302);
   }
 

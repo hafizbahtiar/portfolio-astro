@@ -1,6 +1,7 @@
 import { isTag, isText, type ChildNode, type Element } from "domhandler";
 import { escapeAttribute, escapeText } from "entities";
 import { parseDocument } from "htmlparser2";
+import { marked } from "marked";
 
 const ALLOWED_TAGS = new Set([
   "a",
@@ -73,7 +74,11 @@ const YOUTUBE_EMBED = /^https:\/\/www\.youtube-nocookie\.com\/embed\/[\w-]+(\?[\
 const SAFE_HREF_PATTERN = /^(https?:|mailto:|tel:|#|\/(?!\/))/i;
 const DROPPED_CONTENT_TAGS = new Set(["script", "style"]);
 
-const renderAttrs = (node: Element, tagName: string): string => {
+// User-generated content (posts by registered users): no embeds, no form inputs,
+// no classes (site CSS could restyle the page), links marked nofollow/ugc.
+const UGC_DROPPED_TAGS = new Set(["iframe", "input"]);
+
+const renderAttrs = (node: Element, tagName: string, ugc: boolean): string => {
   const allowedAttrs = ALLOWED_ATTRS.get(tagName) ?? new Set<string>();
   const attrs: string[] = [];
 
@@ -89,6 +94,10 @@ const renderAttrs = (node: Element, tagName: string): string => {
     }
 
     if (!allowedAttrs.has(name) || name.startsWith("on")) {
+      continue;
+    }
+
+    if (ugc && (name === "class" || name === "target")) {
       continue;
     }
 
@@ -116,7 +125,7 @@ const renderAttrs = (node: Element, tagName: string): string => {
   }
 
   if (tagName === "a") {
-    attrs.push('rel="noopener noreferrer"');
+    attrs.push(ugc ? 'rel="nofollow ugc noopener noreferrer" target="_blank"' : 'rel="noopener noreferrer"');
   }
 
   // Published task lists are read-only.
@@ -133,7 +142,7 @@ const renderAttrs = (node: Element, tagName: string): string => {
   return attrs.length > 0 ? ` ${attrs.join(" ")}` : "";
 };
 
-const renderNode = (node: ChildNode): string => {
+const renderNode = (node: ChildNode, ugc: boolean): string => {
   if (isText(node)) {
     return escapeText(node.data);
   }
@@ -147,8 +156,8 @@ const renderNode = (node: ChildNode): string => {
     return "";
   }
 
-  const children = node.children.map(renderNode).join("");
-  if (!ALLOWED_TAGS.has(tagName)) {
+  const children = node.children.map((child) => renderNode(child, ugc)).join("");
+  if (!ALLOWED_TAGS.has(tagName) || (ugc && UGC_DROPPED_TAGS.has(tagName))) {
     return children;
   }
 
@@ -160,7 +169,7 @@ const renderNode = (node: ChildNode): string => {
     return "";
   }
 
-  const attrs = renderAttrs(node, tagName);
+  const attrs = renderAttrs(node, tagName, ugc);
   if (tagName === "iframe") {
     return `<iframe${attrs}></iframe>`;
   }
@@ -171,15 +180,19 @@ const renderNode = (node: ChildNode): string => {
   return `<${tagName}${attrs}>${children}</${tagName}>`;
 };
 
-export const sanitizeRichHtml = (html: string): string => {
+export const sanitizeRichHtml = (html: string, opts: { ugc?: boolean } = {}): string => {
   const document = parseDocument(html, {
     decodeEntities: true,
     lowerCaseAttributeNames: true,
     lowerCaseTags: true,
   });
 
-  return document.children.map(renderNode).join("");
+  return document.children.map((node) => renderNode(node, !!opts.ugc)).join("");
 };
+
+/** A registered user's markdown post → safe HTML (strict UGC mode). Used by the public page and the editor preview. */
+export const renderUserMarkdown = (markdown: string): string =>
+  sanitizeRichHtml(marked.parse(markdown, { async: false, gfm: true }) as string, { ugc: true });
 
 const BLOCK_TAGS = new Set(["p", "div", "li", "br", "h2", "h3", "h4", "blockquote", "pre", "tr", "aside", "summary"]);
 
