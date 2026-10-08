@@ -11,6 +11,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { CharacterCount, Placeholder } from "@tiptap/extensions";
 import Highlight from "@tiptap/extension-highlight";
 import Youtube from "@tiptap/extension-youtube";
+import Image from "@tiptap/extension-image";
 import { Details, DetailsContent, DetailsSummary } from "@tiptap/extension-details";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TableKit } from "@tiptap/extension-table";
@@ -38,6 +39,7 @@ import {
     Underline,
     Undo2,
     Youtube as YoutubeIcon,
+    ImagePlus,
 } from "lucide-react";
 import { sanitizeRichHtml } from "../../lib/sanitize";
 import { showToast } from "../../lib/admin-ui";
@@ -49,6 +51,11 @@ type TextEditorProps = {
     name?: string;
     id?: string;
     placeholder?: string;
+    /**
+     * Allow images - by https URL only. Nothing is uploaded (no R2): the image stays
+     * on its own host, and base64 is refused so bodies can't balloon D1 rows.
+     */
+    images?: boolean;
 };
 
 // Stored bodies can be Markdown or HTML. In the editor, single newlines are
@@ -192,6 +199,7 @@ export const TextEditor = ({
     name,
     id,
     placeholder = "Start writing…",
+    images = false,
 }: TextEditorProps) => {
     const initialHtml = toHtml(content, editable);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -223,6 +231,9 @@ export const TextEditor = ({
             DetailsContent,
             TableKit.configure({ table: { resizable: false } }),
             Youtube.configure({ nocookie: true, width: 640, height: 360 }),
+            // Registered either way so stored <img> survives editing; the toolbar
+            // button (below) is what `images` gates. allowBase64: false = data: URIs dropped.
+            Image.configure({ allowBase64: false }),
         ],
         content: initialHtml,
         editable,
@@ -348,6 +359,18 @@ export const TextEditor = ({
         else if (editor.isActive("callout"))
             chain().updateAttributes("callout", { variant }).run();
         else chain().wrapIn("callout", { variant }).run();
+    };
+
+    const addImage = () => {
+        const url = window.prompt("Image URL (https) - images are linked, not uploaded");
+        if (!url) return;
+        const src = url.trim();
+        if (!/^https:\/\/\S+$/i.test(src)) {
+            showToast({ type: "warning", title: "Use an https:// image link." });
+            return;
+        }
+        const alt = window.prompt("Describe the image (alt text)") ?? "";
+        chain().setImage({ src, alt: alt.trim() }).run();
     };
 
     const addVideo = () => {
@@ -481,6 +504,11 @@ export const TextEditor = ({
                 <ToolButton label="Insert table" active={state?.table} onClick={() => chain().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
                     <Table {...ICON} />
                 </ToolButton>
+                {images && (
+                    <ToolButton label="Image (URL)" onClick={addImage}>
+                        <ImagePlus {...ICON} />
+                    </ToolButton>
+                )}
                 <ToolButton label="YouTube video" onClick={addVideo}>
                     <YoutubeIcon {...ICON} />
                 </ToolButton>

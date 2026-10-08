@@ -20,6 +20,7 @@ const ALLOWED_TAGS = new Set([
   "h4",
   "hr",
   "iframe",
+  "img",
   "input",
   "label",
   "li",
@@ -43,7 +44,7 @@ const ALLOWED_TAGS = new Set([
   "ul",
 ]);
 
-const VOID_TAGS = new Set(["br", "col", "hr", "input"]);
+const VOID_TAGS = new Set(["br", "col", "hr", "img", "input"]);
 
 const ALLOWED_ATTRS = new Map<string, Set<string>>([
   ["a", new Set(["href", "name", "target", "rel", "class"])],
@@ -55,6 +56,7 @@ const ALLOWED_ATTRS = new Map<string, Set<string>>([
   ["td", new Set(["colspan", "rowspan", "class"])],
   ["th", new Set(["colspan", "rowspan", "class"])],
   ["iframe", new Set(["src", "width", "height"])],
+  ["img", new Set(["src", "alt", "title", "width", "height"])],
   ["input", new Set(["type", "checked"])],
 ]);
 
@@ -70,6 +72,10 @@ const PRESET_ATTRS: Record<string, RegExp> = {
 };
 
 const YOUTUBE_EMBED = /^https:\/\/www\.youtube-nocookie\.com\/embed\/[\w-]+(\?[\w=&%.-]*)?$/;
+
+// Images are linked, never uploaded (no R2) - https only, so no data:/base64 bloat,
+// no mixed content, no javascript:.
+const IMAGE_SRC = /^https:\/\/[^\s"'<>]+$/i;
 
 const SAFE_HREF_PATTERN = /^(https?:|mailto:|tel:|#|\/(?!\/))/i;
 const DROPPED_CONTENT_TAGS = new Set(["script", "style"]);
@@ -101,7 +107,7 @@ const renderAttrs = (node: Element, tagName: string, ugc: boolean): string => {
       continue;
     }
 
-    if (name === "src" && !YOUTUBE_EMBED.test(value)) {
+    if (name === "src" && !(tagName === "img" ? IMAGE_SRC : YOUTUBE_EMBED).test(value)) {
       continue;
     }
 
@@ -131,6 +137,11 @@ const renderAttrs = (node: Element, tagName: string, ugc: boolean): string => {
   // Published task lists are read-only.
   if (tagName === "input") {
     attrs.push("disabled");
+  }
+
+  if (tagName === "img") {
+    // Hotlinked: don't leak which page the reader is on to the image host.
+    attrs.push('loading="lazy" decoding="async" referrerpolicy="no-referrer"');
   }
 
   if (tagName === "iframe") {
@@ -166,6 +177,10 @@ const renderNode = (node: ChildNode, ugc: boolean): string => {
     return "";
   }
   if (tagName === "input" && node.attribs.type !== "checkbox") {
+    return "";
+  }
+  // An image without a valid https src is dropped entirely (no empty <img>).
+  if (tagName === "img" && !IMAGE_SRC.test(node.attribs.src?.trim() ?? "")) {
     return "";
   }
 

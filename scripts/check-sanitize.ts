@@ -14,7 +14,7 @@ const yt = s('<div data-youtube-video><iframe src="https://www.youtube-nocookie.
 expect(yt).toMatch(/^<div data-youtube-video><iframe src="https:\/\/www\.youtube-nocookie\.com\/embed\/abc_1-2\?start=0" width="640" height="480" loading="lazy" allowfullscreen/);
 expect(!yt.includes("onload")).toBeTruthy();
 for (const src of ["https://evil.com/embed/x", "javascript:alert(1)", "https://www.youtube-nocookie.com.evil.com/embed/x", "//www.youtube-nocookie.com/embed/x"]) {
-    expect(s(`<iframe src="${src}"></iframe>`), src).toBe("");
+  expect(s(`<iframe src="${src}"></iframe>`), src).toBe("");
 }
 expect(!s('<iframe src="https://www.youtube-nocookie.com/embed/x"><script>x()</script></iframe>').includes("x()")).toBeTruthy();
 
@@ -42,5 +42,16 @@ expect(!ugc('<input type="checkbox">').includes("<input"), "no inputs for users"
 expect(ugc("[ok](https://a.b)"), "links are nofollow ugc").toMatch(/rel="nofollow ugc noopener noreferrer" target="_blank"/);
 expect(ugc("**bold**"), "markdown still renders").toMatch(/<strong>bold<\/strong>/);
 expect(s('<iframe src="https://www.youtube-nocookie.com/embed/abc"></iframe>').includes("<iframe"), "owner mode unchanged").toBeTruthy();
+
+// Images: linked by https URL only (nothing uploaded, no base64), lazy + no referrer.
+expect(s('<img src="https://cdn.example.com/a.png" alt="A" width="640" onerror="x()">')).toBe(
+  '<img src="https://cdn.example.com/a.png" alt="A" width="640" loading="lazy" decoding="async" referrerpolicy="no-referrer">',
+);
+for (const src of ["data:image/png;base64,AAAA", "http://insecure.example/a.png", "javascript:alert(1)", "//cdn.example.com/a.png", "/media/a.png", ""]) {
+  expect(s(`<p><img src="${src}"></p>`), src || "(empty)").toBe("<p></p>");
+}
+expect(s('<img src="https://x.example/a.png" width="100%">')).toBe('<img src="https://x.example/a.png" loading="lazy" decoding="async" referrerpolicy="no-referrer">');
+expect(renderUserMarkdown("![cat](https://x.example/cat.jpg)")).toContain('<img src="https://x.example/cat.jpg" alt="cat"');
+expect(renderUserMarkdown("![b64](data:image/png;base64,AAAA)")).not.toContain("<img");
 
 console.log("sanitize: ok");
