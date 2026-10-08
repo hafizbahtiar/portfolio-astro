@@ -40,6 +40,7 @@ import {
     Youtube as YoutubeIcon,
 } from "lucide-react";
 import { sanitizeRichHtml } from "../../lib/sanitize";
+import { showToast } from "../../lib/admin-ui";
 
 type TextEditorProps = {
     content: string;
@@ -248,7 +249,7 @@ export const TextEditor = ({
         editorProps: {
             attributes: {
                 class:
-                    "prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-200 leading-relaxed focus:outline-none min-h-[220px] sm:min-h-[240px] md:min-h-[280px] lg:min-h-[320px] prose-headings:text-gray-950 dark:prose-headings:text-white prose-strong:text-gray-950 dark:prose-strong:text-white prose-a:text-sky-600 dark:prose-a:text-sky-300 prose-a:font-medium prose-a:no-underline prose-a:hover:text-sky-500 dark:prose-a:hover:text-sky-200 prose-code:text-sky-700 dark:prose-code:text-sky-300 prose-code:bg-gray-100 dark:prose-code:bg-gray-950/70 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-pre:bg-gray-950 prose-pre:text-gray-200 dark:prose-pre:bg-white/4 prose-pre:border prose-pre:border-gray-950/5 dark:prose-pre:border-white/10 prose-pre:overflow-x-auto prose-pre:rounded-xl prose-pre:font-mono prose-blockquote:border-sky-500/40 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-300 prose-hr:border-gray-200 dark:prose-hr:border-gray-800",
+                    "prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-200 leading-relaxed focus:outline-none min-h-55 sm:min-h-60 md:min-h-70 lg:min-h-80 prose-headings:text-gray-950 dark:prose-headings:text-white prose-strong:text-gray-950 dark:prose-strong:text-white prose-a:text-sky-600 dark:prose-a:text-sky-300 prose-a:font-medium prose-a:no-underline prose-a:hover:text-sky-500 dark:prose-a:hover:text-sky-200 prose-code:text-sky-700 dark:prose-code:text-sky-300 prose-code:bg-gray-100 dark:prose-code:bg-gray-950/70 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-pre:bg-gray-950 prose-pre:text-gray-200 dark:prose-pre:bg-white/4 prose-pre:border prose-pre:border-gray-950/5 dark:prose-pre:border-white/10 prose-pre:overflow-x-auto prose-pre:rounded-xl prose-pre:font-mono prose-blockquote:border-sky-500/40 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-300 prose-hr:border-gray-200 dark:prose-hr:border-gray-800",
             },
         },
     });
@@ -352,7 +353,7 @@ export const TextEditor = ({
     const addVideo = () => {
         const url = window.prompt("YouTube URL");
         if (url && !editor.commands.setYoutubeVideo({ src: url.trim() }))
-            window.alert("That doesn't look like a YouTube link.");
+            showToast({ type: "warning", title: "That doesn't look like a YouTube link." });
     };
 
     const editLink = () => {

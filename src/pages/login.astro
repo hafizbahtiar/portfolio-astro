@@ -1,5 +1,13 @@
 ---
-import { Check, ChevronLeft, CircleCheck, CircleX, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  CircleCheck,
+  CircleX,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+} from "lucide-react";
 import { Image } from "astro:assets";
 import CoreLayout from "../layouts/CoreLayout.astro";
 import SectionHeader from "../components/layout/SectionHeader.astro";
@@ -21,7 +29,7 @@ const turnstileSiteKey =
   <div class="page-shell font-inter text-gray-950 dark:text-white">
     <div class="gutter gutter-left" aria-hidden="true"></div>
     <div class="page-col">
-      <main class="flex-grow">
+      <main class="grow">
         <div class="line-b">
           <div class="container-main flex h-14 items-center">
             <a
@@ -75,11 +83,16 @@ const turnstileSiteKey =
             </div>
             <!-- Lucide icons the script swaps in (see icon()). -->
             <template id="icon-error"><CircleX className="h-4 w-4" /></template>
-            <template id="icon-success"><CircleCheck className="h-4 w-4" /></template>
-            <template id="icon-spinner"><LoaderCircle className="h-4 w-4 animate-spin" /></template>
+            <template id="icon-success"
+              ><CircleCheck className="h-4 w-4" /></template
+            >
+            <template id="icon-spinner"
+              ><LoaderCircle className="h-4 w-4 animate-spin" /></template
+            >
             <template id="icon-check"><Check className="h-4 w-4" /></template>
             <template id="icon-eye"><Eye className="h-4 w-4" /></template>
-            <template id="icon-eye-off"><EyeOff className="h-4 w-4" /></template>
+            <template id="icon-eye-off"><EyeOff className="h-4 w-4" /></template
+            >
 
             <div>
               <label
@@ -368,7 +381,8 @@ const turnstileSiteKey =
   };
 
   // Icon markup comes from the <template id="icon-*"> lucide icons in the page.
-  const icon = (name: string) => document.getElementById(`icon-${name}`)?.innerHTML ?? "";
+  const icon = (name: string) =>
+    document.getElementById(`icon-${name}`)?.innerHTML ?? "";
   const errorIcon = icon("error");
   const successIcon = icon("success");
 

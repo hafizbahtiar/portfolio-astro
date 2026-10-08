@@ -35,9 +35,11 @@ const SECURITY_HEADERS: Record<string, string> = {
     // lets an <iframe> point at.
     "frame-src 'self' https://challenges.cloudflare.com https://www.youtube-nocookie.com",
     "worker-src 'self' blob:",
+    // github-contributions-api.jogruber.de: contact-section GitHub card,
+    // fetched only when a visitor opens the card.
     // In dev the API runs on localhost:8787 - without this, the CSP silently
     // blocks every admin fetch during local development.
-    `connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com${import.meta.env.DEV ? " http://localhost:8787" : ""
+    `connect-src 'self' https://api.hafizbahtiar.com https://cloudflareinsights.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://github-contributions-api.jogruber.de${import.meta.env.DEV ? " http://localhost:8787" : ""
     }`,
   ].join("; "),
 };

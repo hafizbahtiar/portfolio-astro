@@ -34,7 +34,7 @@ const isMobile =
 const logoSrc = typeof imageUrl === "string" ? imageUrl : imageUrl?.src;
 ---
 
-<div class="absolute inset-0 bg-gray-50 dark:bg-white/[0.03] overflow-hidden">
+<div class="absolute inset-0 bg-gray-50 dark:bg-white/3 overflow-hidden">
   <!-- Dot grid + accent glow backdrop -->
   <div class="absolute inset-0 pattern"></div>
   <div
@@ -58,7 +58,7 @@ const logoSrc = typeof imageUrl === "string" ? imageUrl : imageUrl?.src;
 
   {
     isMobile ? (
-      <div class="relative mx-auto mt-5 sm:mt-7 w-[100px] sm:w-[116px] h-full rounded-t-2xl border border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-900 shadow-xl shadow-gray-300/40 dark:shadow-black/40 overflow-hidden group-hover:-translate-y-1 transition-transform duration-300">
+      <div class="relative mx-auto mt-5 sm:mt-7 w-25 sm:w-29 h-full rounded-t-2xl border border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-900 shadow-xl shadow-gray-300/40 dark:shadow-black/40 overflow-hidden group-hover:-translate-y-1 transition-transform duration-300">
         <div class="mx-auto mt-1.5 h-1 w-8 rounded-full bg-gray-200 dark:bg-gray-600" />
         <div class="p-2 space-y-1.5">
           <div class="flex items-center gap-1.5">

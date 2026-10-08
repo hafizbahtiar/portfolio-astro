@@ -48,6 +48,14 @@ Custom Astro components with their own inline `<script>` blocks that set up even
 - `DateInput.astro` - styled date input.
 - `Select.tsx` - React equivalent of Dropdown for use inside React components.
 
+### Third-party component bases
+
+Three UI bases coexist without touching each other. Read the folder README before adding anything:
+
+- `src/components/ui/` - ours (default for everything).
+- `src/components/shadcn/` - shadcn/ui via `npx shadcn add` (`components.json` points here; tokens in `src/styles/shadcn.css`). Never run `shadcn init`; token classes like `bg-background` are shadcn-folder-only.
+- `src/components/great-ui/` - Great UI, hand-copied and ported from Next.js.
+
 ### Family tree (`src/components/family/`)
 
 > **Read the memory brain before touching Family module code.** Future Claude/Opus/Codex sessions

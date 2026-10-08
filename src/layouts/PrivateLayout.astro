@@ -5,6 +5,7 @@ import AdminSidebar from "../components/admin/AdminSidebar.astro";
 import AdminNavbar from "../components/admin/AdminNavbar.astro";
 import UnsavedChangesModal from "../components/ui/UnsavedChangesModal.astro";
 import ConfirmModal from "../components/ui/ConfirmModal.astro";
+import AlertToast from "../components/ui/AlertToast.astro";
 
 interface Props {
     title?: string;
@@ -26,11 +27,11 @@ const { title, description } = Astro.props;
     <div class="page-shell min-h-dvh">
         <div class="gutter gutter-left" aria-hidden="true"></div>
         <div class="page-col">
-            <div class="flex flex-grow">
+            <div class="flex grow">
                 <AdminSidebar />
-                <div class="flex min-w-0 flex-grow flex-col">
+                <div class="flex min-w-0 grow flex-col">
                     <AdminNavbar />
-                    <main class="container-main flex-grow pt-10 pb-20">
+                    <main class="container-main grow pt-10 pb-20">
                         <slot />
                     </main>
                 </div>
@@ -41,6 +42,7 @@ const { title, description } = Astro.props;
 
     <UnsavedChangesModal />
     <ConfirmModal />
+    <AlertToast id="admin-alert" />
 </CoreLayout>
 
 <script>
