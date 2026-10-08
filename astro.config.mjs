@@ -70,7 +70,15 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
-      include: ["@tanstack/react-table"],
+      include: ["@tanstack/react-table", "motion/react", "lucide-react"],
+    },
+    // Pre-bundle SSR-side React deps at startup. Discovered lazily, Vite re-optimizes
+    // mid-request ("optimized dependencies changed. reloading") and the SSR runner
+    // ends up with two React copies -> "Invalid hook call" in islands (dev only).
+    ssr: {
+      optimizeDeps: {
+        include: ["motion/react", "lucide-react", "clsx", "tailwind-merge", "htmlparser2", "domhandler", "entities"],
+      },
     },
     build: {
       chunkSizeWarningLimit: 1200,

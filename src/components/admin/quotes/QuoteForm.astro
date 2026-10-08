@@ -8,7 +8,6 @@ type Props = {
 };
 
 const { submitLabel, submitButtonId = "submit-btn" } = Astro.props;
-const req = "text-red-600 dark:text-red-400";
 ---
 
 <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
@@ -16,9 +15,7 @@ const req = "text-red-600 dark:text-red-400";
     <h3 class="admin-card-title">Quote</h3>
     <div class="grid grid-cols-1 gap-6">
       <div class="space-y-2">
-        <label class="admin-label" for="quote-text"
-          >Quote text <span class={req}>*</span></label
-        >
+        <label class="admin-label" for="quote-text">Quote text</label>
         <textarea
           id="quote-text"
           name="text"
@@ -28,9 +25,7 @@ const req = "text-red-600 dark:text-red-400";
           class="admin-input"></textarea>
       </div>
       <div class="space-y-2">
-        <label class="admin-label" for="quote-author"
-          >Author <span class={req}>*</span></label
-        >
+        <label class="admin-label" for="quote-author">Author</label>
         <input
           id="quote-author"
           type="text"

@@ -1,4 +1,12 @@
 {
+  // SSR → API calls go Worker-to-Worker through this binding (src/lib/public-content.ts).
+  // The target Worker must be deployed in the same Cloudflare account.
+  "services": [
+    {
+      "binding": "API",
+      "service": "hono-workers"
+    }
+  ],
   "observability": {
     "enabled": false,
     "head_sampling_rate": 1,

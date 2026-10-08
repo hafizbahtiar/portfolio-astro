@@ -357,8 +357,8 @@ Template copy map:
 
 | Field | Control | Rules |
 |---|---|---|
-| Quote text | `<textarea name="text" required>` | 1-500 chars; red `*` |
-| Author | `<input name="author" required>` | 1-120 chars; red `*` |
+| Quote text | `<textarea name="text" required>` | 1-500 chars; red `*` comes from the global `label:has(+ :required)` rule - never add one manually |
+| Author | `<input name="author" required>` | 1-120 chars (auto red `*`) |
 | Source | `<input name="source">` + `admin-help` | optional, ≤120; empty → `null` |
 | Tags | `MultiDropdown` (`name="tagIds"`, `values` = ids) | optional; many; options are all tags, label `${name} · ${categoryLabel}` |
 

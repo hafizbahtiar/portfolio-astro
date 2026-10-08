@@ -1,7 +1,6 @@
 ---
 export const prerender = false;
 import PublicLayout from "../layouts/PublicLayout.astro";
-import SectionHeader from "../components/layout/SectionHeader.astro";
 import { getPublicQuotes } from "../lib/public-content";
 import { categoryLabel, sortCategories } from "../lib/quotes";
 
@@ -22,99 +21,126 @@ const chipClass =
   title="Quotes | Hafiz Bahtiar"
   description="A small collection of quotes worth keeping - from books, history, anime and life."
 >
-  <div class="h-16 sm:h-24"></div>
-  <SectionHeader
-    as="h1"
-    eyebrow="Quotes"
-    title="Words worth keeping"
-    description="A small collection of lines from books, history, anime and life."
-  />
-  <div class="h-12"></div>
+  <!-- Same layout as /blog (tailwindcss.com/blog): big title + lead on hairline
+       rows, then one row per quote - [author | divider | quote, source, tags] -
+       with spacer rows between so the column dividers run the full list. -->
+  <div class="relative mx-auto mt-24 max-lg:max-w-2xl">
+    <div class="line-y">
+      <h1
+        class="mx-2 text-6xl tracking-tighter text-balance sm:text-7xl lg:text-8xl"
+      >
+        Words worth keeping
+      </h1>
+    </div>
+    <div class="line-y mt-10">
+      <p class="mx-2 text-lg">
+        A small collection of lines from books, history, anime and life.
+      </p>
+    </div>
 
-  {
-    quotes.length > 0 ? (
-      <>
-        {presentCategories.length > 0 && (
-          <div class="line-y">
-            <div
-              role="group"
-              aria-label="Filter quotes by category"
-              class="container-main flex flex-wrap gap-2 py-3"
-            >
-              <button
-                type="button"
-                data-quote-filter="all"
-                aria-pressed="true"
-                class={chipClass}
+    {
+      quotes.length > 0 ? (
+        <>
+          {presentCategories.length > 0 && (
+            <div class="line-y mt-10">
+              <div
+                role="group"
+                aria-label="Filter quotes by category"
+                class="mx-2 flex flex-wrap gap-2"
               >
-                All
-              </button>
-              {presentCategories.map((cat) => (
                 <button
                   type="button"
-                  data-quote-filter={cat}
-                  aria-pressed="false"
+                  data-quote-filter="all"
+                  aria-pressed="true"
                   class={chipClass}
                 >
-                  {categoryLabel(cat)}
+                  All
                 </button>
-              ))}
+                {presentCategories.map((cat) => (
+                  <button
+                    type="button"
+                    data-quote-filter={cat}
+                    aria-pressed="false"
+                    class={chipClass}
+                  >
+                    {categoryLabel(cat)}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-        <div class="h-10" />
-        <div class="line-t mb-46">
-          <div class="row-grid">
-            {quotes.map((quote) => (
-              <figure
+          )}
+          <div class="mt-12 mb-46 grid grid-cols-1 lg:grid-cols-[24rem_2.5rem_minmax(0,1fr)]">
+            {quotes.map((quote, i) => (
+              <div
+                class="contents"
                 data-quote-category={quoteCategories(quote.tags).join(" ")}
-                class="flex flex-col px-4 py-6 sm:px-6 sm:py-8"
               >
-                <blockquote class="text-base/7 whitespace-pre-line text-gray-950 dark:text-white">
-                  {quote.text}
-                </blockquote>
-                <figcaption class="mt-4 text-sm/6">
-                  <div class="font-semibold text-gray-950 dark:text-white">
+                {/* Spacer sits before each quote; the first visible one's is hidden
+                    (here and by the filter) so the dividers end on a hairline. */}
+                <div
+                  class="quote-spacer contents divide-x divide-gray-950/5 dark:divide-white/10"
+                  hidden={i === 0}
+                >
+                  <div class="h-16 max-lg:hidden" />
+                  <div class="h-16 max-lg:hidden" />
+                  <div class="h-16" />
+                </div>
+                <figure class="line-y col-span-3 grid grid-cols-subgrid divide-x divide-gray-950/5 dark:divide-white/10">
+                  <figcaption class="px-2 font-mono text-sm/6 font-medium tracking-widest text-gray-500 uppercase max-lg:hidden">
                     {quote.author}
-                  </div>
-                  {quote.source && (
-                    <div class="text-gray-600 dark:text-gray-400">
-                      {quote.source}
-                    </div>
-                  )}
-                </figcaption>
-                {quote.tags.length > 0 && (
-                  <div class="mt-4 flex flex-wrap gap-1.5">
-                    {quote.tags.map((tag) => (
-                      <span
-                        title={categoryLabel(tag.category)}
-                        class="font-mono text-xs/5 text-gray-500 dark:text-gray-400"
+                  </figcaption>
+                  <div class="max-lg:hidden" />
+                  <div class="px-2">
+                    <div class="max-w-2xl">
+                      <div
+                        class="mb-4 font-mono text-sm/6 font-medium tracking-widest text-gray-500 uppercase lg:hidden"
+                        aria-hidden="true"
                       >
-                        #{tag.name}
-                      </span>
-                    ))}
+                        {quote.author}
+                      </div>
+                      <blockquote class="font-semibold whitespace-pre-line">
+                        {quote.text}
+                      </blockquote>
+                      {quote.source && (
+                        <cite class="mt-4 block text-sm/6 text-gray-600 not-italic dark:text-gray-400">
+                          {quote.source}
+                        </cite>
+                      )}
+                      {quote.tags.length > 0 && (
+                        <div class="mt-4 flex flex-wrap gap-x-3 gap-y-1">
+                          {quote.tags.map((tag) => (
+                            <span
+                              title={categoryLabel(tag.category)}
+                              class="font-mono text-xs/5 text-gray-500 dark:text-gray-400"
+                            >
+                              #{tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </figure>
+                </figure>
+              </div>
             ))}
           </div>
+        </>
+      ) : (
+        <div class="line-y mt-12 mb-46">
+          <p class="mx-2 text-sm/7 text-gray-600 dark:text-gray-400">
+            The first quotes are on the way. Meanwhile,{" "}
+            <a
+              href="/blog"
+              class="font-semibold text-sky-500 hover:text-sky-600 dark:text-sky-400"
+            >
+              the blog has plenty to read
+            </a>
+            .
+          </p>
         </div>
-      </>
-    ) : (
-      <div class="line-y mb-46">
-        <p class="container-main text-sm/7 text-gray-600 dark:text-gray-400">
-          The first quotes are on the way. Meanwhile,{" "}
-          <a
-            href="/blog"
-            class="font-semibold text-sky-500 hover:text-sky-600 dark:text-sky-400"
-          >
-            the blog has plenty to read
-          </a>
-          .
-        </p>
-      </div>
-    )
-  }
+      )
+    }
+  </div>
 </PublicLayout>
 
 <script>
@@ -132,16 +158,15 @@ const chipClass =
       chips.forEach((c) =>
         c.setAttribute("aria-pressed", String(c.dataset.quoteFilter === cat)),
       );
+      let first = true;
       quotes.forEach((q) => {
         const cats = (q.dataset.quoteCategory ?? "").split(" ").filter(Boolean);
         q.hidden = cat !== "all" && !cats.includes(cat);
+        if (q.hidden) return;
+        // Only spacers between visible quotes: the first visible one has none.
+        q.querySelector<HTMLElement>(".quote-spacer")!.hidden = first;
+        first = false;
       });
-      // .row-grid hairlines use nth-child: keep visible cells first (original order).
-      const all = [...quotes];
-      quotes[0]?.parentElement?.append(
-        ...all.filter((q) => !q.hidden),
-        ...all.filter((q) => q.hidden),
-      );
     };
     chips.forEach((c) =>
       c.addEventListener("click", () => apply(c.dataset.quoteFilter ?? "all")),
