@@ -28,16 +28,25 @@ const metaDescription =
 const ogImage = post.coverImageUrl ?? undefined;
 const siteOrigin = Astro.site ?? new URL(Astro.url.origin);
 const canonical = new URL(`/blog/${post.slug}`, siteOrigin).toString();
+const ogImageAbs = new URL(ogImage ?? "/og-default.png", siteOrigin).toString();
 
 const articleSchema = {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   headline: post.title,
   description: metaDescription,
+  image: ogImageAbs,
   datePublished: publishedISO,
   dateModified: post.updatedAt ?? publishedISO,
-  author: { "@type": "Person", name: "Hafiz Bahtiar" },
-  publisher: { "@type": "Person", name: "Hafiz Bahtiar" },
+  author: { "@type": "Person", name: "Hafiz Bahtiar", url: siteOrigin.toString() },
+  publisher: {
+    "@type": "Organization",
+    name: "Hafiz Bahtiar",
+    logo: {
+      "@type": "ImageObject",
+      url: new URL("/favicons/favicon-512x512.png", siteOrigin).toString(),
+    },
+  },
   mainEntityOfPage: canonical,
   keywords: (post.tags ?? []).join(", "),
 };

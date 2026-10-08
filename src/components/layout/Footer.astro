@@ -1,13 +1,6 @@
 ---
 import { RESUME_URL } from "../../lib/constants";
-import TextReveal from "../great-ui/TextReveal";
 const currentYear = new Date().getFullYear();
-// Matches the copyright line's text-gray-600 / dark:text-gray-400; the footer sits
-// at the page bottom, so the reveal must finish low in the viewport.
-const footerReveal = {
-    color: ["#4b5563", "#9ca3af"] as [string, string],
-    offset: [1, 0.85] as [number, number],
-};
 
 type FooterLink = {
     text: string;
@@ -199,18 +192,10 @@ const columns: { title: string; links: FooterLink[] }[] = [
         </div>
 
         <p class="text-sm/6 text-gray-600 dark:text-gray-400">
-            <TextReveal
-                client:visible
-                {...footerReveal}
-                text={`Copyright © ${currentYear} Hafiz Bahtiar`}
-            />
+            Copyright &copy; {currentYear} Hafiz Bahtiar
             <span class="mx-1.5 text-gray-400 dark:text-gray-600">&middot;</span
             >
-            <TextReveal
-                client:visible
-                {...footerReveal}
-                text="Built with Astro + Cloudflare"
-            />
+            Built with Astro + Cloudflare
         </p>
     </div>
 </footer>
@@ -232,7 +217,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
         @apply absolute top-0.75 left-0.75 size-7 sm:size-6.5 rounded-full bg-white shadow-sm ring-1 ring-gray-950/10 dark:bg-gray-700 dark:ring-transparent;
         --i: 0;
         transform: translateX(calc(var(--i) * (100% + 0.125rem)));
-        transition: transform 380ms cubic-bezier(0.34, 1.3, 0.64, 1);
+        transition: transform 280ms cubic-bezier(0.34, 1.15, 0.64, 1);
     }
     #theme-switcher:has([data-theme-value="light"][aria-checked="true"])
         .theme-thumb {
@@ -273,39 +258,6 @@ const columns: { title: string; links: FooterLink[] }[] = [
         document.documentElement.classList.toggle("dark", isDarkFor(pref));
     };
 
-    // New theme wipes in from the bottom edge up (View Transitions API).
-    // Falls back to an instant swap without VT support or with reduced motion.
-    const switchTheme = (pref: Pref) => {
-        const html = document.documentElement;
-        const changes = html.classList.contains("dark") !== isDarkFor(pref);
-        const reduced = window.matchMedia(
-            "(prefers-reduced-motion: reduce)",
-        ).matches;
-        if (
-            !changes ||
-            reduced ||
-            typeof document.startViewTransition !== "function"
-        ) {
-            applyPref(pref);
-            return;
-        }
-        html.setAttribute("data-theme-switching", "");
-        const vt = document.startViewTransition(() => applyPref(pref));
-        vt.ready
-            .then(() =>
-                html.animate(
-                    { clipPath: ["inset(100% 0 0 0)", "inset(0 0 0 0)"] },
-                    {
-                        duration: 650,
-                        easing: "cubic-bezier(0.65, 0, 0.35, 1)",
-                        pseudoElement: "::view-transition-new(root)",
-                    },
-                ),
-            )
-            .catch(() => {});
-        vt.finished.finally(() => html.removeAttribute("data-theme-switching"));
-    };
-
     const initThemeSwitcher = () => {
         const root = document.getElementById("theme-switcher");
         if (!root) return;
@@ -340,7 +292,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
                         /* storage blocked - still apply for this page */
                     }
                     sync();
-                    switchTheme(pref);
+                    applyPref(pref);
                 },
                 { signal },
             );

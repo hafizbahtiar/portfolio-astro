@@ -21,15 +21,12 @@ interface TextRevealProps {
   color?: [light: string, dark: string];
   /** Unrevealed colour, light / dark. */
   dimColor?: [light: string, dark: string];
-  /** Scroll window: [where the reveal starts, where it ends] (viewport fractions). */
-  offset?: [number, number];
 }
 
 export default function TextReveal({
   text,
   color = ["#030712", "#ffffff"], // gray-950 / white
   dimColor = ["#d1d5db", "#374151"], // gray-300 / gray-700
-  offset = [0.9, 0.55],
 }: TextRevealProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const reduced = useReducedMotion();
@@ -44,10 +41,10 @@ export default function TextReveal({
     return () => observer.disconnect();
   }, []);
 
-  // Reveal while the text travels from offset[0] to offset[1] of the viewport height.
+  // Reveal while the text travels from 90% to 55% of the viewport height.
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: [`start ${offset[0]}`, `start ${offset[1]}`],
+    offset: ["start 0.9", "start 0.55"],
   });
 
   // SSR / pre-hydration / reduced motion: plain text in the element's own colour.
