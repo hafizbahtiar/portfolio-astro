@@ -2,6 +2,7 @@ import type { Project, ProjectPolicy } from "../types/project";
 import type { Experience } from "../types/experiences";
 import type { BlogPost, BlogPostSummary } from "../types/blog";
 import type { PublicProjectDetail } from "../types/project-cms";
+import type { Quote } from "../types/quotes";
 import { API_BASE_URL } from "./config";
 import {
     FALLBACK_PROJECTS,
@@ -194,6 +195,11 @@ export async function getPublicPosts(): Promise<BlogPostSummary[]> {
 
 export async function getPublicPostBySlug(slug: string): Promise<BlogPost | null> {
     return await fetchJson<BlogPost>(`blog/${slug}`);
+}
+
+/** Quotes: same contract as getPublicPosts - `[]` on failure, API order (newest first). */
+export async function getPublicQuotes(): Promise<Quote[]> {
+    return (await fetchJson<Quote[]>("quotes")) ?? [];
 }
 
 export async function getPublicProjectPolicy(slug: string): Promise<ProjectPolicy | null> {
