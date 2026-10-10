@@ -1,10 +1,12 @@
 ---
 import Annot from "./Annot.astro";
 import TextReveal from "../great-ui/TextReveal";
+import TechHeading from "./TechHeading.astro";
 /**
  * tailwindcss.com section header: eyebrow row, heading row, faint class
  * annotation (live, see Annot.astro), lead row - each on its own full-bleed hairline row.
  * Optional `action` slot sits to the right of the heading on sm+.
+ * Title effect: TextReveal below lg, TechText on lg+ (see TechHeading).
  */
 interface Props {
   eyebrow?: string;
@@ -35,11 +37,17 @@ const hasAction = Astro.slots.has("action");
     >
       <Heading
         class:list={[
-          "text-4xl/[1.1] font-medium tracking-tighter text-pretty text-gray-950 dark:text-white",
+          "min-w-0 flex-1 text-4xl/[1.1] font-medium tracking-tighter text-pretty text-gray-950 dark:text-white",
           Heading === "h1" ? "sm:text-6xl/[1.05]" : "sm:text-5xl/[1.05]",
         ]}
       >
-        <TextReveal client:visible text={title} />
+        <TechHeading
+          text={title}
+          fontSize={Heading === "h1" ? 60 : 48}
+          box={Heading === "h1" ? "-my-7 h-30" : "-my-6 h-24"}
+        >
+          <TextReveal client:visible text={title} />
+        </TechHeading>
       </Heading>
       {
         hasAction && (

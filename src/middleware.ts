@@ -13,14 +13,16 @@ import type { MiddlewareHandler } from "astro";
 const SECURITY_HEADERS: Record<string, string> = {
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
   "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "DENY",
+  // Dev only: ClientRouter loads the next page in a same-origin iframe to collect
+  // client:only styles (prepareForClientOnlyComponents); DENY would hang navigation.
+  "X-Frame-Options": import.meta.env.DEV ? "SAMEORIGIN" : "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Content-Security-Policy": [
     "default-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
-    "frame-ancestors 'none'",
+    import.meta.env.DEV ? "frame-ancestors 'self'" : "frame-ancestors 'none'",
     "form-action 'self'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' https://fonts.gstatic.com data:",

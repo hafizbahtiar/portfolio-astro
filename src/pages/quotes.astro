@@ -1,5 +1,6 @@
 ---
 export const prerender = false;
+import TechHeading from "../components/layout/TechHeading.astro";
 import PublicLayout from "../layouts/PublicLayout.astro";
 import { getPublicQuotes } from "../lib/public-content";
 import { categoryLabel, sortCategories } from "../lib/quotes";
@@ -29,7 +30,12 @@ const chipClass =
       <h1
         class="mx-2 text-6xl tracking-tighter text-balance sm:text-7xl lg:text-8xl"
       >
-        Words worth keeping
+        <TechHeading
+          text="Words worth keeping"
+          fontSize={96}
+          fontWeight={400}
+          box="-my-12 h-48"
+        />
       </h1>
     </div>
     <div class="line-y mt-10">
@@ -85,7 +91,10 @@ const chipClass =
                   <div class="h-16 max-lg:hidden" />
                   <div class="h-16" />
                 </div>
-                <figure id={`q-${quote.id}`} class="scroll-offset line-y col-span-3 grid grid-cols-subgrid divide-x divide-gray-950/5 dark:divide-white/10">
+                <figure
+                  id={`q-${quote.id}`}
+                  class="scroll-offset line-y col-span-3 grid grid-cols-subgrid divide-x divide-gray-950/5 dark:divide-white/10"
+                >
                   <figcaption class="px-2 font-mono text-sm/6 font-medium tracking-widest text-gray-500 uppercase max-lg:hidden">
                     {quote.author}
                   </figcaption>
