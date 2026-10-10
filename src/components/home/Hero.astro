@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import ResumeDownloadButton from "../ui/ResumeDownloadButton.astro";
 import Annot from "../layout/Annot.astro";
+import HeroLanyard from "./HeroLanyard";
 
 interface Props {
     projectCount: number;
@@ -145,12 +146,17 @@ const tokClass: Record<string, string> = {
 };
 ---
 
-<section id="about" class="scroll-offset">
+<section id="about" class="scroll-offset relative">
+    <!-- Lanyard hangs in the empty right side of the intro (xl+ only; the island
+         itself skips loading three.js on smaller screens). The h1 reserves its width. -->
+    <div class="absolute top-0 right-0 z-10 hidden h-136 w-80 xl:block">
+        <HeroLanyard client:only="react" />
+    </div>
     <div class="h-16 sm:h-24 lg:h-32"></div>
 
     <Annot preset="display" class="hero-stagger" style="--stagger-i: 0" />
     <div class="line-y hero-stagger" style="--stagger-i: 1">
-        <h1 class="display container-main">
+        <h1 class="display container-main xl:pr-80">
             I build the systems behind the screens.
         </h1>
     </div>
