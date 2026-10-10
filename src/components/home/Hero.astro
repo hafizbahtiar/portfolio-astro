@@ -147,16 +147,16 @@ const tokClass: Record<string, string> = {
 ---
 
 <section id="about" class="scroll-offset relative">
-    <!-- Lanyard hangs in the empty right side of the intro (xl+ only; the island
-         itself skips loading three.js on smaller screens). The h1 reserves its width. -->
-    <div class="absolute top-0 right-0 z-10 hidden h-136 w-80 xl:block">
-        <HeroLanyard client:only="react" />
+    <!-- Lanyard: beside the intro on xl (the h1 and lead reserve its width), as its
+         own row under the buttons below xl - see HeroLanyard for the loading rules. -->
+    <div class="absolute top-0 right-0 z-10 hidden h-136 w-120 p-2 xl:block">
+        <HeroLanyard client:only="react" media="(min-width: 1280px)" />
     </div>
     <div class="h-16 sm:h-24 lg:h-32"></div>
 
     <Annot preset="display" class="hero-stagger" style="--stagger-i: 0" />
     <div class="line-y hero-stagger" style="--stagger-i: 1">
-        <h1 class="display container-main xl:pr-80">
+        <h1 class="display container-main xl:pr-124">
             I build the systems behind the screens.
         </h1>
     </div>
@@ -168,7 +168,7 @@ const tokClass: Record<string, string> = {
     />
     <div class="line-y hero-stagger" style="--stagger-i: 2">
         <p
-            class="container-main max-w-4xl text-lg/8 font-medium text-gray-950 dark:text-white"
+            class="container-main max-w-4xl text-lg/8 font-medium xl:max-w-[calc(100%-31rem)] text-gray-950 dark:text-white"
         >
             {
                 /* {" "} is explicit: Astro's HTML compression drops a line break next to a tag. */
@@ -224,6 +224,12 @@ const tokClass: Record<string, string> = {
                 source="hero"
                 class="btn-pill btn-pill-ghost"
             />
+        </div>
+    </div>
+
+    <div class="line-y mt-8 hero-stagger xl:hidden" style="--stagger-i: 4">
+        <div class="h-112 p-2 sm:h-128">
+            <HeroLanyard client:only="react" media="(max-width: 1279.98px)" />
         </div>
     </div>
 
