@@ -3,6 +3,7 @@ import { Camera, Save } from "lucide-react";
 import PrivateLayout from "../../layouts/PrivateLayout.astro";
 import AdminPageHeader from "../../components/admin/AdminPageHeader.astro";
 import { Image } from "astro:assets";
+import avatar from "../../assets/avatar.jpg";
 
 const profile: any = {}; // populated client-side after page load
 ---
@@ -23,7 +24,7 @@ const profile: any = {}; // populated client-side after page load
           <div class="relative w-32 h-32 group shrink-0">
             <Image
               id="avatar-preview"
-              src={profile?.avatarUrl || "/favicons/icon1.png"}
+              src={profile?.avatarUrl || avatar}
               alt="Profile"
               width={128}
               height={128}

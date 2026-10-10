@@ -5,7 +5,9 @@ import SectionHeader from "../layout/SectionHeader.astro";
 import GithubCard from "../great-ui/GithubCard";
 import LinkedinCard from "../great-ui/LinkedinCard";
 
-const AVATAR_URL = "https://github.com/hafizbahtiar.png";
+import avatar from "../../assets/avatar.jpg";
+
+const AVATAR_URL = avatar.src;
 
 // Cloudflare Turnstile (invisible until a challenge is needed). This site key is
 // public; keep it as a fallback so production contact submissions still work

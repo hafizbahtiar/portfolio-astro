@@ -3,6 +3,7 @@ import { Image } from "astro:assets";
 import ResumeDownloadButton from "../ui/ResumeDownloadButton.astro";
 import Annot from "../layout/Annot.astro";
 import HeroLanyard from "./HeroLanyard";
+import avatar from "../../assets/avatar.jpg";
 
 interface Props {
     projectCount: number;
@@ -302,10 +303,13 @@ const tokClass: Record<string, string> = {
                     >
                         <div class="flex items-start justify-between gap-4">
                             <div class="flex items-center gap-3">
-                                <span
-                                    class="flex size-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-400 to-sky-600 text-base font-semibold text-white"
-                                    aria-hidden="true">HB</span
-                                >
+                                <Image
+                                    src={avatar}
+                                    alt=""
+                                    width={96}
+                                    height={96}
+                                    class="size-12 shrink-0 rounded-full object-cover ring-2 ring-sky-500/60"
+                                />
                                 <div class="min-w-0">
                                     <p
                                         data-f="name"

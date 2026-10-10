@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 export const prerender = false;
 import PublicLayout from "../../../layouts/PublicLayout.astro";
+import avatar from "../../../assets/avatar.jpg";
 import JsonLd from "../../../components/seo/JsonLd.astro";
 import { getPublicPostBySlug } from "../../../lib/public-content";
 import { renderUserMarkdown, sanitizeRichHtml } from "../../../lib/sanitize";
@@ -112,26 +113,47 @@ const bodyHtml =
           class="relative flex items-center px-4 py-2 font-medium whitespace-nowrap before:absolute before:top-0 before:right-0 before:h-px before:w-[200vw] before:bg-gray-950/5 after:absolute after:right-0 after:bottom-0 after:h-px after:w-[200vw] after:bg-gray-950/5 max-xl:before:left-[-100vw]! max-xl:after:left-[-100vw]! xl:px-2 xl:before:hidden dark:before:bg-white/10 dark:after:bg-white/10"
         >
           <div class="flex gap-4">
-            <span
-              class="flex size-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-400 to-sky-600 text-base font-semibold text-white"
-              aria-hidden="true">{userAuthor ? userAuthor.slice(0, 1).toUpperCase() : "HB"}</span
-            >
+            {
+              userAuthor ? (
+                <span
+                  class="flex size-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-400 to-sky-600 text-base font-semibold text-white"
+                  aria-hidden="true"
+                >
+                  {userAuthor.slice(0, 1).toUpperCase()}
+                </span>
+              ) : (
+                <Image
+                  src={avatar}
+                  alt=""
+                  width={96}
+                  height={96}
+                  class="size-12 shrink-0 rounded-full object-cover"
+                />
+              )
+            }
             <div
               class="flex flex-col justify-center gap-1 text-sm font-semibold"
             >
-              <div class="text-gray-950 dark:text-white">{userAuthor ?? "Hafiz Bahtiar"}</div>
+              <div class="text-gray-950 dark:text-white">
+                {userAuthor ?? "Hafiz Bahtiar"}
+              </div>
               <div>
-                {userAuthor ? (
-                  <span class="font-normal text-gray-500 dark:text-gray-400">Community post</span>
-                ) : (
-                  <a
-                    href="https://github.com/hafizbahtiar"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-sky-500 hover:text-sky-600 dark:text-sky-400"
-                    >@hafizbahtiar</a
-                  >
-                )}
+                {
+                  userAuthor ? (
+                    <span class="font-normal text-gray-500 dark:text-gray-400">
+                      Community post
+                    </span>
+                  ) : (
+                    <a
+                      href="https://github.com/hafizbahtiar"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-sky-500 hover:text-sky-600 dark:text-sky-400"
+                    >
+                      @hafizbahtiar
+                    </a>
+                  )
+                }
               </div>
             </div>
           </div>
