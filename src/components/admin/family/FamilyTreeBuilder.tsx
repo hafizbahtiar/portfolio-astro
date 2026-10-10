@@ -392,7 +392,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
     setPersonMetadataInput(JSON.stringify(selectedPerson.metadata || {}, null, 2));
   }, [selectedAction, selectedPerson]);
 
-  const handleCreateTree = async (e: React.FormEvent) => {
+  const handleCreateTree = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setError(null);
@@ -439,7 +439,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
     }
   };
 
-  const handleSaveTree = async (e: React.FormEvent) => {
+  const handleSaveTree = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!treeId) return;
     setIsSaving(true);
@@ -492,7 +492,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
     }
   };
 
-  const handleSavePerson = async (e: React.FormEvent) => {
+  const handleSavePerson = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!selectedPerson || !treeId) return;
     setIsSaving(true);
@@ -672,7 +672,7 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
     [treeId],
   );
 
-  const handleQuickAdd = async (e: React.FormEvent) => {
+  const handleQuickAdd = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!treeId || !selectedPerson || !selectedAction) return;
     setIsSaving(true);

@@ -49,7 +49,7 @@ export function LoginForm({ siteKey }: { siteKey: string }) {
     }
   }, [siteKey]);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (busy) return;
     if (!email.trim() || !password) {

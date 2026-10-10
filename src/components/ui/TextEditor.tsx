@@ -38,7 +38,7 @@ import {
     TextQuote,
     Underline,
     Undo2,
-    Youtube as YoutubeIcon,
+    SquarePlay,
     ImagePlus,
 } from "lucide-react";
 import { sanitizeRichHtml } from "../../lib/sanitize";
@@ -510,7 +510,7 @@ export const TextEditor = ({
                     </ToolButton>
                 )}
                 <ToolButton label="YouTube video" onClick={addVideo}>
-                    <YoutubeIcon {...ICON} />
+                    <SquarePlay {...ICON} />
                 </ToolButton>
                 <Divider />
                 <ToolButton label="Clear formatting" onClick={() => chain().unsetAllMarks().clearNodes().run()}>

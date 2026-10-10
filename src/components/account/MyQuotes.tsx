@@ -25,7 +25,7 @@ export function MyQuotes() {
   };
   useEffect(() => { void load(); }, []);
 
-  const save = async (e: React.FormEvent) => {
+  const save = async (e: React.SubmitEvent) => {
     e.preventDefault();
     const data = { text: draft.text.trim(), author: draft.author.trim(), source: draft.source.trim() || null };
     try {

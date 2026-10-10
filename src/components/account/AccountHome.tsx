@@ -45,7 +45,7 @@ export function AccountHome() {
     })();
   }, []);
 
-  const saveProfile = async (e: React.FormEvent) => {
+  const saveProfile = async (e: React.SubmitEvent) => {
     e.preventDefault();
     // Empty link fields clear the link; empty text fields are left unchanged.
     const data = Object.fromEntries(
@@ -61,7 +61,7 @@ export function AccountHome() {
     }
   };
 
-  const savePassword = async (e: React.FormEvent) => {
+  const savePassword = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (pw.next.length < 12) {
       setPwMsg({ ok: false, text: "The new password needs at least 12 characters." });

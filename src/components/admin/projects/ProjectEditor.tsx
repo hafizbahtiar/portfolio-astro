@@ -109,7 +109,7 @@ export function ProjectEditor({ projectId }: { projectId?: number }) {
 
   // Warn on navigation with unsaved Basics/Case Study edits (child managers save immediately).
   useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => { if (dirty) { e.preventDefault(); e.returnValue = ""; } };
+    const handler = (e: BeforeUnloadEvent) => { if (dirty) e.preventDefault(); };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);

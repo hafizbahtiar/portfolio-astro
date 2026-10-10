@@ -47,7 +47,7 @@ export function MyPosts() {
 
   const html = useMemo(() => (preview && editing ? renderUserMarkdown(editing.data.bodyContent) : ""), [preview, editing]);
 
-  const save = async (e: React.FormEvent) => {
+  const save = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!editing) return;
     const data = { ...editing.data, tags: tagsText.split(",").map((t) => t.trim()).filter(Boolean).slice(0, 10) };
