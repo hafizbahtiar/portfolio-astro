@@ -43,7 +43,7 @@ expect(ugc("[ok](https://a.b)"), "links are nofollow ugc").toMatch(/rel="nofollo
 expect(ugc("**bold**"), "markdown still renders").toMatch(/<strong>bold<\/strong>/);
 expect(s('<iframe src="https://www.youtube-nocookie.com/embed/abc"></iframe>').includes("<iframe"), "owner mode unchanged").toBeTruthy();
 
-// Images: linked by https URL only (nothing uploaded, no base64), lazy + no referrer.
+// Images: linked by https URL only (no base64), lazy + no referrer.
 expect(s('<img src="https://cdn.example.com/a.png" alt="A" width="640" onerror="x()">')).toBe(
   '<img src="https://cdn.example.com/a.png" alt="A" width="640" loading="lazy" decoding="async" referrerpolicy="no-referrer">',
 );
@@ -51,7 +51,8 @@ for (const src of ["data:image/png;base64,AAAA", "http://insecure.example/a.png"
   expect(s(`<p><img src="${src}"></p>`), src || "(empty)").toBe("<p></p>");
 }
 expect(s('<img src="https://x.example/a.png" width="100%">')).toBe('<img src="https://x.example/a.png" loading="lazy" decoding="async" referrerpolicy="no-referrer">');
-expect(renderUserMarkdown("![cat](https://x.example/cat.jpg)")).toContain('<img src="https://x.example/cat.jpg" alt="cat"');
+expect(renderUserMarkdown("![cat](https://x.example/cat.jpg)"), "users: no third-party images (tracking pixels)").not.toContain("<img");
+expect(renderUserMarkdown("![cat](https://api.hafizbahtiar.com/api/v1/media/images/a1-b2.png)")).toContain('<img src="https://api.hafizbahtiar.com/api/v1/media/images/a1-b2.png" alt="cat"');
 expect(renderUserMarkdown("![b64](data:image/png;base64,AAAA)")).not.toContain("<img");
 
 console.log("sanitize: ok");

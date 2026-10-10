@@ -73,9 +73,13 @@ const PRESET_ATTRS: Record<string, RegExp> = {
 
 const YOUTUBE_EMBED = /^https:\/\/www\.youtube-nocookie\.com\/embed\/[\w-]+(\?[\w=&%.-]*)?$/;
 
-// Images are linked, never uploaded (no R2) - https only, so no data:/base64 bloat,
-// no mixed content, no javascript:.
+// Images are linked by URL - https only, so no data:/base64 bloat, no mixed
+// content, no javascript:.
 const IMAGE_SRC = /^https:\/\/[^\s"'<>]+$/i;
+// User posts: our own media only. Any other host would be a tracking pixel that
+// logs every reader's IP.
+const UGC_IMAGE_SRC = /^https:\/\/api\.hafizbahtiar\.com\/api\/v1\/media\/images\/[\w.-]+$/;
+const imageSrcOk = (src: string, ugc: boolean) => (ugc ? UGC_IMAGE_SRC : IMAGE_SRC).test(src);
 
 const SAFE_HREF_PATTERN = /^(https?:|mailto:|tel:|#|\/(?!\/))/i;
 const DROPPED_CONTENT_TAGS = new Set(["script", "style"]);
@@ -107,7 +111,7 @@ const renderAttrs = (node: Element, tagName: string, ugc: boolean): string => {
       continue;
     }
 
-    if (name === "src" && !(tagName === "img" ? IMAGE_SRC : YOUTUBE_EMBED).test(value)) {
+    if (name === "src" && !(tagName === "img" ? imageSrcOk(value, ugc) : YOUTUBE_EMBED.test(value))) {
       continue;
     }
 
@@ -180,7 +184,7 @@ const renderNode = (node: ChildNode, ugc: boolean): string => {
     return "";
   }
   // An image without a valid https src is dropped entirely (no empty <img>).
-  if (tagName === "img" && !IMAGE_SRC.test(node.attribs.src?.trim() ?? "")) {
+  if (tagName === "img" && !imageSrcOk(node.attribs.src?.trim() ?? "", ugc)) {
     return "";
   }
 

@@ -85,7 +85,7 @@ const chipClass =
                   <div class="h-16 max-lg:hidden" />
                   <div class="h-16" />
                 </div>
-                <figure class="line-y col-span-3 grid grid-cols-subgrid divide-x divide-gray-950/5 dark:divide-white/10">
+                <figure id={`q-${quote.id}`} class="scroll-offset line-y col-span-3 grid grid-cols-subgrid divide-x divide-gray-950/5 dark:divide-white/10">
                   <figcaption class="px-2 font-mono text-sm/6 font-medium tracking-widest text-gray-500 uppercase max-lg:hidden">
                     {quote.author}
                   </figcaption>
@@ -123,6 +123,13 @@ const chipClass =
                           ))}
                         </div>
                       )}
+                      <a
+                        href={`#q-${quote.id}`}
+                        aria-label={`Link to quote by ${quote.author}`}
+                        class="mt-4 inline-block font-mono text-xs/5 text-gray-400 hover:text-sky-500 dark:text-gray-500 dark:hover:text-sky-400"
+                      >
+                        link
+                      </a>
                     </div>
                   </div>
                 </figure>

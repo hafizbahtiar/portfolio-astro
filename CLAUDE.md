@@ -18,7 +18,7 @@ Checks: `bun scripts/check-sanitize.ts` (blog + user-post HTML sanitizer). Scrip
 
 **Stack:** Astro 6 (server output) + React 19 (islands) + Tailwind CSS v4 + Cloudflare Pages.
 
-**Backend:** Separate repo at `/Users/hafiz/Developments/hono-workers` - a Hono API on Cloudflare Workers with D1 (SQLite) - no KV (sessions and caches moved off it 2026-10-09 to cut write costs). The portfolio fetches from it at `PUBLIC_API_URL` (`.env`: `http://localhost:8787/api/v1`; production: `https://hono-workers.hafizbahtiar98.workers.dev/api/v1`).
+**Backend:** Separate repo at `/Users/hafiz/Developments/hono-workers` - a Hono API on Cloudflare Workers with D1 (SQLite) - no KV (sessions and caches moved off it 2026-10-09 to cut write costs). The portfolio fetches from it at `PUBLIC_API_URL` (`.env`: `http://localhost:8787/api/v1`; production: `https://api.hafizbahtiar.com/api/v1` - same site as the frontend).
 
 ### Rendering model
 
