@@ -1,26 +1,14 @@
 # Cloudflare static-asset headers (prerendered pages + static files).
-# SSR'd HTML documents are covered by src/middleware.ts - KEEP THE CSP BELOW
-# IN SYNC with SECURITY_HEADERS there.
+# SSR'd HTML documents get theirs from src/middleware.ts + Astro (CSP header).
 #
-# CSP notes:
-#  - 'unsafe-inline' on script-src is required by Astro's inline hydration +
-#    <ClientRouter> (View Transitions) + the theme/sidebar IIFEs in CoreLayout.
-#    Tighten to hashes/nonces in a later pass (C1 follow-up).
-#  - blob: (script-src/worker-src) + basemaps.cartocdn.com (connect/img) are
-#    required by MapLibre (MapSection). Removing them breaks the map.
-#  - img-src https: is intentionally broad: the portfolio renders remote images
-#    from many hosts (github, licdn, dbkl, qiubbx, R2).
-#  - cloudflareinsights.com (script-src static.*, connect-src apex) is
-#    Cloudflare Web Analytics - its beacon is auto-injected by Cloudflare.
-#  - challenges.cloudflare.com (script-src + frame-src) is Cloudflare Turnstile
-#    on /login and the contact form: the api.js script plus its widget iframe.
-#  - www.youtube-nocookie.com (frame-src) is blog video embeds - the only
-#    iframe host sanitizeRichHtml allows.
+# CSP: the Content-Security-Policy line below is a marker - astro.config.ts
+# (csp-static-headers) replaces it at build with the policy Astro generates
+# (script hashes, no 'unsafe-inline'). Edit the CSP in astro.config.ts, not here.
 
 /*
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(self)
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' blob: https://static.cloudflareinsights.com https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com https://www.youtube-nocookie.com; worker-src 'self' blob:; connect-src 'self' https://api.hafizbahtiar.com https://api.waktusolat.app https://cloudflareinsights.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://github-contributions-api.jogruber.de
+  Content-Security-Policy: GENERATED

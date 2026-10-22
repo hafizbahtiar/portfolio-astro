@@ -1,4 +1,6 @@
 ---
+// Inline scripts live in src/scripts/inline/ and are hashed into the CSP by astro.config.ts.
+import themeInit from "../scripts/inline/theme-init.js?raw";
 import "../styles/index.css";
 import { ClientRouter } from "astro:transitions";
 
@@ -31,7 +33,10 @@ const {
 // Absolute URLs for canonical + social cards. Astro.site is set in astro.config.
 const siteOrigin = Astro.site ?? new URL(Astro.url.origin);
 // No trailing slash (except "/"): /blog and /blog/ both serve, one canonical URL.
-const canonicalURL = new URL(Astro.url.pathname.replace(/(.)\/+$/, "$1"), siteOrigin);
+const canonicalURL = new URL(
+  Astro.url.pathname.replace(/(.)\/+$/, "$1"),
+  siteOrigin,
+);
 const socialImageURL = new URL(image, siteOrigin);
 ---
 
@@ -105,43 +110,7 @@ const socialImageURL = new URL(image, siteOrigin);
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <script is:inline>
-      (function () {
-        function applyTheme() {
-          const stored = localStorage.getItem("theme");
-          const prefersDark = window.matchMedia(
-            "(prefers-color-scheme: dark)",
-          ).matches;
-          if (stored === "dark" || (!stored && prefersDark)) {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
-        }
-        applyTheme();
-        document.addEventListener("astro:after-swap", applyTheme);
-      })();
-    </script>
-    <script is:inline>
-      (function () {
-        if (!document?.documentElement) return;
-        const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-        if (!isDesktop) {
-          document.documentElement.dataset.adminSidebar = "closed";
-          return;
-        }
-        const storedState = localStorage.getItem("admin-sidebar-state");
-        if (
-          storedState === "open" ||
-          storedState === "closed" ||
-          storedState === "minimized"
-        ) {
-          document.documentElement.dataset.adminSidebar = storedState;
-        } else {
-          document.documentElement.dataset.adminSidebar = "open";
-        }
-      })();
-    </script>
+    <script is:inline set:html={themeInit} />
   </head>
   <body class={`flex flex-col min-h-screen ${className}`}>
     <slot />

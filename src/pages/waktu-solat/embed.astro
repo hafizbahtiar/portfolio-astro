@@ -1,4 +1,5 @@
 ---
+import embedTema from "../../scripts/inline/embed-tema.js?raw";
 export const prerender = false;
 import CoreLayout from "../../layouts/CoreLayout.astro";
 import {
@@ -47,10 +48,7 @@ const rows = day
   class="font-inter"
 >
   <!-- tema=gelap|terang overrides the visitor's system theme (auto = follow it). -->
-  <script is:inline define:vars={{ tema }}>
-    if (tema === "gelap") document.documentElement.classList.add("dark");
-    if (tema === "terang") document.documentElement.classList.remove("dark");
-  </script>
+  <script is:inline data-tema={tema} set:html={embedTema} />
   <main
     id="embed"
     data-today={today}

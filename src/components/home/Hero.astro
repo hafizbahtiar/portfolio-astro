@@ -1,4 +1,5 @@
 ---
+import heroTyping from "../../scripts/inline/hero-typing.js?raw";
 import { Image } from "astro:assets";
 import { Mail, MapPin } from "lucide-react";
 import { CONTACT_EMAIL } from "../../lib/constants";
@@ -206,7 +207,11 @@ const tokClass: Record<string, string> = {
                 data-email={CONTACT_EMAIL}
                 class="group inline-flex w-full max-w-sm items-center gap-2 rounded-full px-4 py-2 text-left text-sm/6 text-gray-600 ring-1 ring-gray-950/10 ring-inset transition-colors hover:ring-gray-950/20 sm:w-80 dark:text-gray-400 dark:ring-white/15 dark:hover:ring-white/25"
             >
-                <Mail className="h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+                <Mail
+                    className="h-4 w-4 shrink-0"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                />
                 <span class="flex-1 truncate">{CONTACT_EMAIL}</span>
                 <kbd
                     data-copy-label
@@ -234,23 +239,7 @@ const tokClass: Record<string, string> = {
     <!-- Typing demo: flag before first paint so the finished content never
          flashes. Skipped for reduced motion and after the first play this session.
          If the module never arms it, the 5s fallback shows the static content. -->
-    <script is:inline>
-        (function () {
-            try {
-                if (matchMedia("(prefers-reduced-motion: reduce)").matches)
-                    return;
-                if (sessionStorage.getItem("hero-typed")) return;
-            } catch (e) {
-                return;
-            }
-            var d = document.documentElement;
-            d.dataset.heroTyping = "pending";
-            setTimeout(function () {
-                if (d.dataset.heroTyping === "pending")
-                    delete d.dataset.heroTyping;
-            }, 5000);
-        })();
-    </script>
+    <script is:inline set:html={heroTyping} />
     <div class="line-y hero-stagger" style="--stagger-i: 4">
         <div
             id="hero-demo"
@@ -333,7 +322,11 @@ const tokClass: Record<string, string> = {
                             data-f="based_in"
                             class="demo-field mt-4 inline-flex items-center gap-1.5 text-sm/6 text-gray-600 dark:text-gray-400"
                         >
-                            <MapPin className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
+                            <MapPin
+                                className="h-4 w-4"
+                                strokeWidth={1.5}
+                                aria-hidden="true"
+                            />
                             <span data-v>Kuala Lumpur, MY</span>
                         </p>
 
