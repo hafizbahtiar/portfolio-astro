@@ -33,6 +33,13 @@ The project uses SSR (`output: "server"`) via `@astrojs/cloudflare`. Pages that 
 
 `src/lib/*.ts` - service classes that extend `ApiClient` (in `src/lib/api-client.ts`). Each service maps to an API resource (family, projects, blog, experiences, etc.). The `ApiClient` sends `credentials: "include"` - auth lives in the API's httpOnly cookies; on a 401 it calls `/auth/refresh` once (shared promise) and retries once. `session_active` is a UX-only cookie. Public endpoints need no auth.
 
+### Database (lives in the API)
+
+This app has no database; D1 lives in `hono-workers`, shared with Nubi Sport and future apps
+(one login). Table naming: shared + existing portfolio tables keep their names, any new
+app-specific table is prefixed `<app>_` (e.g. `nubi_teams`); small per-user app records go in
+`app_items` first. Full rule: `hono-workers/CLAUDE.md` → Database conventions.
+
 ### Layouts
 
 - `CoreLayout.astro` - root HTML shell (theme choice lives in the public Footer's system/light/dark switcher), injects theme-init script (reads `localStorage("theme")`, adds `.dark` to `<html>`), uses Astro `<ClientRouter>` for SPA transitions.

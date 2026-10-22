@@ -1,4 +1,4 @@
-# Open API Kerajaan Malaysia — rujukan
+# Open API Kerajaan Malaysia - rujukan
 
 Semakan terakhir: **20 Oktober 2026** (§1A, §4 BNM, §7: **21 Oktober 2026**). Semua endpoint di bawah diuji pada tarikh itu
 (kecuali yang ditanda "tidak diuji"). Harga, kiraan dan had kadar boleh berubah.
@@ -24,7 +24,7 @@ Ringkasan pantas:
 
 ---
 
-## 1. data.gov.my — API rasmi kerajaan
+## 1. data.gov.my - API rasmi kerajaan
 
 Dokumentasi: <https://developer.data.gov.my>
 
@@ -155,12 +155,12 @@ Tiga dataset kebangsaan JAKIM di sana berlesen **Creative Commons Attribution**:
 
 Lajur: `NEGERI, SURAU, ALAMAT, POSKOD, DAERAH, NO. TELEFON, NO. FAKSIMILI` (dalam fail
 masjid, lajur `SURAU` sebenarnya menyimpan nama masjid). Tiada koordinat. Data ini
-**bukan semasa** — jangan guna sebagai satu-satunya sumber untuk senarai hari ini.
+**bukan semasa** - jangan guna sebagai satu-satunya sumber untuk senarai hari ini.
 Jangan jumlahkan ketiga-tiga fail: `SURAU SOLAT JUMAAT` ialah subset kepada `SURAU`.
 
 ---
 
-## 2. JAKIM e-solat — waktu solat (tidak didokumenkan)
+## 2. JAKIM e-solat - waktu solat (tidak didokumenkan)
 
 ```bash
 curl -s 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=WLY01'
@@ -269,7 +269,7 @@ Penting:
 
 - `surOrMas=1` = semua masjid, `surOrMas=2` = semua surau.
 - Semua parameter lain (`negeri`, `daerah`, `jenis`, `carian`) **diabaikan** oleh
-  endpoint ini — ia sentiasa memulangkan seluruh negara. Sudah diuji.
+  endpoint ini - ia sentiasa memulangkan seluruh negara. Sudah diuji.
 - Tiada kod rekod, tiada tarikh dibina, tiada koordinat dalam eksport.
 
 Parser stdlib yang diuji (6,924 baris untuk masjid):
@@ -349,7 +349,7 @@ Skema betaqwa:
 
 ### 3.7 Portal negeri
 
-- **JAIS e-Masjid** (Selangor): <https://e-masjid.jais.gov.my> — HTML, ada butiran
+- **JAIS e-Masjid** (Selangor): <https://e-masjid.jais.gov.my> - HTML, ada butiran
   tambahan (kategori, kapasiti, pengasas, perasmi). Hampir tiada koordinat.
 - **JAWI** (W.P. Kuala Lumpur/Putrajaya/Labuan): direktori HTML; permintaan berprogram
   boleh dapat **403**, jadi jangan bergantung padanya.
@@ -361,7 +361,7 @@ Skema betaqwa:
 
 | Keperluan | Pilihan |
 |---|---|
-| Senarai penuh + koordinat segera | betaqwa (40,078) — **jangan**, walaupun untuk prototaip: pendua + geokod centroid (§3.6) |
+| Senarai penuh + koordinat segera | betaqwa (40,078) - **jangan**, walaupun untuk prototaip: pendua + geokod centroid (§3.6) |
 | Data rasmi terkini tanpa koordinat | SISMIM `/excelMS` (server, cache) atau minta data semasa |
 | Perlu butiran satu masjid | `/maklumatDetailMS/1/<kod>` |
 | Selangor + koordinat | XLSX arkib (403 baris, CC BY) atau JAIS e-Masjid |
@@ -405,7 +405,7 @@ Skema betaqwa:
    sebut CSV/JSON dalam penerangan.
 3. Hantar. Tiket awam boleh dijejak (dan diikuti) di halaman yang sama.
 4. Panduan rasmi: [Garis Panduan Permohonan Set Data](https://www.malaysia.gov.my/en/my-initiative/government-open-data/policy-strategy-and-governance/garis-panduan-permohonan-set-data)
-   (dikemas kini 17/7/2026; buka dalam pelayar — permintaan skrip boleh dapat 403).
+   (dikemas kini 17/7/2026; buka dalam pelayar - permintaan skrip boleh dapat 403).
 5. Hubungi JAKIM jika perlu: `webmaster@islam.gov.my`, 03-8886 4000, No. 23 Jalan Tunku
    Abdul Rahman, Presint 3, 62100 Putrajaya.
 
@@ -429,7 +429,7 @@ secara berhemah:
 **D. Negeri (liputan tidak seragam)**
 
 - **Selangor, ada koordinat:** [LOKASI MASJID MENGIKUT DAERAH DI NEGERI SELANGOR](https://archive.data.gov.my/data/dataset/1dac0c48-821f-4879-85f4-6f672b093eb6/resource/7a01ddae-bd77-48c9-a4ac-dc83e5cb86ee/download/21-lokasi-masjid-mengikut-daerah-di-negeri-selangor.xlsx)
-  — 403 baris, lajur `DAERAH, MUKIM, NAMA MASJID, Alamat, LATITUD, LONGITUD`, CC BY,
+  - 403 baris, lajur `DAERAH, MUKIM, NAMA MASJID, Alamat, LATITUD, LONGITUD`, CC BY,
   dikemas kini 27 Ogos 2021.
 - **JAIS e-Masjid (semasa, HTML):** [masjid](https://e-masjid.jais.gov.my/dashboard/listmasjid)
   457 rekod; [surau](https://e-masjid.jais.gov.my/dashboard/listsurau) 1,994 rekod
@@ -468,7 +468,7 @@ pengesahan/freshness. Jangan bina produk komersial di atas scrape SISMIM tanpa k
 | Permohonan data | <https://data.gov.my/data-request> | Borang rasmi; tiket awam; agensi = kementerian sahaja (JAKIM → JPM). Lihat §7 |
 | JAKIM | `webmaster@islam.gov.my`, 03-8886 4000 | Pertanyaan data/masjid/surau |
 | Storage data.gov.my | `https://storage.data.gov.my/<kategori>/<fail>.csv` | CSV statik; contoh `commodities/fuelprice.csv` |
-| JPJ, LHDN, KKM, KPM | — | Tiada API awam umum; data yang diterbitkan biasanya melalui data.gov.my |
+| JPJ, LHDN, KKM, KPM | - | Tiada API awam umum; data yang diterbitkan biasanya melalui data.gov.my |
 
 ---
 
@@ -488,7 +488,7 @@ pengesahan/freshness. Jangan bina produk komersial di atas scrape SISMIM tanpa k
 - **PDPA.** Telefon/faks ialah data peribadi dalam beberapa rekod. Jangan edar secara
   pukal atau hubungi pemilik tanpa asas.
 - **Lesen.** Arkib/data.gov.my = CC BY atau Terma Data Terbuka Kerajaan 1.0 (atribusi +
-  pautan terma). SISMIM = © JAKIM, tiada lesen terbuka — akses awam bukan lesen edar
+  pautan terma). SISMIM = © JAKIM, tiada lesen terbuka - akses awam bukan lesen edar
   semula. Dataset betaqwa tiada lesen standard. Untuk komersial, guna CC BY atau minta
   kebenaran JAKIM.
 - **Semak semula kiraan** sebelum bergantung pada angka dalam dokumen ini:
@@ -505,7 +505,7 @@ curl -s 'https://masjid.islam.gov.my/excelMS?surOrMas=2' -o /tmp/s.html && grep 
 
 Semua diakses 20 Oktober 2026.
 
-- [data.gov.my Open API — dokumentasi](https://developer.data.gov.my/)
+- [data.gov.my Open API - dokumentasi](https://developer.data.gov.my/)
 - [Data Catalogue API](https://developer.data.gov.my/static-api/data-catalogue)
 - [OpenDOSM API](https://developer.data.gov.my/static-api/opendosm)
 - [Weather API](https://developer.data.gov.my/realtime-api/weather)
@@ -515,26 +515,26 @@ Semua diakses 20 Oktober 2026.
 - [Format balasan](https://developer.data.gov.my/response-format)
 - [Katalog data.gov.my](https://data.gov.my/data-catalogue)
 - [Portal SISMIM (JAKIM)](https://masjid.islam.gov.my/maklumatMasjidSurau)
-- [Senarai masjid dan surau — JAKIM](https://www.islam.gov.my/ms/solat-masjid/masjid-dan-surau-di-malaysia)
+- [Senarai masjid dan surau - JAKIM](https://www.islam.gov.my/ms/solat-masjid/masjid-dan-surau-di-malaysia)
 - [JAIS e-Masjid](https://e-masjid.jais.gov.my/)
-- [JAWI — direktori masjid](https://jawi.gov.my/index.php/perkhidmatan-masjid-surau)
+- [JAWI - direktori masjid](https://jawi.gov.my/index.php/perkhidmatan-masjid-surau)
 - [BNM OpenAPI Portal](https://apikijangportal.bnm.gov.my/)
 - [MyGeoportal](https://www.mygeoportal.gov.my/)
 - [malaysia-masjid-dataset (salinan yang berfungsi)](https://github.com/Rewsyaydee/malaysia-masjid-dataset)
 - [mosque-collection (bergeokod)](https://github.com/betaqwa/mosque-collection)
 - [Arkib data.gov.my (MAMPU)](https://archive.data.gov.my/data/ms_MY/dataset/senarai-masjid-di-seluruh-malaysia)
 - [API CKAN arkib data.gov.my](https://archive.data.gov.my/data/api/3/action/package_search?q=masjid&rows=5)
-- [Permohonan Data — data.gov.my](https://data.gov.my/data-request)
+- [Permohonan Data - data.gov.my](https://data.gov.my/data-request)
 - [Katalog OpenDOSM](https://open.dosm.gov.my/data-catalogue) (diakses 21 Okt 2026)
 - [Katalog data.moh.gov.my](https://data.moh.gov.my/data-catalogue) (diakses 21 Okt 2026)
-- [Garis Panduan Permohonan Set Data — MyGOV](https://www.malaysia.gov.my/en/my-initiative/government-open-data/policy-strategy-and-governance/garis-panduan-permohonan-set-data)
-- [Pekeliling Am Bil. 1/2015 — Terma Penggunaan Data Terbuka Kerajaan 1.0](https://dasar.jdn.gov.my/search-g/download-file/25/7f821c650c868d025fb5351d7d45d001)
+- [Garis Panduan Permohonan Set Data - MyGOV](https://www.malaysia.gov.my/en/my-initiative/government-open-data/policy-strategy-and-governance/garis-panduan-permohonan-set-data)
+- [Pekeliling Am Bil. 1/2015 - Terma Penggunaan Data Terbuka Kerajaan 1.0](https://dasar.jdn.gov.my/search-g/download-file/25/7f821c650c868d025fb5351d7d45d001)
 - [LOKASI MASJID MENGIKUT DAERAH DI NEGERI SELANGOR (XLSX, koordinat)](https://archive.data.gov.my/data/dataset/1dac0c48-821f-4879-85f4-6f672b093eb6/resource/7a01ddae-bd77-48c9-a4ac-dc83e5cb86ee/download/21-lokasi-masjid-mengikut-daerah-di-negeri-selangor.xlsx)
-- [JAIS e-Masjid — senarai masjid](https://e-masjid.jais.gov.my/dashboard/listmasjid)
-- [JAIS e-Masjid — senarai surau](https://e-masjid.jais.gov.my/dashboard/listsurau)
-- [JAKIM — hubungi kami](https://masjid.islam.gov.my/contact)
+- [JAIS e-Masjid - senarai masjid](https://e-masjid.jais.gov.my/dashboard/listmasjid)
+- [JAIS e-Masjid - senarai surau](https://e-masjid.jais.gov.my/dashboard/listsurau)
+- [JAKIM - hubungi kami](https://masjid.islam.gov.my/contact)
 - [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/)
-- [OpenStreetMap — hak cipta dan lesen ODbL](https://www.openstreetmap.org/copyright)
+- [OpenStreetMap - hak cipta dan lesen ODbL](https://www.openstreetmap.org/copyright)
 
 ---
 
