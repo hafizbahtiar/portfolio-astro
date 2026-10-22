@@ -1,4 +1,4 @@
-# TODO - senarai semak (dikemas kini 2026-10-17)
+# TODO - senarai semak (dikemas kini 2026-10-22)
 
 Priorities: P0 = bug/vuln, P1 = perf/correctness, P2 = polish/cleanup, P3 = nice to have.
 Fail ni senarai **kerja yang belum siap** sahaja - item siap dibuang (butiran dalam git history). Isu keselamatan: `VULNERABLE.md`. Backend: `/Users/hafiz/Developments/hono-workers/TODO.md`.
@@ -15,6 +15,7 @@ Fail ni senarai **kerja yang belum siap** sahaja - item siap dibuang (butiran da
 - **Prerender tak membantu kos**: home, `/blog`, `/quotes`, `/projects` perlukan data API semasa request; app Showcase data langsung. Jangan tukar ke prerender untuk "jimat".
 - **R2 binding `remote: true`**: upload lokal tulis ke bucket sebenar (perlu `wrangler login`). Aset peribadi jangan bawah prefix `images/` - route proxy hanya serve prefix itu.
 - **Guna helper bersama, jangan tulis semula** (refactor 2026-10-17): `lib/geo.ts` (`distanceKm`, `locateOnce`, `geoErrorText`), `lib/clipboard.ts` (`copyText`), `lib/url.ts` (`setParam`, pass `history.state`), `lib/money.ts` (`rm`, `ringgit`), `lib/date-my.ts` (`todayMY`, `formatIsoMs`, `isoToDmy`), `lib/chart.ts` + `ui/LineChart.astro`, `lib/map-view.ts` (`bindViewTabs`, `POINTS_MAP_FOCUS`), `lib/theme.ts`, `lib/admin-ui.ts` (`showToast`, form helpers), `lib/calc-state.ts`, `ui/ResetButton.astro`, atom `.link`, `CONTACT_EMAIL`. Ikon: lucide. Check scripts: `bun:test` `expect`.
+- **CSP (pentest 2026-10-22 F-04)**: `script-src` tiada `'unsafe-inline'`/`blob:`. Skrip inline tulisan tangan masuk `src/scripts/inline/*.js` (di-hash oleh `astro.config.ts`); jangan tulis `<script is:inline>` berisi kod, `on*=` atau `javascript:`. Origin luar baharu (script/connect/frame/img) ditambah dalam `CSP_DIRECTIVES`/`scriptDirective` di `astro.config.ts`, bukan `public/_headers`. HSTS tiada `preload` (F-07).
 - **Keselamatan (dah disemak, kekalkan)**: "Kongsi" (`BackLink`) kongsi `location.href` sahaja; state kalkulator (`calc-state.ts`) divalidasi per medan dan masuk `.value`/`checked`, bukan HTML; `public/sw.js` cache GET same-origin Showcase + `/_astro/*` sahaja (tak pernah admin/account/auth/api/POST); import `/@react-refresh` dalam `TechHeading` hanya bawah `import.meta.env.DEV`.
 
 ## Owner - deploy & dashboard (manual)
@@ -31,7 +32,6 @@ Fail ni senarai **kerja yang belum siap** sahaja - item siap dibuang (butiran da
 
 - [ ] **[P2] Hantar beacon lawatan** - backend `POST /api/v1/public/visit` dah ada (migration 015) tapi frontend belum hantar; satu baris dalam `PublicLayout`. Kemudian panel admin untuk `GET /owner/dashboard/visits`.
 - [ ] **[P2] `kl-boundary.json` (15.8 KB) dalam bundle setiap pelawat** (`MapCanvas.tsx:15`, import statik) - kecilkan titik atau ambil sebagai aset runtime.
-- [ ] **[P2] CSP `'unsafe-inline'` untuk script** (`middleware.ts:33`, untuk inline theme-init `CoreLayout`); CSP `middleware.ts` kena sepadan dengan `public/_headers` secara manual.
 - [ ] **[P3] Cover blog** dalam kad `/blog` dan/atau hero post (sekarang social card sahaja).
 - [ ] **[P3] Nota privasi "IP download dilog"** - tiada page privasi site; pilih nota footer, page site-level, atau biar.
 - [ ] **[P3] `README.md` masih boilerplate Astro starter** - tulis README sebenar (setup, env, deploy) atau buang.
