@@ -12,6 +12,8 @@ export interface AiModel {
   id: string;
   name: string;
   contextLength: number | null;
+  /** Endpoints advertised by Command Code for this model (e.g. /chat/completions, /responses). */
+  supportedEndpoints: string[];
   /** Served on /chat/completions - the only route the backend speaks (Claude models are /messages-only). */
   usable: boolean;
 }

@@ -5,6 +5,7 @@ import {
   REASONING,
   aiSettingsError,
   aiSettingsService,
+  type AiModel,
   type AiModelList,
   type AiRoute,
   type AiTestResult,
@@ -24,6 +25,12 @@ const when = (s: string) => {
   return Number.isNaN(d.getTime()) ? "-" : WHEN.format(d);
 };
 const ctx = (n: number | null) => (n === null ? "" : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}M` : `${Math.round(n / 1e3)}K`);
+const endpointLabel = (endpoint: string) => endpoint.replace(/^\//, "");
+const endpointsOf = (m: AiModel): string[] => (Array.isArray(m.supportedEndpoints) ? m.supportedEndpoints : []);
+const endpointsHint = (m: AiModel) => {
+  const endpoints = endpointsOf(m);
+  return endpoints.length ? endpoints.map(endpointLabel).join(" + ") : "no endpoint info";
+};
 const REASONING_LABEL: Record<Reasoning, string> = {
   none: "None",
   minimal: "Minimal",
@@ -93,6 +100,7 @@ export function AiSettingsManager() {
   if (loadError) return <p className="admin-error">Couldn't load AI settings: {loadError}</p>;
 
   const usable = list?.models.filter((m) => m.usable).length ?? 0;
+  const messagesOnly = list?.models.filter((m) => endpointsOf(m).includes("/messages")).length ?? 0;
   return (
     <div className="space-y-6">
       {features.length > 0 && (
@@ -101,7 +109,7 @@ export function AiSettingsManager() {
       <div className="admin-card flex flex-wrap items-center justify-between gap-3">
         <p className="admin-help">
           {list
-            ? `${list.models.length} models from Command Code · ${usable} usable here · fetched ${when(list.fetchedAt)}`
+            ? `${list.models.length} models from Command Code · ${usable} chat-ready · ${messagesOnly} /messages-only · fetched ${when(list.fetchedAt)}`
             : "Loading the Command Code model list…"}
         </p>
         <button type="button" className="admin-btn admin-btn-secondary" onClick={() => void loadModels(true)} disabled={refreshing}>
@@ -142,7 +150,7 @@ function FeaturesCard({ features, onSaved }: { features: Feature[]; onSaved: (f:
             <input id={`feature-${f.code}`} type="checkbox" className="mt-1" checked={f.enabled} disabled={busy === f.code}
               onChange={(e) => void toggle(f, e.target.checked)} />
             <label htmlFor={`feature-${f.code}`} className="space-y-0.5">
-              <span className="block text-sm font-medium text-gray-950 dark:text-white">{f.label}</span>
+              <span className="admin-label block">{f.label}</span>
               <span className="admin-help block">{f.description}</span>
               <span className="admin-help block">
                 {f.overridden && f.updatedAt ? `Set ${when(f.updatedAt)}${f.updatedBy?.displayName ? ` by ${f.updatedBy.displayName}` : ""}` : `Default (${f.enabled ? "on" : "off"})`}
@@ -175,7 +183,7 @@ function RouteCard({ route, list, onSaved }: { route: AiRoute; list: AiModelList
     .map((m) => ({
       value: m.id,
       label: m.id === route.defaultModel ? `${m.name} (default)` : m.name,
-      hint: m.usable ? [m.id, ctx(m.contextLength)].filter(Boolean).join(" · ") : "/messages only",
+      hint: [m.id, ctx(m.contextLength), endpointsHint(m)].filter(Boolean).join(" · "),
       disabled: !m.usable,
     }));
 
@@ -245,7 +253,7 @@ function RouteCard({ route, list, onSaved }: { route: AiRoute; list: AiModelList
               : " · code default"}
           </p>
         </div>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${route.configured ? "bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300" : "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300"}`}>
+        <span className={`admin-pill ${route.configured ? "admin-pill-ok" : "admin-pill-muted"}`}>
           {route.provider} · {route.configured ? "key set" : "no API key"}
         </span>
       </div>
@@ -258,12 +266,36 @@ function RouteCard({ route, list, onSaved }: { route: AiRoute; list: AiModelList
           className="max-w-xl"
           label="Model"
           searchable
-          searchPlaceholder="Search by name or id…"
+          searchPlaceholder="Search by name, id or endpoint…"
           value={model}
           onChange={(v) => setModel(String(v))}
           options={known ? modelOptions : [{ value: model, label: model, hint: "not in the list" }, ...modelOptions]}
           placeholder={list ? "Pick a model" : "Loading models…"}
         />
+        {known && (
+          <div className="admin-subcard text-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-medium">{known.name}</span>
+              <span className="admin-help font-mono">{known.id}</span>
+              {known.id === route.defaultModel && <span className="admin-pill admin-pill-ok">Default</span>}
+            </div>
+            <dl className="mt-2 grid gap-1.5 sm:grid-cols-2">
+              <div className="flex gap-2">
+                <dt className="admin-help">Context</dt>
+                <dd className="font-medium">{ctx(known.contextLength) || "not advertised"}</dd>
+              </div>
+              <div className="flex gap-2">
+                <dt className="admin-help">Endpoints</dt>
+                <dd className="font-mono text-xs">{endpointsOf(known).join(" · ") || "not advertised"}</dd>
+              </div>
+            </dl>
+            {!known.usable && (
+              <p className="admin-error mt-2">
+                Not usable by this backend: it doesn't advertise /chat/completions. This backend only speaks that endpoint.
+              </p>
+            )}
+          </div>
+        )}
         {list && !known && (
           <p className="admin-error">
             <span className="font-mono">{model}</span> isn't in Command Code's list any more - pick another model.
@@ -279,8 +311,11 @@ function RouteCard({ route, list, onSaved }: { route: AiRoute; list: AiModelList
         options={[{ value: DEFAULT, label: "Model default" }, ...REASONING.map((r) => ({ value: r, label: REASONING_LABEL[r] }))]}
       />
       <p className="admin-help">
-        Sent as <span className="font-mono">reasoning_effort</span>. Command Code doesn't say which levels each model
-        takes (xhigh is GPT-5.x+, max is Anthropic-style) - a model ignores or rejects one it doesn't know, so Test before saving.
+        Sent as <span className="font-mono">reasoning_effort</span>. The live model list gives context and endpoint
+        support, but not per-model reasoning levels or prices - Test before saving.{" "}
+        <a className="admin-link" href="https://commandcode.ai/docs/resources/pricing-limits" target="_blank" rel="noreferrer">
+          Command Code pricing &amp; limits
+        </a>
       </p>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -299,10 +334,10 @@ function RouteCard({ route, list, onSaved }: { route: AiRoute; list: AiModelList
       </div>
 
       {test && (
-        <div role="status" className="rounded-lg bg-gray-950/2.5 p-3 text-sm dark:bg-white/5">
+        <div role="status" className="admin-subcard text-sm">
           {test.ok ? (
-            <p className="text-gray-700 dark:text-gray-300">
-              <span className="font-medium text-sky-700 dark:text-sky-300">Works.</span> Replied "{test.text}" in {(test.ms / 1000).toFixed(1)} s
+            <p>
+              <span className="admin-ok">Works.</span> Replied "{test.text}" in {(test.ms / 1000).toFixed(1)} s
               · <span className="font-mono">{test.model}</span>
               {test.usage && ` · ${test.usage.inputTokens} in / ${test.usage.outputTokens} out tokens`}
             </p>

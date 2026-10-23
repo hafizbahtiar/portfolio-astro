@@ -424,6 +424,31 @@ html[data-theme-switching]::view-transition-new(root) {
         @apply text-red-600 ring-1 ring-red-500/30 ring-inset hover:bg-red-500/10 dark:text-red-400;
     }
 
+    /* Shared admin metadata bits - use these instead of per-file colour utilities. */
+    .admin-pill {
+        @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+    }
+
+    .admin-pill-ok {
+        @apply bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300;
+    }
+
+    .admin-pill-muted {
+        @apply bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300;
+    }
+
+    .admin-subcard {
+        @apply rounded-lg border border-gray-950/10 bg-gray-950/2.5 p-3 dark:border-white/10 dark:bg-white/5;
+    }
+
+    .admin-ok {
+        @apply font-medium text-sky-700 dark:text-sky-300;
+    }
+
+    .admin-link {
+        @apply underline;
+    }
+
     /* Cards - family-chart's own DOM uses class "card", so this stays live. */
     .card {
         @apply bg-white rounded-2xl outline outline-slate-950/5 overflow-hidden transition-colors duration-300 dark:bg-pub-dark dark:outline-white/10;
@@ -961,11 +986,11 @@ html[data-theme-switching]::view-transition-new(root) {
    Astro's ClientRouter already turns every view-transition animation off under
    prefers-reduced-motion. Names only while Astro navigates (html[data-astro-transition]),
    so they never make a stacking context the rest of the time. */
-html[data-astro-transition] .page-col > main {
+html[data-astro-transition] .page-col>main {
     view-transition-name: page-main;
 }
 
-html[data-astro-transition] [data-showcase-app] + .line-y > h1 {
+html[data-astro-transition] [data-showcase-app]+.line-y>h1 {
     view-transition-name: app-title;
 }
 
