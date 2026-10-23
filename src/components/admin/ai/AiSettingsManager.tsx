@@ -33,6 +33,23 @@ const REASONING_LABEL: Record<Reasoning, string> = {
   xhigh: "Extra high (xhigh)",
   max: "Max",
 };
+const USE_CASE_META: Record<string, { app: string; label: string; description: string }> = {
+  default: {
+    app: "Portfolio",
+    label: "Default assistant",
+    description: "General assistant for the portfolio and shared platform.",
+  },
+  content: {
+    app: "Portfolio",
+    label: "Admin writing",
+    description: "Writing help for admin form fields (projects and blog).",
+  },
+  nubi_chat: {
+    app: "Nubi Sport",
+    label: "NUNI · Pembantu AI",
+    description: "Member-facing running, training and sport-health chat. Uses the Nubi tool set.",
+  },
+};
 const DEFAULT = "default"; // Select value for "no reasoning_effort sent"
 const fail = (title: string, e: unknown) => showToast({ type: "error", title, message: aiSettingsError(e) });
 
@@ -206,13 +223,21 @@ function RouteCard({ route, list, onSaved }: { route: AiRoute; list: AiModelList
       }
     });
 
+  const meta = USE_CASE_META[route.useCase] ?? {
+    app: "App",
+    label: route.useCase,
+    description: "Backend AI use case.",
+  };
   return (
     <section className="admin-card space-y-4" aria-labelledby={`ai-${route.useCase}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h3 className="admin-card-title" id={`ai-${route.useCase}`}>
-            Use case: <span className="font-mono">{route.useCase}</span>
+            {meta.app} · {meta.label}
           </h3>
+          <p className="admin-help">
+            <span className="font-mono">{route.useCase}</span> · {meta.description}
+          </p>
           <p className="admin-help">
             Now: <span className="font-mono">{route.model}</span> · reasoning {route.reasoning ? REASONING_LABEL[route.reasoning] : "model default"}
             {route.overridden && route.updatedAt
