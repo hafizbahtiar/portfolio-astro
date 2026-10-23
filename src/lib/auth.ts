@@ -52,6 +52,7 @@ class AuthService extends ApiClient {
     const response = await this.post<LoginResponse>('/auth/login', {
       email,
       password,
+      app: 'portfolio',
       ...(captchaToken ? { captchaToken } : {}),
     });
     if (response) {
