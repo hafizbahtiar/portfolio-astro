@@ -1,10 +1,9 @@
 ---
-// New (no ?id) and edit (?id=) in one page. Photos need a saved record, so the
-// photo card appears after the first save.
+// New (no ?id) and edit (?id=) in one page. Photos (top, <EvidencePhotos>) can be picked before the
+// first save - they upload once the record exists (the page sends `dd:saved`).
 import {
   ArrowLeft,
   Check,
-  ImagePlus,
   LoaderCircle,
   Plus,
   Sparkles,
@@ -13,7 +12,19 @@ import {
 import PrivateLayout from "../../../../layouts/PrivateLayout.astro";
 import AdminPageHeader from "../../../../components/admin/AdminPageHeader.astro";
 import AlertToast from "../../../../components/ui/AlertToast.astro";
+import { EvidencePhotos } from "../../../../components/admin/crime/EvidencePhotos";
 import Dropdown from "../../../../components/ui/Dropdown.astro";
+import DateInput from "../../../../components/ui/DateInput.astro";
+
+// `count` = a live badge (rows in that list), filled by the page script.
+const TABS = [
+  { id: "basics", label: "Basics" },
+  { id: "sources", label: "Sources & AI" },
+  { id: "case", label: "Case" },
+  { id: "victims", label: "Victims", count: true },
+  { id: "lawyers", label: "Lawyers", count: true },
+  { id: "photos", label: "Photos" },
+];
 
 const CASE_STATUSES = [
   { value: "", label: "-" },
@@ -67,120 +78,165 @@ const OUTCOMES = [
       </a>
     </AdminPageHeader>
 
-    <form id="dd-form" class="space-y-8">
-      <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
-        <div class="admin-card">
-          <h3 class="admin-card-title">Person &amp; incident</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2 md:col-span-2">
-              <label class="admin-label" for="dd-name">Full name</label>
+    <!-- Tabs: same look as the project editor (ProjectEditor.tsx). Panels stay in one form, so Save sends all. -->
+    <div class="border-b border-gray-950/5 dark:border-white/10">
+      <div id="dd-tabs" class="flex -mb-px overflow-x-auto" role="tablist">
+        {
+          TABS.map((t, i) => (
+            <button
+              type="button"
+              role="tab"
+              data-tab={t.id}
+              aria-selected={i === 0 ? "true" : "false"}
+              class="dd-tab inline-flex shrink-0 items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 aria-selected:border-sky-500 aria-selected:text-gray-950 dark:aria-selected:text-white"
+            >
+              {t.label}
+              {t.count && (
+                <span
+                  data-count={t.id}
+                  class="rounded-full bg-gray-950/5 px-1.5 text-xs/5 text-gray-600 empty:hidden dark:bg-white/10 dark:text-gray-300"
+                />
+              )}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+    <form id="dd-form" class="space-y-6">
+      <section data-panel="basics" role="tabpanel" class="admin-card">
+        <h3 class="admin-card-title">Person &amp; incident</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2 md:col-span-2">
+            <label class="admin-label" for="dd-name">Full name</label>
+            <input
+              id="dd-name"
+              name="fullName"
+              required
+              maxlength="120"
+              class="admin-input"
+            />
+            <label class="flex items-center gap-3">
               <input
-                id="dd-name"
-                name="fullName"
-                required
-                maxlength="120"
-                class="admin-input"
+                type="checkbox"
+                name="nameUndisclosed"
+                class="h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20"
               />
-              <label
-                class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+              <span class="text-sm text-gray-700 dark:text-gray-300"
+                >Name not disclosed yet</span
               >
-                <input type="checkbox" name="nameUndisclosed" class="h-4 w-4" />
-                Name not disclosed yet
-              </label>
-              <p id="dd-name-help" class="admin-help">
-                Public once published - exactly as in the court record.
-              </p>
-            </div>
-            <div class="space-y-2">
-              <label class="admin-label" for="dd-ic">IC number</label>
-              <input
-                id="dd-ic"
-                name="icNumber"
-                inputmode="numeric"
-                maxlength="14"
-                placeholder="900101-14-5678"
-                class="admin-input"
-                autocomplete="off"
-              />
-              <p class="admin-help">
-                Optional. Never public - visitors only see that an IC is on
-                file.
-              </p>
-            </div>
-            <div class="space-y-2">
-              <label class="admin-label" for="dd-dob">Date of birth</label>
-              <input
-                id="dd-dob"
-                type="date"
-                name="dateOfBirth"
-                class="admin-input"
-              />
-              <p class="admin-help">
-                Filled from the IC when empty. Never public.
-              </p>
-            </div>
-            <div class="space-y-2">
-              <label class="admin-label" for="dd-age">Age</label>
-              <input
-                id="dd-age"
-                type="number"
-                name="age"
-                min="0"
-                max="120"
-                class="admin-input"
-              />
-              <p class="admin-help">
-                At the incident - worked out from the date of birth when there
-                is one.
-              </p>
-            </div>
-            <div class="space-y-2">
-              <label class="admin-label" for="dd-incident">Incident date</label>
-              <input
-                id="dd-incident"
-                type="date"
-                name="incidentDate"
-                class="admin-input"
-              />
-            </div>
-            <div class="space-y-2 md:col-span-2">
-              <label class="admin-label" for="dd-location">Location</label>
-              <input
-                id="dd-location"
-                name="location"
-                maxlength="200"
-                class="admin-input"
-              />
-            </div>
-            <div class="space-y-2 md:col-span-2">
-              <label class="admin-label" for="dd-details">Details</label>
-              <textarea
-                id="dd-details"
-                name="details"
-                maxlength="2000"
-                rows="5"
-                class="admin-input"></textarea>
-              <p class="admin-help">
-                Private notes (vehicle, sentence, victims...).
-              </p>
-            </div>
+            </label>
+            <p id="dd-name-help" class="admin-help">
+              Public once published - exactly as in the court record.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <label class="admin-label" for="dd-ic">IC number</label>
+            <input
+              id="dd-ic"
+              name="icNumber"
+              inputmode="numeric"
+              maxlength="14"
+              placeholder="900101-14-5678"
+              class="admin-input"
+              autocomplete="off"
+            />
+            <p class="admin-help">
+              Optional. Never public - visitors only see that an IC is on file.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <DateInput label="Date of birth" name="dateOfBirth" />
+            <p class="admin-help">
+              Filled from the IC when empty. Never public.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <label class="admin-label" for="dd-age">Age</label>
+            <input
+              id="dd-age"
+              type="number"
+              name="age"
+              min="0"
+              max="120"
+              class="admin-input"
+            />
+            <p class="admin-help">
+              At the incident - worked out from the date of birth when there is
+              one.
+            </p>
+          </div>
+          <DateInput label="Incident date" name="incidentDate" />
+          <div class="space-y-2 md:col-span-2">
+            <label class="admin-label" for="dd-location">Location</label>
+            <input
+              id="dd-location"
+              name="location"
+              maxlength="200"
+              class="admin-input"
+            />
+          </div>
+          <div class="space-y-2 md:col-span-2">
+            <label class="admin-label" for="dd-details">Details</label>
+            <textarea
+              id="dd-details"
+              name="details"
+              maxlength="2000"
+              rows="5"
+              class="admin-input"></textarea>
+            <p class="admin-help">Private notes (vehicle, what happened...).</p>
           </div>
         </div>
+      </section>
 
-        <div class="admin-card">
-          <h3 class="admin-card-title">Conviction &amp; publishing</h3>
-          <div class="grid grid-cols-1 gap-6">
-            <div class="space-y-2">
-              <label class="admin-label" for="dd-convicted"
-                >Conviction date</label
-              >
-              <input
-                id="dd-convicted"
-                type="date"
-                name="convictedOn"
-                class="admin-input"
+      <section data-panel="sources" role="tabpanel" hidden class="admin-card">
+        <h3 class="admin-card-title">Sources</h3>
+        <div class="space-y-4">
+          <ul id="dd-sources" class="space-y-2"></ul>
+          <p class="admin-help">
+            https links only - court records or news naming this person, up to
+            10. First = main. A new box appears once a link is valid.
+          </p>
+          <button
+            type="button"
+            id="dd-ai-btn"
+            class="admin-btn admin-btn-secondary"
+          >
+            <Sparkles className="h-4 w-4 dd-ai-idle" />
+            <LoaderCircle className="h-4 w-4 dd-ai-busy hidden animate-spin" />
+            <span id="dd-ai-label">Fill from sources (AI)</span>
+          </button>
+          <p class="admin-help">
+            Reads the first 5 links and shows a draft to review: every value
+            comes with its quote, untick what is wrong. IC is never filled by
+            AI.
+          </p>
+        </div>
+      </section>
+
+      <div data-panel="case" role="tabpanel" hidden class="space-y-6">
+        <section class="admin-card">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h3 class="admin-card-title mb-0!">Conviction &amp; appeal</h3>
+            <button
+              type="button"
+              id="dd-ai-status"
+              class="admin-btn admin-btn-secondary"
+            >
+              <Sparkles className="h-4 w-4 dd-ai-idle" />
+              <LoaderCircle
+                className="h-4 w-4 dd-ai-busy hidden animate-spin"
               />
-            </div>
+              Check case status (AI)
+            </button>
+          </div>
+          <p class="admin-help mb-4">
+            Owner-only. The AI cannot search the web - it re-reads the source
+            links, so add the newest news or court link first. An appeal that
+            quashed the conviction blocks publishing.
+          </p>
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <DateInput label="Conviction date" name="convictedOn" />
             <div class="space-y-2">
               <label class="admin-label" for="dd-case">Case reference</label>
               <input
@@ -191,194 +247,126 @@ const OUTCOMES = [
                 class="admin-input"
               />
             </div>
-            <div class="space-y-2">
-              <p class="admin-label">Sources</p>
-              <ul id="dd-sources" class="space-y-2"></ul>
-              <p class="admin-help">
-                https links only - court records or news naming this person, up
-                to 10. First = main. A new box appears once a link is valid.
-              </p>
-              <button
-                type="button"
-                id="dd-ai-btn"
-                class="admin-btn admin-btn-secondary w-full"
+            <div class="space-y-2 md:col-span-2">
+              <label class="admin-label" for="dd-charge">Charge</label>
+              <input
+                id="dd-charge"
+                name="charge"
+                maxlength="300"
+                placeholder="Seksyen 45A(1) APJ 1987"
+                class="admin-input"
+              />
+            </div>
+            <div class="space-y-2 md:col-span-2">
+              <label class="admin-label" for="dd-sentence"
+                >Sentence imposed</label
               >
-                <Sparkles className="h-4 w-4 dd-ai-idle" />
-                <LoaderCircle
-                  className="h-4 w-4 dd-ai-busy hidden animate-spin"
-                />
-                <span id="dd-ai-label">Fill from sources (AI)</span>
-              </button>
+              <textarea
+                id="dd-sentence"
+                name="sentence"
+                maxlength="500"
+                rows="2"
+                placeholder="Penjara, denda RM, lesen digantung..."
+                class="admin-input"></textarea>
+            </div>
+            <Dropdown
+              label="Case status"
+              name="caseStatus"
+              options={CASE_STATUSES}
+              placeholder="-"
+              class="w-full"
+            />
+            <Dropdown
+              label="Appeal"
+              name="appealStatus"
+              options={APPEAL_STATUSES}
+              placeholder="Unknown"
+              class="w-full"
+            />
+            <DateInput label="Appeal decided on" name="appealDecidedOn" />
+            <DateInput label="Last checked" name="lastCheckedOn" />
+            <div class="space-y-2 md:col-span-2">
+              <label class="admin-label" for="dd-appeal-notes"
+                >Appeal notes</label
+              >
+              <textarea
+                id="dd-appeal-notes"
+                name="appealNotes"
+                maxlength="1000"
+                rows="2"
+                placeholder="Court, what changed"
+                class="admin-input"></textarea>
               <p class="admin-help">
-                Reads the first 5 links and shows a draft to review: every value
-                comes with its quote, untick what is wrong. IC is never filled
-                by AI.
+                Last checked is set to today when you apply an AI draft. Over 90
+                days = flagged in the list.
               </p>
             </div>
-            <label class="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="published"
-                class="h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20"
-              />
-              <span class="text-sm text-gray-700 dark:text-gray-300"
-                >Published (needs conviction date, case reference and a source)</span
+          </div>
+        </section>
+
+        <section class="admin-card">
+          <h3 class="admin-card-title">
+            Alcohol, licence &amp; court documents
+          </h3>
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Dropdown
+              label="Alcohol test"
+              name="alcoholTest"
+              options={ALCOHOL_TESTS}
+              placeholder="-"
+              class="w-full"
+            />
+            <div class="space-y-2">
+              <label class="admin-label" for="dd-alcohol">Alcohol reading</label
               >
-            </label>
+              <input
+                id="dd-alcohol"
+                type="number"
+                name="alcoholReading"
+                min="0.1"
+                max="999"
+                step="0.1"
+                class="admin-input"
+              />
+              <p id="dd-alcohol-hint" class="admin-help"></p>
+            </div>
+            <div class="space-y-2">
+              <label class="admin-label" for="dd-licence-months"
+                >Licence disqualified (months)</label
+              >
+              <input
+                id="dd-licence-months"
+                type="number"
+                name="licenceDisqualifiedMonths"
+                min="0"
+                max="600"
+                step="1"
+                class="admin-input"
+              />
+            </div>
+            <div class="space-y-2">
+              <DateInput
+                label="Disqualified from"
+                name="licenceDisqualifiedFrom"
+              />
+              <p id="dd-licence-until" class="admin-help">
+                Usually the conviction date - or the release date when the court
+                says it starts after prison.
+              </p>
+            </div>
+            <div class="space-y-2 md:col-span-2">
+              <p class="admin-label">Court documents</p>
+              <ul id="dd-court-docs" class="space-y-2"></ul>
+              <p class="admin-help">
+                Judgment or court record links (https), optional. Added by hand
+                - the AI cannot see links inside a page.
+              </p>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
 
-      <div class="admin-card">
-        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h3 class="admin-card-title mb-0!">Charge, sentence &amp; appeal</h3>
-          <button
-            type="button"
-            id="dd-ai-status"
-            class="admin-btn admin-btn-secondary"
-          >
-            <Sparkles className="h-4 w-4 dd-ai-idle" />
-            <LoaderCircle className="h-4 w-4 dd-ai-busy hidden animate-spin" />
-            Check case status (AI)
-          </button>
-        </div>
-        <p class="admin-help mb-4">
-          Owner-only. The AI cannot search the web - it re-reads the source
-          links, so add the newest news or court link first. An appeal that
-          quashed the conviction blocks publishing.
-        </p>
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div class="space-y-2 md:col-span-2">
-            <label class="admin-label" for="dd-charge">Charge</label>
-            <input
-              id="dd-charge"
-              name="charge"
-              maxlength="300"
-              placeholder="Seksyen 45A(1) APJ 1987"
-              class="admin-input"
-            />
-          </div>
-          <div class="space-y-2 md:col-span-2">
-            <label class="admin-label" for="dd-sentence">Sentence imposed</label
-            >
-            <textarea
-              id="dd-sentence"
-              name="sentence"
-              maxlength="500"
-              rows="2"
-              placeholder="Penjara, denda RM, lesen digantung..."
-              class="admin-input"></textarea>
-          </div>
-          <Dropdown
-            label="Case status"
-            name="caseStatus"
-            options={CASE_STATUSES}
-            placeholder="-"
-            class="w-full"
-          />
-          <Dropdown
-            label="Appeal"
-            name="appealStatus"
-            options={APPEAL_STATUSES}
-            placeholder="Unknown"
-            class="w-full"
-          />
-          <div class="space-y-2">
-            <label class="admin-label" for="dd-appeal-date"
-              >Appeal decided on</label
-            >
-            <input
-              id="dd-appeal-date"
-              type="date"
-              name="appealDecidedOn"
-              class="admin-input"
-            />
-          </div>
-          <div class="space-y-2 md:col-span-2">
-            <label class="admin-label" for="dd-appeal-notes">Appeal notes</label
-            >
-            <textarea
-              id="dd-appeal-notes"
-              name="appealNotes"
-              maxlength="1000"
-              rows="2"
-              placeholder="Court, what changed"
-              class="admin-input"></textarea>
-          </div>
-          <Dropdown
-            label="Alcohol test"
-            name="alcoholTest"
-            options={ALCOHOL_TESTS}
-            placeholder="-"
-            class="w-full"
-          />
-          <div class="space-y-2">
-            <label class="admin-label" for="dd-alcohol">Alcohol reading</label>
-            <input
-              id="dd-alcohol"
-              type="number"
-              name="alcoholReading"
-              min="0.1"
-              max="999"
-              step="0.1"
-              class="admin-input"
-            />
-            <p id="dd-alcohol-hint" class="admin-help"></p>
-          </div>
-          <div class="space-y-2">
-            <label class="admin-label" for="dd-licence-months"
-              >Licence disqualified (months)</label
-            >
-            <input
-              id="dd-licence-months"
-              type="number"
-              name="licenceDisqualifiedMonths"
-              min="0"
-              max="600"
-              step="1"
-              class="admin-input"
-            />
-          </div>
-          <div class="space-y-2">
-            <label class="admin-label" for="dd-licence-from"
-              >Disqualified from</label
-            >
-            <input
-              id="dd-licence-from"
-              type="date"
-              name="licenceDisqualifiedFrom"
-              class="admin-input"
-            />
-            <p id="dd-licence-until" class="admin-help">
-              Usually the conviction date - or the release date when the court
-              says it starts after prison.
-            </p>
-          </div>
-          <div class="space-y-2 md:col-span-2">
-            <p class="admin-label">Court documents</p>
-            <ul id="dd-court-docs" class="space-y-2"></ul>
-            <p class="admin-help">
-              Judgment or court record links (https), optional. Added by hand -
-              the AI cannot see links inside a page.
-            </p>
-          </div>
-          <div class="space-y-2">
-            <label class="admin-label" for="dd-checked">Last checked</label>
-            <input
-              id="dd-checked"
-              type="date"
-              name="lastCheckedOn"
-              class="admin-input"
-            />
-            <p class="admin-help">
-              Set to today when you apply an AI draft. Over 90 days = flagged in
-              the list.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="admin-card">
+      <section data-panel="victims" role="tabpanel" hidden class="admin-card">
         <h3 class="admin-card-title">Victims</h3>
         <p class="admin-help mb-4">
           Owner-only - never on the public page. Name is optional ("seorang
@@ -393,9 +381,9 @@ const OUTCOMES = [
           <Plus className="h-4 w-4" />
           Add victim
         </button>
-      </div>
+      </section>
 
-      <div class="admin-card">
+      <section data-panel="lawyers" role="tabpanel" hidden class="admin-card">
         <h3 class="admin-card-title">Lawyers</h3>
         <p class="admin-help mb-4">
           Owner-only. Defence counsel and the deputy public prosecutor named in
@@ -410,9 +398,23 @@ const OUTCOMES = [
           <Plus className="h-4 w-4" />
           Add lawyer
         </button>
+      </section>
+
+      <div data-panel="photos" role="tabpanel" hidden>
+        <EvidencePhotos client:load />
       </div>
 
       <div class="admin-form-actions">
+        <label class="mr-auto flex items-center gap-3">
+          <input
+            type="checkbox"
+            name="published"
+            class="h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300"
+            >Published (needs conviction date, case reference and a source)</span
+          >
+        </label>
         <button
           type="submit"
           id="dd-submit"
@@ -423,30 +425,6 @@ const OUTCOMES = [
         </button>
       </div>
     </form>
-
-    <section id="dd-photos" class="admin-card hidden">
-      <h3 class="admin-card-title">Evidence photos</h3>
-      <p class="admin-help mb-4">
-        Private - never shown on the public page. Up to 10, JPEG/PNG/WebP/GIF,
-        resized before upload.
-      </p>
-      <label class="admin-btn admin-btn-secondary cursor-pointer">
-        <ImagePlus className="h-4 w-4" />
-        <span id="dd-photo-label">Add photos</span>
-        <input
-          id="dd-photo-input"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          multiple
-          class="sr-only"
-        />
-      </label>
-      <ul
-        id="dd-photo-grid"
-        class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
-      >
-      </ul>
-    </section>
   </div>
   <template id="dd-victim-row">
     <li class="rounded-lg p-4 ring-1 ring-gray-950/10 dark:ring-white/10">
@@ -476,14 +454,7 @@ const OUTCOMES = [
           placeholder="-"
           class="w-full"
         />
-        <label class="space-y-2"
-          ><span class="admin-label">Date of birth</span>
-          <input
-            name="victim.dateOfBirth"
-            type="date"
-            class="admin-input"
-          /></label
-        >
+        <DateInput label="Date of birth" name="victim.dateOfBirth" />
         <label class="space-y-2"
           ><span class="admin-label">Age</span>
           <input
@@ -588,8 +559,12 @@ const OUTCOMES = [
         <label
           class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
         >
-          <input id="dd-draft-all" type="checkbox" checked class="h-4 w-4" /> Select
-          all
+          <input
+            id="dd-draft-all"
+            type="checkbox"
+            checked
+            class="h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20"
+          /> Select all
         </label>
         <ul id="dd-draft-items" class="space-y-3"></ul>
         <ul
@@ -622,12 +597,10 @@ const OUTCOMES = [
 <script>
   import {
     showToast,
-    confirmDialog,
     formatErrorMessage,
     normalizeOptionalText,
   } from "../../../../lib/admin-ui";
   import { setupFormGuard } from "../../../../lib/form-guard";
-  import { compressImage } from "../../../../lib/upload";
   import {
     addMonths,
     drunkDriversService,
@@ -722,10 +695,6 @@ const OUTCOMES = [
       return;
     const form = document.getElementById("dd-form") as HTMLFormElement;
     const submit = document.getElementById("dd-submit") as HTMLButtonElement;
-    const photos = document.getElementById("dd-photos")!;
-    const grid = document.getElementById("dd-photo-grid")!;
-    const input = document.getElementById("dd-photo-input") as HTMLInputElement;
-    const inputLabel = document.getElementById("dd-photo-label")!;
     const toast = (o: Omit<Parameters<typeof showToast>[0], "id">) =>
       showToast({ ...o, id: "dd-alert" });
 
@@ -734,6 +703,27 @@ const OUTCOMES = [
 
     const field = (name: string) =>
       form.elements.namedItem(name) as HTMLInputElement;
+
+    // Tabs (same look as the project editor). Every panel stays in the form, so a field in a hidden
+    // panel is still saved - and an invalid one opens its tab before the browser reports it.
+    const tabs = [
+      ...document.querySelectorAll<HTMLButtonElement>("#dd-tabs [data-tab]"),
+    ];
+    const panels = [...form.querySelectorAll<HTMLElement>("[data-panel]")];
+    const showTab = (tab: string) => {
+      for (const t of tabs)
+        t.setAttribute("aria-selected", String(t.dataset.tab === tab));
+      for (const p of panels) p.hidden = p.dataset.panel !== tab;
+    };
+    const showTabOf = (el: Element | null | undefined) => {
+      const panel = el?.closest<HTMLElement>("[data-panel]");
+      if (panel) showTab(panel.dataset.panel!);
+    };
+    for (const t of tabs)
+      t.addEventListener("click", () => showTab(t.dataset.tab!));
+    submit.addEventListener("click", () =>
+      showTabOf(form.querySelector(":invalid")),
+    );
 
     // Date of birth from the IC when empty; age from the date of birth (at the incident, else today).
     // The API does the same on save - this is the live preview.
@@ -746,7 +736,13 @@ const OUTCOMES = [
       const update = () => {
         // Follow the IC while the date is still the one taken from it; a typed date is left alone.
         if (!dob.value || dob.value === dob.dataset.fromIc) {
-          dob.value = dob.dataset.fromIc = dobFromIc(ic.value) ?? "";
+          const fromIc = dobFromIc(ic.value) ?? "";
+          dob.dataset.fromIc = fromIc;
+          if (dob.value !== fromIc) {
+            dob.value = fromIc;
+            // DatePicker shows it (and the form guard sees it); this listener then runs once more, unchanged.
+            dob.dispatchEvent(new Event("change", { bubbles: true }));
+          }
         }
         const computed = dob.value
           ? ageOn(dob.value, field("incidentDate").value || today())
@@ -803,9 +799,9 @@ const OUTCOMES = [
       for (const el of li.querySelectorAll<HTMLElement>("[id]"))
         el.id += `-${n}`;
       for (const el of li.querySelectorAll<HTMLElement>(
-        "[for], [aria-labelledby]",
+        "[for], [aria-labelledby], [aria-controls]",
       )) {
-        for (const a of ["for", "aria-labelledby"]) {
+        for (const a of ["for", "aria-labelledby", "aria-controls"]) {
           const v = el.getAttribute(a);
           if (v) el.setAttribute(a, `${v}-${n}`);
         }
@@ -816,8 +812,15 @@ const OUTCOMES = [
       });
       return li;
     };
-    const initDropdowns = () =>
-      (window as Window & { setupDropdowns?: () => void }).setupDropdowns?.();
+    // Bind the <Dropdown> and <DateInput> scripts to newly added rows.
+    const initDropdowns = () => {
+      const w = window as Window & {
+        setupDropdowns?: () => void;
+        setupDatePickers?: () => void;
+      };
+      w.setupDropdowns?.();
+      w.setupDatePickers?.();
+    };
 
     const addVictim = (v: Partial<DrunkDriverVictim> = {}) => {
       const li = cloneRow(victimTemplate);
@@ -835,7 +838,9 @@ const OUTCOMES = [
       }
       victimList.append(li);
       initDropdowns();
-      input("outcome").dispatchEvent(new Event("change")); // show the label of the value set above
+      // Show the values set above in the Dropdown / DatePicker.
+      input("outcome").dispatchEvent(new Event("change"));
+      input("dateOfBirth").dispatchEvent(new Event("change"));
       autoPerson(input("icNumber"), input("dateOfBirth"), input("age"))();
       return li;
     };
@@ -863,6 +868,20 @@ const OUTCOMES = [
         .filter((v) => Object.values(v).some((x) => x !== null)); // an untouched row is not a victim
 
     const lawyerList = document.getElementById("dd-lawyers")!;
+    // Tab badges = rows in each list.
+    const counts = () => {
+      for (const [tab, list] of [
+        ["victims", victimList],
+        ["lawyers", lawyerList],
+      ] as const) {
+        const n = list.querySelectorAll(":scope > li").length;
+        document.querySelector(`[data-count="${tab}"]`)!.textContent = n
+          ? String(n)
+          : "";
+      }
+    };
+    for (const list of [victimList, lawyerList])
+      new MutationObserver(counts).observe(list, { childList: true });
     const lawyerTemplate = document.getElementById(
       "dd-lawyer-row",
     ) as HTMLTemplateElement;
@@ -927,7 +946,7 @@ const OUTCOMES = [
     // Default the start to the conviction date the first time months are entered.
     field("licenceDisqualifiedMonths").addEventListener("change", () => {
       if (!field("licenceDisqualifiedFrom").value && field("convictedOn").value)
-        field("licenceDisqualifiedFrom").value = field("convictedOn").value;
+        setField("licenceDisqualifiedFrom", field("convictedOn").value);
       updateHints();
     });
     updateHints();
@@ -1001,7 +1020,9 @@ const OUTCOMES = [
         del.type = "button";
         del.className = "admin-btn admin-btn-secondary px-2!";
         del.setAttribute("aria-label", "Remove link");
-        del.textContent = "×";
+        // lucide "x" (static markup) - same icon as the other admin remove buttons.
+        del.innerHTML =
+          '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
         del.addEventListener("click", () => {
           li.remove();
           sync();
@@ -1135,7 +1156,8 @@ const OUTCOMES = [
       const box = document.createElement("input");
       box.type = "checkbox";
       box.checked = true;
-      box.className = "mt-1 h-4 w-4 shrink-0";
+      box.className =
+        "mt-1 shrink-0 h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20";
       box.addEventListener("change", countPicked);
       const text = document.createElement("div");
       text.className = "min-w-0 space-y-1";
@@ -1364,57 +1386,6 @@ const OUTCOMES = [
       }
     };
 
-    const renderPhotos = () => {
-      if (!id || !record) return;
-      photos.classList.remove("hidden");
-      grid.replaceChildren(
-        ...record.photos.map((p) => {
-          const li = document.createElement("li");
-          li.className =
-            "relative overflow-hidden rounded-lg ring-1 ring-gray-950/10 dark:ring-white/10";
-          const link = document.createElement("a");
-          link.href = drunkDriversService.photoUrl(id!, p.id);
-          link.target = "_blank";
-          link.rel = "noopener";
-          const img = document.createElement("img");
-          img.src = link.href;
-          img.alt = `Evidence photo ${p.id}`;
-          img.loading = "lazy";
-          img.className = "aspect-square w-full object-cover";
-          link.append(img);
-          const del = document.createElement("button");
-          del.type = "button";
-          del.className =
-            "admin-btn admin-btn-secondary absolute right-1 top-1 px-2! py-1! text-xs";
-          del.textContent = "Delete";
-          del.addEventListener("click", async () => {
-            if (
-              !(await confirmDialog({
-                title: "Delete photo",
-                message: "Delete this photo?",
-                confirmText: "Delete",
-                variant: "danger",
-              }))
-            )
-              return;
-            try {
-              await drunkDriversService.removePhoto(id!, p.id);
-              record!.photos = record!.photos.filter((x) => x.id !== p.id);
-              renderPhotos();
-            } catch {
-              toast({
-                type: "error",
-                title: "Delete failed",
-                message: "Failed to delete the photo.",
-              });
-            }
-          });
-          li.append(link, del);
-          return li;
-        }),
-      );
-    };
-
     if (id) {
       record = await drunkDriversService.getById(id).catch(() => null);
       if (!record) {
@@ -1440,12 +1411,15 @@ const OUTCOMES = [
       record.lawyers.forEach((l) => addLawyer(l));
       for (const name of DROPDOWNS)
         field(name).dispatchEvent(new Event("change")); // show the option label
+      for (const el of form.querySelectorAll<HTMLInputElement>(
+        "[data-datepicker] > input[type=hidden]",
+      ))
+        el.dispatchEvent(new Event("change")); // DatePicker shows the loaded date
       field("age").value = record.age == null ? "" : String(record.age);
       record.victims.forEach((v) => addVictim(v));
       updateHints();
       driverAuto();
       field("published").checked = record.published;
-      renderPhotos();
     }
     syncName(); // after the record is loaded (label, required, publish lock)
     const guard = setupFormGuard(form);
@@ -1497,12 +1471,13 @@ const OUTCOMES = [
         id = saved.id;
         record = saved;
         if (created) history.replaceState(history.state, "", `?id=${id}`);
-        renderPhotos();
+        // <EvidencePhotos> uploads any photos picked before the first save.
+        window.dispatchEvent(new CustomEvent("dd:saved", { detail: { id } }));
         toast({
           type: "success",
           title: "Saved",
           message: created
-            ? "Saved - you can add photos now."
+            ? "Saved - photos you picked are uploading."
             : "Record updated.",
         });
       } catch (error) {
@@ -1511,35 +1486,14 @@ const OUTCOMES = [
           "Failed to save.",
           LABELS,
         );
-        if (bad) (form.elements.namedItem(bad) as HTMLElement | null)?.focus();
+        if (bad) {
+          const el = form.elements.namedItem(bad) as HTMLElement | null;
+          showTabOf(el ?? form.querySelector(`[name^="${bad}"]`));
+          el?.focus();
+        }
         toast({ type: "error", title: "Save failed", message });
       } finally {
         submit.disabled = false;
-      }
-    });
-
-    input.addEventListener("change", async () => {
-      const files = [...(input.files ?? [])];
-      input.value = "";
-      if (!files.length || !id || !record) return;
-      inputLabel.textContent = "Uploading...";
-      try {
-        // Quality 95% (owner choice, evidence detail); re-encoding also drops EXIF (GPS, device).
-        const ready = await Promise.all(
-          files.map(async (f) => (await compressImage(f, 2560, 0.95)).file),
-        );
-        record.photos.push(
-          ...(await drunkDriversService.uploadPhotos(id, ready)),
-        );
-        renderPhotos();
-      } catch (error) {
-        toast({
-          type: "error",
-          title: "Upload failed",
-          message: formatErrorMessage(error, "Failed to upload.", {}).message,
-        });
-      } finally {
-        inputLabel.textContent = "Add photos";
       }
     });
   }

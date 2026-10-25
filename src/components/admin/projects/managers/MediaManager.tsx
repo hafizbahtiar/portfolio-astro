@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronUp, ChevronDown, Trash2, Plus, ImageUp, Loader2 } from "lucide-react";
+import { ChevronUp, ChevronDown, Trash2, Plus } from "lucide-react";
 import { cmsService, extractApiError } from "../../../../lib/projects-cms";
 import { compressImage, uploadImage, UPLOAD_TYPES } from "../../../../lib/upload";
 import { showToast, confirmDialog } from "../../../../lib/admin-ui";
 import { Select } from "../../../ui/Select";
+import { ImageDropZone } from "../../../ui/ImageDropZone";
 import type { ProjectMedia, MediaType, DeviceFrame, MediaAsset, MediaAssetInput } from "../../../../types/project-cms";
 
 const MEDIA_TYPES: MediaType[] = ["screenshot", "video", "architecture_diagram", "logo", "cover", "og", "other"];
@@ -38,7 +39,6 @@ export function MediaManager({ projectId, projectTitle, onChanged }: { projectId
   const [draft, setDraft] = useState({ url: "", altText: "", mediaType: "screenshot" as MediaType });
   const saved = useRef(new Map<number, string>());
   const [busy, setBusy] = useState<string | null>(null);
-  const [dragging, setDragging] = useState(false);
 
   // Alt text is required to publish, so the system writes it: the caption if
   // there is one, else "<project> <type>". Editing it just overrides the default.
@@ -118,10 +118,6 @@ export function MediaManager({ projectId, projectTitle, onChanged }: { projectId
         showToast({ type: "success", title: done === 1 ? "Image added" : `${done} images added`, message: `${formatBytes(before)} → ${formatBytes(after)}` });
       }
     }
-  };
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault(); setDragging(false);
-    if (!busy) void addFiles([...e.dataTransfer.files]);
   };
   // Autosave: called on blur and on select/checkbox change; no-op when unchanged.
   const commit = async (raw: ProjectMedia) => {
@@ -230,26 +226,7 @@ export function MediaManager({ projectId, projectTitle, onChanged }: { projectId
           </div>
         </div>
 
-        <label
-          onDragOver={(e) => { e.preventDefault(); if (!busy) setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={onDrop}
-          aria-busy={!!busy}
-          className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sky-500 ${busy ? "cursor-wait border-gray-950/10 opacity-70 dark:border-white/15" : dragging ? "cursor-copy border-sky-500 bg-sky-500/5" : "cursor-pointer border-gray-950/10 hover:border-sky-500/50 hover:bg-gray-950/2 dark:border-white/15 dark:hover:bg-white/3"}`}
-        >
-          <input type="file" accept={UPLOAD_TYPES.join(",")} multiple className="sr-only" disabled={!!busy}
-            onChange={(e) => { void addFiles([...(e.target.files ?? [])]); e.target.value = ""; }} />
-          {busy
-            ? <Loader2 className="h-6 w-6 animate-spin text-sky-500" aria-hidden="true" />
-            : <ImageUp className={`h-6 w-6 ${dragging ? "text-sky-500" : "text-gray-400"}`} aria-hidden="true" />}
-          <span className="text-sm/6 font-medium text-gray-950 dark:text-white" aria-live="polite">
-            {busy ?? (dragging ? "Drop to upload" : <>
-              <span className="sm:hidden">Tap to choose images</span>
-              <span className="hidden sm:inline">Drop images here or <span className="text-sky-600 dark:text-sky-400">browse</span></span>
-            </>)}
-          </span>
-          <span className="admin-help">JPG, PNG, WebP or GIF · resized and compressed automatically</span>
-        </label>
+        <ImageDropZone busy={busy} onFiles={(files) => void addFiles(files)} />
 
         <details className="group">
           <summary className="cursor-pointer select-none text-sm/6 text-gray-500 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white">Or add by image URL</summary>

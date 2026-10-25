@@ -30,12 +30,31 @@
     const allIconClasses = Object.values(iconVariants).flat();
 
     let hideTimer = null;
+    let remaining = 0;
+    let startedAt = 0;
+    const startTimer = () => {
+      if (remaining <= 0 || hideTimer) return;
+      startedAt = Date.now();
+      hideTimer = window.setTimeout(hide, remaining);
+    };
+    // Hovering or focusing the toast pauses the countdown, so a long error can be read.
+    const pauseTimer = () => {
+      if (!hideTimer) return;
+      clearTimeout(hideTimer);
+      hideTimer = null;
+      remaining = Math.max(1000, remaining - (Date.now() - startedAt));
+    };
+    root.addEventListener("mouseenter", pauseTimer);
+    root.addEventListener("focusin", pauseTimer);
+    root.addEventListener("mouseleave", startTimer);
+    root.addEventListener("focusout", startTimer);
 
     const hide = () => {
       if (hideTimer) {
         clearTimeout(hideTimer);
         hideTimer = null;
       }
+      remaining = 0;
       root.classList.remove("opacity-100", "translate-y-0");
       root.classList.add("opacity-0", "translate-y-2");
       window.setTimeout(() => {
@@ -68,10 +87,14 @@
       root.classList.remove("hidden", "opacity-0", "translate-y-2");
       root.classList.add("opacity-100", "translate-y-0");
 
-      if (duration > 0) {
-        if (hideTimer) clearTimeout(hideTimer);
-        hideTimer = window.setTimeout(hide, duration);
-      }
+      if (hideTimer) clearTimeout(hideTimer);
+      hideTimer = null;
+      // Long messages stay long enough to read (~50 ms a character, up to 15 s).
+      remaining =
+        duration > 0
+          ? Math.max(duration, Math.min(15000, 1500 + `${title} ${message}`.length * 50))
+          : 0;
+      startTimer();
     };
 
     if (closeBtn) {

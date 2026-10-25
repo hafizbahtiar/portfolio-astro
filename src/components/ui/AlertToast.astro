@@ -14,25 +14,26 @@ const alertId = id;
 >
   <div
     data-alert-panel
-    class="min-w-70 max-w-90 rounded-xl border border-gray-950/10 bg-white px-5 py-4 shadow-lg dark:border-white/10 dark:bg-gray-900"
+    class="w-90 max-w-[calc(100vw-3rem)] rounded-xl border border-gray-950/10 bg-white px-5 py-4 shadow-lg dark:border-white/10 dark:bg-gray-900"
   >
     <div class="flex items-start gap-3">
       <div
         data-alert-icon
-        class="mt-0.5 rounded-full border px-2 py-0.5 font-mono text-[10px]/5 font-medium uppercase tracking-wider"
+        class="mt-0.5 shrink-0 rounded-full border px-2 py-0.5 font-mono text-[10px]/5 font-medium uppercase tracking-wider"
       >
         INFO
       </div>
-      <div class="flex-1">
+      <!-- min-w-0: lets long words (links, error codes) wrap instead of pushing out of the panel. -->
+      <div class="min-w-0 flex-1">
         <p
           data-alert-title
-          class="text-sm font-semibold text-gray-950 dark:text-white"
+          class="text-sm font-semibold text-gray-950 wrap-break-word dark:text-white"
         >
           Notification
         </p>
         <p
           data-alert-message
-          class="text-sm text-gray-500 dark:text-gray-400 mt-1"
+          class="mt-1 max-h-48 overflow-y-auto text-sm whitespace-pre-line text-gray-500 wrap-break-word dark:text-gray-400"
         >
           Action completed.
         </p>
@@ -40,7 +41,7 @@ const alertId = id;
       <button
         type="button"
         data-alert-close
-        class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+        class="shrink-0 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
         aria-label="Dismiss"
       >
         <X className="w-4 h-4" />
