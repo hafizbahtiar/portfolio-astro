@@ -87,14 +87,14 @@ const date = (iso: string) =>
                 </div>
                 <div class="text-sm text-gray-600 dark:text-gray-400">
                   Disabitkan {date(p.convictedOn)} ·{" "}
-                  <a
-                    class="link"
-                    href={p.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                  >
-                    Sumber
-                  </a>
+                  {p.sources.map((url, i) => (
+                    <>
+                      {i > 0 && ", "}
+                      <a class="link" href={url} target="_blank" rel="noopener noreferrer nofollow">
+                        {p.sources.length > 1 ? `Sumber ${i + 1}` : "Sumber"}
+                      </a>
+                    </>
+                  ))}
                 </div>
               </li>
             ))}

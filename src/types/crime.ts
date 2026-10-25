@@ -16,7 +16,8 @@ export interface DrunkDriver {
   details: string | null;
   convictedOn: string | null;
   caseReference: string | null;
-  sourceUrl: string | null;
+  /** First = main source. */
+  sources: string[];
   published: boolean;
   createdAt: string;
   updatedAt: string;
@@ -31,5 +32,16 @@ export interface PublicDrunkDriver {
   name: string;
   ic: string | null;
   convictedOn: string;
-  sourceUrl: string;
+  sources: string[];
+}
+
+export type ExtractField = "fullName" | "incidentDate" | "location" | "convictedOn" | "caseReference" | "details";
+
+/** AI draft from source links - every field's quote was found on its page by the API. Nothing is saved. */
+export interface DrunkDriverDraft {
+  fields: Partial<Record<ExtractField, { value: string; source: string; quote: string }>>;
+  rejected: { field: string; reason: string }[];
+  conflicts: { field: string; note: string }[];
+  sources: { url: string; ok: boolean; title: string | null; error: string | null }[];
+  model: string;
 }

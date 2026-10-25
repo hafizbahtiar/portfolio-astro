@@ -56,6 +56,11 @@ const USE_CASE_META: Record<string, { app: string; label: string; description: s
     label: "NUNI · Pembantu AI",
     description: "Member-facing running, training and sport-health chat. Uses the Nubi tool set.",
   },
+  crime_extract: {
+    app: "Portfolio",
+    label: "Drunk-driver draft",
+    description: "Reads the source links of a drunk-driver record and drafts its fields with quotes (verified by the API).",
+  },
 };
 const DEFAULT = "default"; // Select value for "no reasoning_effort sent"
 const fail = (title: string, e: unknown) => showToast({ type: "error", title, message: aiSettingsError(e) });

@@ -1,4 +1,4 @@
-import type { DrunkDriver, DrunkDriverPayload, DrunkDriverPhoto, PublicDrunkDriver } from "../types/crime";
+import type { DrunkDriver, DrunkDriverDraft, DrunkDriverPayload, DrunkDriverPhoto, PublicDrunkDriver } from "../types/crime";
 import { ApiClient, ApiError } from "./api-client";
 import { authService } from "./auth";
 import { API_BASE_URL } from "./config";
@@ -29,6 +29,13 @@ export class DrunkDriversService extends ApiClient {
 
   update(id: number, data: DrunkDriverPayload): Promise<DrunkDriver | null> {
     return this.put<DrunkDriver>(`${OWNER}/${id}`, data);
+  }
+
+  /** AI draft from up to 5 links (owner reviews; nothing saved). Throws ApiError with `code` on failure. */
+  async extract(urls: string[]): Promise<DrunkDriverDraft> {
+    const draft = await this.post<DrunkDriverDraft>(`${OWNER}/extract`, { urls });
+    if (!draft) throw new Error("Empty AI draft");
+    return draft;
   }
 
   async remove(id: number): Promise<void> {
