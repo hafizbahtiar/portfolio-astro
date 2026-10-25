@@ -5,6 +5,27 @@ import { API_BASE_URL } from "./config";
 
 const OWNER = "owner/crime/drunk-drivers";
 
+/** Mirror of the API's addMonths (services/crime-drunk-drivers.ts): day clamped to the month's end. */
+export const addMonths = (from: string, months: number): string => {
+  const [y, m, d] = from.split("-").map(Number);
+  const end = new Date(Date.UTC(y, m - 1 + months + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, m - 1 + months, Math.min(d, end))).toISOString().slice(0, 10);
+};
+
+/** Mirror of the API's isSafeSourceUrl (validators/crime.ts): https, a named host, no login in the link. */
+export const isSafeSourceUrl = (v: string) => {
+  if (!/^https:\/\/\S+$/i.test(v)) return false;
+  try {
+    const u = new URL(v);
+    return (
+      u.protocol === "https:" && !u.username && !u.password &&
+      /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(u.hostname) && !/^[\d.]+$/.test(u.hostname)
+    );
+  } catch {
+    return false;
+  }
+};
+
 export class DrunkDriversService extends ApiClient {
   constructor() {
     super(API_BASE_URL);

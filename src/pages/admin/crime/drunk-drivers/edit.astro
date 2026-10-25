@@ -1,10 +1,54 @@
 ---
 // New (no ?id) and edit (?id=) in one page. Photos need a saved record, so the
 // photo card appears after the first save.
-import { ArrowLeft, Check, ImagePlus, Plus, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  ImagePlus,
+  LoaderCircle,
+  Plus,
+  Sparkles,
+  X,
+} from "lucide-react";
 import PrivateLayout from "../../../../layouts/PrivateLayout.astro";
 import AdminPageHeader from "../../../../components/admin/AdminPageHeader.astro";
 import AlertToast from "../../../../components/ui/AlertToast.astro";
+import Dropdown from "../../../../components/ui/Dropdown.astro";
+
+const CASE_STATUSES = [
+  { value: "", label: "-" },
+  { value: "charged", label: "Charged" },
+  { value: "on_trial", label: "On trial" },
+  { value: "convicted", label: "Convicted" },
+  { value: "under_appeal", label: "Under appeal" },
+  { value: "closed", label: "Closed (final)" },
+];
+const APPEAL_STATUSES = [
+  { value: "", label: "Unknown" },
+  { value: "none", label: "No appeal" },
+  { value: "filed", label: "Appeal pending" },
+  { value: "dismissed", label: "Dismissed (conviction stands)" },
+  { value: "partly_allowed", label: "Partly allowed (sentence changed)" },
+  { value: "allowed", label: "Allowed (conviction quashed)" },
+];
+const ALCOHOL_TESTS = [
+  { value: "", label: "-" },
+  { value: "breath", label: "Breath (µg / 100 ml)" },
+  { value: "blood", label: "Blood (mg / 100 ml)" },
+  { value: "urine", label: "Urine (mg / 100 ml)" },
+];
+const LAWYER_ROLES = [
+  { value: "", label: "-" },
+  { value: "defence", label: "Defence" },
+  { value: "prosecution", label: "Prosecution (TPR)" },
+];
+const OUTCOMES = [
+  { value: "", label: "-" },
+  { value: "killed", label: "Killed" },
+  { value: "seriously_injured", label: "Seriously injured" },
+  { value: "injured", label: "Injured" },
+  { value: "unhurt", label: "Unhurt" },
+];
 ---
 
 <PrivateLayout title="Drunk Driver Record">
@@ -22,16 +66,6 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         Back to list
       </a>
     </AdminPageHeader>
-
-    <section id="dd-ai" class="admin-card hidden" aria-live="polite">
-      <h3 class="admin-card-title">AI draft - check every field</h3>
-      <ul id="dd-ai-fields" class="space-y-3"></ul>
-      <ul
-        id="dd-ai-notes"
-        class="mt-4 space-y-1 text-sm text-amber-700 dark:text-amber-300"
-      >
-      </ul>
-    </section>
 
     <form id="dd-form" class="space-y-8">
       <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
@@ -152,27 +186,27 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
               />
             </div>
             <div class="space-y-2">
-              <label class="admin-label" for="dd-sources">Sources</label>
-              <textarea
-                id="dd-sources"
-                name="sources"
-                rows="4"
-                placeholder="https://... (one link per line, first = main)"
-                class="admin-input font-mono text-xs"></textarea>
+              <p class="admin-label">Sources</p>
+              <ul id="dd-sources" class="space-y-2"></ul>
               <p class="admin-help">
-                Court records or news reports naming this person - up to 10.
+                https links only - court records or news naming this person, up
+                to 10. First = main. A new box appears once a link is valid.
               </p>
               <button
                 type="button"
                 id="dd-ai-btn"
                 class="admin-btn admin-btn-secondary w-full"
               >
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-4 w-4 dd-ai-idle" />
+                <LoaderCircle
+                  className="h-4 w-4 dd-ai-busy hidden animate-spin"
+                />
                 <span id="dd-ai-label">Fill from sources (AI)</span>
               </button>
               <p class="admin-help">
-                Reads the first 5 links. Fills empty fields only; every value
-                comes with its quote. IC is never filled by AI.
+                Reads the first 5 links and shows a draft to review: every value
+                comes with its quote, untick what is wrong. IC is never filled
+                by AI.
               </p>
             </div>
             <label class="flex items-center gap-3">
@@ -185,6 +219,155 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
                 >Published (needs conviction date, case reference and a source)</span
               >
             </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h3 class="admin-card-title mb-0!">Charge, sentence &amp; appeal</h3>
+          <button
+            type="button"
+            id="dd-ai-status"
+            class="admin-btn admin-btn-secondary"
+          >
+            <Sparkles className="h-4 w-4 dd-ai-idle" />
+            <LoaderCircle className="h-4 w-4 dd-ai-busy hidden animate-spin" />
+            Check case status (AI)
+          </button>
+        </div>
+        <p class="admin-help mb-4">
+          Owner-only. The AI cannot search the web - it re-reads the source
+          links, so add the newest news or court link first. An appeal that
+          quashed the conviction blocks publishing.
+        </p>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div class="space-y-2 md:col-span-2">
+            <label class="admin-label" for="dd-charge">Charge</label>
+            <input
+              id="dd-charge"
+              name="charge"
+              maxlength="300"
+              placeholder="Seksyen 45A(1) APJ 1987"
+              class="admin-input"
+            />
+          </div>
+          <div class="space-y-2 md:col-span-2">
+            <label class="admin-label" for="dd-sentence">Sentence imposed</label
+            >
+            <textarea
+              id="dd-sentence"
+              name="sentence"
+              maxlength="500"
+              rows="2"
+              placeholder="Penjara, denda RM, lesen digantung..."
+              class="admin-input"></textarea>
+          </div>
+          <Dropdown
+            label="Case status"
+            name="caseStatus"
+            options={CASE_STATUSES}
+            placeholder="-"
+            class="w-full"
+          />
+          <Dropdown
+            label="Appeal"
+            name="appealStatus"
+            options={APPEAL_STATUSES}
+            placeholder="Unknown"
+            class="w-full"
+          />
+          <div class="space-y-2">
+            <label class="admin-label" for="dd-appeal-date"
+              >Appeal decided on</label
+            >
+            <input
+              id="dd-appeal-date"
+              type="date"
+              name="appealDecidedOn"
+              class="admin-input"
+            />
+          </div>
+          <div class="space-y-2 md:col-span-2">
+            <label class="admin-label" for="dd-appeal-notes">Appeal notes</label
+            >
+            <textarea
+              id="dd-appeal-notes"
+              name="appealNotes"
+              maxlength="1000"
+              rows="2"
+              placeholder="Court, what changed"
+              class="admin-input"></textarea>
+          </div>
+          <Dropdown
+            label="Alcohol test"
+            name="alcoholTest"
+            options={ALCOHOL_TESTS}
+            placeholder="-"
+            class="w-full"
+          />
+          <div class="space-y-2">
+            <label class="admin-label" for="dd-alcohol">Alcohol reading</label>
+            <input
+              id="dd-alcohol"
+              type="number"
+              name="alcoholReading"
+              min="0.1"
+              max="999"
+              step="0.1"
+              class="admin-input"
+            />
+            <p id="dd-alcohol-hint" class="admin-help"></p>
+          </div>
+          <div class="space-y-2">
+            <label class="admin-label" for="dd-licence-months"
+              >Licence disqualified (months)</label
+            >
+            <input
+              id="dd-licence-months"
+              type="number"
+              name="licenceDisqualifiedMonths"
+              min="0"
+              max="600"
+              step="1"
+              class="admin-input"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="admin-label" for="dd-licence-from"
+              >Disqualified from</label
+            >
+            <input
+              id="dd-licence-from"
+              type="date"
+              name="licenceDisqualifiedFrom"
+              class="admin-input"
+            />
+            <p id="dd-licence-until" class="admin-help">
+              Usually the conviction date - or the release date when the court
+              says it starts after prison.
+            </p>
+          </div>
+          <div class="space-y-2 md:col-span-2">
+            <p class="admin-label">Court documents</p>
+            <ul id="dd-court-docs" class="space-y-2"></ul>
+            <p class="admin-help">
+              Judgment or court record links (https), optional. Added by hand -
+              the AI cannot see links inside a page.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <label class="admin-label" for="dd-checked">Last checked</label>
+            <input
+              id="dd-checked"
+              type="date"
+              name="lastCheckedOn"
+              class="admin-input"
+            />
+            <p class="admin-help">
+              Set to today when you apply an AI draft. Over 90 days = flagged in
+              the list.
+            </p>
           </div>
         </div>
       </div>
@@ -203,6 +386,23 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         >
           <Plus className="h-4 w-4" />
           Add victim
+        </button>
+      </div>
+
+      <div class="admin-card">
+        <h3 class="admin-card-title">Lawyers</h3>
+        <p class="admin-help mb-4">
+          Owner-only. Defence counsel and the deputy public prosecutor named in
+          the case.
+        </p>
+        <ul id="dd-lawyers" class="space-y-4"></ul>
+        <button
+          type="button"
+          id="dd-lawyer-add"
+          class="admin-btn admin-btn-secondary mt-4"
+        >
+          <Plus className="h-4 w-4" />
+          Add lawyer
         </button>
       </div>
 
@@ -248,7 +448,6 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         <label class="space-y-2"
           ><span class="admin-label">Name</span>
           <input
-            data-v="fullName"
             name="victim.fullName"
             maxlength="120"
             class="admin-input"
@@ -257,7 +456,6 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         <label class="space-y-2"
           ><span class="admin-label">IC number</span>
           <input
-            data-v="icNumber"
             name="victim.icNumber"
             inputmode="numeric"
             maxlength="14"
@@ -265,20 +463,16 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
             class="admin-input"
           /></label
         >
-        <label class="space-y-2"
-          ><span class="admin-label">Outcome</span>
-          <select data-v="outcome" name="victim.outcome" class="admin-input">
-            <option value="">-</option>
-            <option value="killed">Killed</option>
-            <option value="seriously_injured">Seriously injured</option>
-            <option value="injured">Injured</option>
-            <option value="unhurt">Unhurt</option>
-          </select></label
-        >
+        <Dropdown
+          label="Outcome"
+          name="victim.outcome"
+          options={OUTCOMES}
+          placeholder="-"
+          class="w-full"
+        />
         <label class="space-y-2"
           ><span class="admin-label">Date of birth</span>
           <input
-            data-v="dateOfBirth"
             name="victim.dateOfBirth"
             type="date"
             class="admin-input"
@@ -287,7 +481,6 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         <label class="space-y-2"
           ><span class="admin-label">Age</span>
           <input
-            data-v="age"
             name="victim.age"
             type="number"
             min="0"
@@ -298,7 +491,6 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         <label class="space-y-2 md:col-span-3"
           ><span class="admin-label">Notes</span>
           <input
-            data-v="notes"
             name="victim.notes"
             maxlength="1000"
             class="admin-input"
@@ -312,6 +504,112 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
       >
     </li>
   </template>
+  <template id="dd-lawyer-row">
+    <li class="rounded-lg p-4 ring-1 ring-gray-950/10 dark:ring-white/10">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <label class="space-y-2"
+          ><span class="admin-label">Name</span>
+          <input
+            name="lawyer.name"
+            maxlength="120"
+            class="admin-input"
+          /></label
+        >
+        <Dropdown
+          label="Side"
+          name="lawyer.role"
+          options={LAWYER_ROLES}
+          placeholder="-"
+          class="w-full"
+        />
+        <label class="space-y-2"
+          ><span class="admin-label">Firm</span>
+          <input
+            name="lawyer.firm"
+            maxlength="120"
+            class="admin-input"
+          /></label
+        >
+      </div>
+      <button
+        type="button"
+        data-remove
+        class="admin-btn admin-btn-secondary mt-3 text-xs">Remove lawyer</button
+      >
+    </li>
+  </template>
+  <dialog id="dd-draft" aria-labelledby="dd-draft-title" class="dd-sheet">
+    <div class="flex h-full flex-col">
+      <header
+        class="flex items-center justify-between gap-3 border-b border-gray-950/5 px-5 py-4 dark:border-white/10"
+      >
+        <h2
+          id="dd-draft-title"
+          class="text-base font-semibold text-gray-950 dark:text-white"
+        >
+          AI draft
+        </h2>
+        <button
+          type="button"
+          data-close
+          class="admin-btn admin-btn-secondary px-2!"
+          aria-label="Close"><X className="h-4 w-4" /></button
+        >
+      </header>
+      <div
+        id="dd-draft-loading"
+        class="flex-1 space-y-4 overflow-y-auto px-5 py-5"
+        aria-live="polite"
+      >
+        <p
+          class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+        >
+          <LoaderCircle className="h-4 w-4 animate-spin text-sky-500" />
+          <span id="dd-draft-step">Reading the source pages...</span>
+          <span
+            id="dd-draft-time"
+            class="ml-auto tabular-nums text-xs text-gray-400"></span>
+        </p>
+        <div class="dd-shimmer h-16 rounded-lg"></div>
+        <div class="dd-shimmer h-16 rounded-lg"></div>
+        <div class="dd-shimmer h-24 rounded-lg"></div>
+        <div class="dd-shimmer h-16 rounded-lg"></div>
+      </div>
+      <div
+        id="dd-draft-body"
+        class="hidden flex-1 space-y-4 overflow-y-auto px-5 py-5"
+      >
+        <label
+          class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+        >
+          <input id="dd-draft-all" type="checkbox" checked class="h-4 w-4" /> Select
+          all
+        </label>
+        <ul id="dd-draft-items" class="space-y-3"></ul>
+        <ul
+          id="dd-draft-notes"
+          class="space-y-1 text-sm text-amber-700 dark:text-amber-300"
+        >
+        </ul>
+      </div>
+      <footer
+        class="flex gap-3 border-t border-gray-950/5 px-5 py-4 dark:border-white/10"
+      >
+        <button
+          type="button"
+          id="dd-draft-fill"
+          disabled
+          class="admin-btn admin-btn-primary flex-1"
+        >
+          <Check className="h-4 w-4" />
+          <span id="dd-draft-fill-label">Fill form</span>
+        </button>
+        <button type="button" data-close class="admin-btn admin-btn-secondary"
+          >Close</button
+        >
+      </footer>
+    </div>
+  </dialog>
   <AlertToast id="dd-alert" />
 </PrivateLayout>
 
@@ -324,11 +622,16 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
   } from "../../../../lib/admin-ui";
   import { setupFormGuard } from "../../../../lib/form-guard";
   import { compressImage } from "../../../../lib/upload";
-  import { drunkDriversService } from "../../../../lib/crime";
+  import {
+    addMonths,
+    drunkDriversService,
+    isSafeSourceUrl,
+  } from "../../../../lib/crime";
   import { ageOn, dobFromIc } from "../../../../lib/mykad";
   import type {
     DrunkDriver,
     DrunkDriverPayload,
+    DrunkDriverLawyer,
     DrunkDriverVictim,
     VictimOutcome,
   } from "../../../../types/crime";
@@ -345,6 +648,44 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
     convictedOn: "Conviction date",
     caseReference: "Case reference",
     sources: "Sources",
+    charge: "Charge",
+    sentence: "Sentence",
+    caseStatus: "Case status",
+    appealStatus: "Appeal",
+    appealDecidedOn: "Appeal decided on",
+    appealNotes: "Appeal notes",
+    alcoholTest: "Alcohol test",
+    alcoholReading: "Alcohol reading",
+    licenceDisqualifiedMonths: "Licence disqualified (months)",
+    licenceDisqualifiedFrom: "Disqualified from",
+    courtDocuments: "Court documents",
+    lawyers: "Lawyers",
+    lastCheckedOn: "Last checked",
+  };
+  // "Check case status (AI)" shows only these.
+  const STATUS_FIELDS = new Set([
+    "convictedOn",
+    "caseReference",
+    "charge",
+    "sentence",
+    "caseStatus",
+    "appealStatus",
+    "appealDecidedOn",
+    "appealNotes",
+    "alcoholTest",
+    "alcoholReading",
+    "licenceDisqualifiedMonths",
+  ]);
+  const DROPDOWNS: readonly string[] = [
+    "caseStatus",
+    "appealStatus",
+    "alcoholTest",
+  ];
+  // Legal limits, Road Transport Act 1987 s.45G (2020 amendment) - for the "x the limit" hint only.
+  const ALCOHOL_LIMIT: Record<string, [number, string]> = {
+    breath: [22, "µg / 100 ml breath"],
+    blood: [50, "mg / 100 ml blood"],
+    urine: [67, "mg / 100 ml urine"],
   };
   const TEXT_FIELDS = [
     "fullName",
@@ -355,6 +696,15 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
     "details",
     "convictedOn",
     "caseReference",
+    "charge",
+    "sentence",
+    "caseStatus",
+    "appealStatus",
+    "appealDecidedOn",
+    "appealNotes",
+    "alcoholTest",
+    "licenceDisqualifiedFrom",
+    "lastCheckedOn",
   ] as const;
 
   // <ClientRouter> runs a page's bundled script once per session - init on every visit.
@@ -413,12 +763,37 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
     const victimTemplate = document.getElementById(
       "dd-victim-row",
     ) as HTMLTemplateElement;
+    // Rows (victims, lawyers) are cloned from a <template> that holds a <Dropdown>: give its ids a
+    // row suffix so labels still match, then let the Dropdown script bind the new row.
+    let rowSeq = 0;
+    const cloneRow = (template: HTMLTemplateElement) => {
+      const li = (template.content.firstElementChild as HTMLElement).cloneNode(
+        true,
+      ) as HTMLElement;
+      const n = ++rowSeq;
+      for (const el of li.querySelectorAll<HTMLElement>("[id]"))
+        el.id += `-${n}`;
+      for (const el of li.querySelectorAll<HTMLElement>(
+        "[for], [aria-labelledby]",
+      )) {
+        for (const a of ["for", "aria-labelledby"]) {
+          const v = el.getAttribute(a);
+          if (v) el.setAttribute(a, `${v}-${n}`);
+        }
+      }
+      li.querySelector("[data-remove]")!.addEventListener("click", () => {
+        li.remove();
+        form.dispatchEvent(new Event("change")); // form guard
+      });
+      return li;
+    };
+    const initDropdowns = () =>
+      (window as Window & { setupDropdowns?: () => void }).setupDropdowns?.();
+
     const addVictim = (v: Partial<DrunkDriverVictim> = {}) => {
-      const li = (
-        victimTemplate.content.firstElementChild as HTMLElement
-      ).cloneNode(true) as HTMLElement;
+      const li = cloneRow(victimTemplate);
       const input = (k: string) =>
-        li.querySelector(`[data-v="${k}"]`) as HTMLInputElement;
+        li.querySelector(`[name="victim.${k}"]`) as HTMLInputElement;
       for (const k of [
         "fullName",
         "icNumber",
@@ -429,11 +804,9 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
       ] as const) {
         input(k).value = v[k] == null ? "" : String(v[k]);
       }
-      li.querySelector("[data-remove]")!.addEventListener("click", () => {
-        li.remove();
-        form.dispatchEvent(new Event("change")); // form guard
-      });
       victimList.append(li);
+      initDropdowns();
+      input("outcome").dispatchEvent(new Event("change")); // show the label of the value set above
       autoPerson(input("icNumber"), input("dateOfBirth"), input("age"))();
       return li;
     };
@@ -446,7 +819,7 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         .map((li) => {
           const val = (k: string) =>
             (
-              li.querySelector(`[data-v="${k}"]`) as HTMLInputElement
+              li.querySelector(`[name="victim.${k}"]`) as HTMLInputElement
             ).value.trim();
           return {
             fullName: val("fullName") || null,
@@ -459,19 +832,211 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         })
         .filter((v) => Object.values(v).some((x) => x !== null)); // an untouched row is not a victim
 
-    const sourceList = () =>
-      field("sources")
-        .value.split(/\s+/)
-        .map((s) => s.trim())
-        .filter(Boolean);
+    const lawyerList = document.getElementById("dd-lawyers")!;
+    const lawyerTemplate = document.getElementById(
+      "dd-lawyer-row",
+    ) as HTMLTemplateElement;
+    const addLawyer = (l: Partial<DrunkDriverLawyer> = {}) => {
+      const li = cloneRow(lawyerTemplate);
+      const input = (k: string) =>
+        li.querySelector(`[name="lawyer.${k}"]`) as HTMLInputElement;
+      for (const k of ["name", "role", "firm"] as const)
+        input(k).value = l[k] ?? "";
+      lawyerList.append(li);
+      initDropdowns();
+      input("role").dispatchEvent(new Event("change"));
+      return li;
+    };
+    document.getElementById("dd-lawyer-add")!.addEventListener("click", () => {
+      addLawyer().querySelector("input")?.focus();
+    });
+    // A row without a name is not a lawyer (the API needs the name).
+    const collectLawyers = (): DrunkDriverLawyer[] =>
+      [...lawyerList.querySelectorAll("li")]
+        .map((li) => {
+          const val = (k: string) =>
+            (
+              li.querySelector(`[name="lawyer.${k}"]`) as HTMLInputElement
+            ).value.trim();
+          return {
+            name: val("name"),
+            role: (val("role") || null) as DrunkDriverLawyer["role"],
+            firm: val("firm") || null,
+          };
+        })
+        .filter((l) => l.name);
 
-    // AI draft: fill empty fields, show each value with its quote; a field the owner
-    // already filled keeps its value and gets a "Use" button instead.
+    // Alcohol hint ("2.8x the limit") and licence end date, live.
+    const alcoholHint = document.getElementById("dd-alcohol-hint")!;
+    const licenceUntil = document.getElementById("dd-licence-until")!;
+    const licenceHelp = licenceUntil.textContent;
+    const updateHints = () => {
+      const limit = ALCOHOL_LIMIT[field("alcoholTest").value];
+      const reading = Number(field("alcoholReading").value);
+      alcoholHint.textContent = !limit
+        ? "Pick the test first - the unit depends on it."
+        : reading > 0
+          ? `${(reading / limit[0]).toFixed(1)}x the legal limit (${limit[0]} ${limit[1]}).`
+          : `Legal limit: ${limit[0]} ${limit[1]}.`;
+      const months = field("licenceDisqualifiedMonths").value;
+      const from = field("licenceDisqualifiedFrom").value;
+      const until =
+        months !== "" && from ? addMonths(from, Number(months)) : null;
+      licenceUntil.textContent = until
+        ? `Disqualified until ${until}${until < today() ? " (ended)" : ""}.`
+        : licenceHelp;
+    };
+    for (const name of [
+      "alcoholTest",
+      "alcoholReading",
+      "licenceDisqualifiedMonths",
+      "licenceDisqualifiedFrom",
+    ])
+      for (const ev of ["input", "change"])
+        field(name).addEventListener(ev, updateHints);
+    // Default the start to the conviction date the first time months are entered.
+    field("licenceDisqualifiedMonths").addEventListener("change", () => {
+      if (!field("licenceDisqualifiedFrom").value && field("convictedOn").value)
+        field("licenceDisqualifiedFrom").value = field("convictedOn").value;
+      updateHints();
+    });
+    updateHints();
+
+    // Link lists (sources, court documents): one box per link, always one empty box at the end once the
+    // last link is valid. Spaces never belong in a link, so they are dropped while typing - a space cannot add a box.
+    const MAX_LINKS = 10;
+    const linkList = (
+      boxId: string,
+      name: string,
+      first: string,
+      more: string,
+    ) => {
+      const box = document.getElementById(boxId)!;
+      const inputs = () => [
+        ...box.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`),
+      ];
+      const list = () =>
+        inputs()
+          .map((i) => i.value.trim())
+          .filter(Boolean);
+      const check = (el: HTMLInputElement) => {
+        const v = el.value.trim();
+        el.setCustomValidity(
+          !v || isSafeSourceUrl(v)
+            ? ""
+            : "Use a full https:// link to a website (no IP address, no login in the link).",
+        );
+        el.classList.toggle("ring-2", !!el.validationMessage);
+        el.classList.toggle("ring-red-500/60", !!el.validationMessage);
+        el.title = el.validationMessage;
+      };
+      const add = (value: string) => {
+        const li = document.createElement("li");
+        li.className = "flex gap-2";
+        const el = document.createElement("input");
+        el.type = "url";
+        el.name = name;
+        el.inputMode = "url";
+        el.autocomplete = "off";
+        el.spellcheck = false;
+        el.maxLength = 500;
+        el.className = "admin-input font-mono text-xs";
+        el.value = value;
+        el.addEventListener("input", () => {
+          if (/\s/.test(el.value)) el.value = el.value.replace(/\s+/g, "");
+          check(el);
+          sync();
+        });
+        // Pasting several links (one per line or space-separated) fills several boxes.
+        el.addEventListener("paste", (e) => {
+          const links = (e.clipboardData?.getData("text") ?? "")
+            .split(/\s+/)
+            .filter(Boolean);
+          if (links.length < 2) return;
+          e.preventDefault();
+          el.value = links[0];
+          let after = li;
+          for (const l of links.slice(1)) {
+            if (inputs().length >= MAX_LINKS) break;
+            const extra = add(l).closest("li")!;
+            after.after(extra);
+            after = extra;
+          }
+          inputs().forEach(check);
+          sync();
+          form.dispatchEvent(new Event("change"));
+        });
+        el.addEventListener("blur", sync);
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "admin-btn admin-btn-secondary px-2!";
+        del.setAttribute("aria-label", "Remove link");
+        del.textContent = "×";
+        del.addEventListener("click", () => {
+          li.remove();
+          sync();
+          form.dispatchEvent(new Event("change"));
+        });
+        li.append(el, del);
+        box.append(li);
+        check(el);
+        return el;
+      };
+      const sync = () => {
+        // Drop empty boxes except the last one (and the one being typed in).
+        inputs()
+          .slice(0, -1)
+          .filter((i) => !i.value.trim() && document.activeElement !== i)
+          .forEach((i) => i.closest("li")!.remove());
+        const rest = inputs();
+        const last = rest[rest.length - 1];
+        if (
+          !last ||
+          (isSafeSourceUrl(last.value.trim()) && rest.length < MAX_LINKS)
+        )
+          add("");
+        inputs().forEach((i, n) => (i.placeholder = n === 0 ? first : more));
+      };
+      const set = (links: string[]) => {
+        box.replaceChildren();
+        links.slice(0, MAX_LINKS).forEach(add);
+        sync();
+      };
+      set([]);
+      return { inputs, list, set };
+    };
+    const sources = linkList(
+      "dd-sources",
+      "sources",
+      "https://... (main source)",
+      "https://... (another source)",
+    );
+    const sourceList = sources.list;
+    const sourceInputs = sources.inputs;
+    const setSources = sources.set;
+    const courtDocs = linkList(
+      "dd-court-docs",
+      "courtDocuments",
+      "https://... (judgment or court record)",
+      "https://... (another document)",
+    );
+
+    // AI draft in a right sheet: every verified value with its quote and a checkbox (all ticked).
+    // "Fill form" writes the ticked fields (replacing what is there) and adds the ticked victims.
     const aiBtn = document.getElementById("dd-ai-btn") as HTMLButtonElement;
     const aiLabel = document.getElementById("dd-ai-label")!;
-    const aiPanel = document.getElementById("dd-ai")!;
-    const aiFields = document.getElementById("dd-ai-fields")!;
-    const aiNotes = document.getElementById("dd-ai-notes")!;
+    const sheet = document.getElementById("dd-draft") as HTMLDialogElement;
+    const loading = document.getElementById("dd-draft-loading")!;
+    const step = document.getElementById("dd-draft-step")!;
+    const elapsed = document.getElementById("dd-draft-time")!;
+    const body = document.getElementById("dd-draft-body")!;
+    const items = document.getElementById("dd-draft-items")!;
+    const notes = document.getElementById("dd-draft-notes")!;
+    const all = document.getElementById("dd-draft-all") as HTMLInputElement;
+    const fillBtn = document.getElementById(
+      "dd-draft-fill",
+    ) as HTMLButtonElement;
+    const fillLabel = document.getElementById("dd-draft-fill-label")!;
     const host = (url: string) => {
       try {
         return new URL(url).hostname.replace(/^www\./, "");
@@ -479,125 +1044,261 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         return url;
       }
     };
+    // The draft says whose value it is - accused vs victim is the easy mistake to miss.
+    const ENUM_TEXT: Record<string, string> = {
+      charged: "Charged",
+      on_trial: "On trial",
+      convicted: "Convicted",
+      under_appeal: "Under appeal",
+      closed: "Closed (final)",
+      none: "No appeal",
+      filed: "Appeal pending",
+      dismissed: "Dismissed",
+      partly_allowed: "Partly allowed",
+      allowed: "Allowed (conviction quashed)",
+      breath: "Breath",
+      blood: "Blood",
+      urine: "Urine",
+    };
+    const DRAFT_TITLES: Record<string, string> = {
+      fullName: "Accused - name",
+      age: "Accused - age",
+    };
+    const OUTCOME_TEXT: Record<string, string> = {
+      killed: "killed",
+      seriously_injured: "seriously injured",
+      injured: "injured",
+      unhurt: "unhurt",
+    };
+    for (const b of sheet.querySelectorAll("[data-close]"))
+      b.addEventListener("click", () => sheet.close());
+    sheet.addEventListener("click", (e) => {
+      if (e.target === sheet) sheet.close(); // backdrop
+    });
+
+    type Pick = { box: HTMLInputElement; apply: () => void };
+    let picks: Pick[] = [];
+    const countPicked = () => {
+      const n = picks.filter((p) => p.box.checked).length;
+      fillBtn.disabled = n === 0;
+      fillLabel.textContent = n ? `Fill form (${n})` : "Nothing selected";
+      all.checked = n === picks.length && n > 0;
+      all.indeterminate = n > 0 && n < picks.length;
+    };
+    all.addEventListener("change", () => {
+      for (const p of picks) p.box.checked = all.checked;
+      countPicked();
+    });
+
+    const item = (
+      title: string,
+      value: string,
+      quote: string,
+      source: string,
+      note: string | null,
+      apply: () => void,
+    ) => {
+      const li = document.createElement("li");
+      const label = document.createElement("label");
+      label.className =
+        "flex cursor-pointer gap-3 rounded-lg p-3 ring-1 ring-gray-950/10 has-checked:ring-sky-500/40 dark:ring-white/10";
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = true;
+      box.className = "mt-1 h-4 w-4 shrink-0";
+      box.addEventListener("change", countPicked);
+      const text = document.createElement("div");
+      text.className = "min-w-0 space-y-1";
+      const head = document.createElement("p");
+      head.className = "text-sm";
+      const strong = document.createElement("strong");
+      strong.textContent = `${title}: `;
+      head.append(strong, value);
+      const q = document.createElement("blockquote");
+      q.className =
+        "border-l-2 border-sky-500/40 pl-2 text-xs text-gray-600 dark:text-gray-400";
+      q.textContent = `"${quote}" - `;
+      const a = document.createElement("a");
+      a.href = source;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.className = "link";
+      a.textContent = host(source);
+      q.append(a);
+      text.append(head, q);
+      if (note) {
+        const p = document.createElement("p");
+        p.className = "text-xs text-amber-700 dark:text-amber-300";
+        p.textContent = note;
+        text.append(p);
+      }
+      label.append(box, text);
+      li.append(label);
+      picks.push({ box, apply });
+      return li;
+    };
+
     const setField = (name: string, value: string) => {
       const el = field(name);
       el.value = value;
-      el.dispatchEvent(new Event("input", { bubbles: true })); // form guard sees the change
+      el.dispatchEvent(new Event("input", { bubbles: true })); // form guard
+      el.dispatchEvent(new Event("change", { bubbles: true })); // date of birth -> age
     };
 
-    aiBtn.addEventListener("click", async () => {
-      const urls = sourceList();
+    fillBtn.addEventListener("click", () => {
+      const chosen = picks.filter((p) => p.box.checked);
+      chosen.forEach((p) => p.apply());
+      setField("lastCheckedOn", today()); // the sources were just re-read
+      form.dispatchEvent(new Event("change"));
+      sheet.close();
+      toast({
+        type: "success",
+        title: "Form filled",
+        message: `${chosen.length} item(s) from the AI draft. Check them, then save.`,
+      });
+    });
+
+    let timer = 0;
+    const setBusy = (busy: boolean) => {
+      for (const b of [aiBtn, statusBtn]) b.disabled = busy;
+      const active = only ? statusBtn : aiBtn;
+      active.querySelector(".dd-ai-idle")?.classList.toggle("hidden", busy);
+      active.querySelector(".dd-ai-busy")?.classList.toggle("hidden", !busy);
+      aiLabel.textContent = busy
+        ? "AI is reading..."
+        : "Fill from sources (AI)";
+      loading.classList.toggle("hidden", !busy);
+      body.classList.toggle("hidden", busy);
+      clearInterval(timer);
+      if (!busy) return;
+      fillBtn.disabled = true;
+      const started = Date.now();
+      // Steps by elapsed time only - the API answers once, there is no real progress to show.
+      const tick = () => {
+        const sec = Math.floor((Date.now() - started) / 1000);
+        elapsed.textContent = `${sec}s`;
+        step.textContent =
+          sec < 4
+            ? "Reading the source pages..."
+            : sec < 30
+              ? only
+                ? "AI is looking for the sentence and any appeal..."
+                : "AI is picking out the accused, victims and dates..."
+              : "Still working - long pages take up to a minute...";
+      };
+      tick();
+      timer = window.setInterval(tick, 1000);
+    };
+
+    const statusBtn = document.getElementById(
+      "dd-ai-status",
+    ) as HTMLButtonElement;
+    let only: Set<string> | null = null; // null = everything; the status button = case-progress fields only
+    aiBtn.addEventListener("click", () => {
+      only = null;
+      void runDraft();
+    });
+    statusBtn.addEventListener("click", () => {
+      only = STATUS_FIELDS;
+      void runDraft();
+    });
+    const runDraft = async () => {
+      const urls = sourceList().filter(isSafeSourceUrl);
       if (!urls.length) {
         toast({
           type: "warning",
           title: "No sources",
           message: "Paste at least one link first.",
         });
-        field("sources").focus();
+        sourceInputs()[0]?.focus();
         return;
       }
-      aiBtn.disabled = true;
-      aiLabel.textContent = "Reading sources...";
+      setBusy(true);
+      sheet.showModal();
       try {
         const draft = await drunkDriversService.extract(urls.slice(0, 5));
-        const rows = Object.entries(draft.fields).map(([name, f]) => {
-          const li = document.createElement("li");
-          li.className =
-            "rounded-lg p-3 ring-1 ring-gray-950/10 dark:ring-white/10";
-          const head = document.createElement("p");
-          head.className = "text-sm";
-          const label = document.createElement("strong");
-          label.textContent = `${LABELS[name] ?? name}: `;
-          head.append(label, f.value);
-          const quote = document.createElement("blockquote");
-          quote.className =
-            "mt-1 border-l-2 border-sky-500/40 pl-2 text-xs text-gray-600 dark:text-gray-400";
-          quote.textContent = `"${f.quote}" - `;
-          const src = document.createElement("a");
-          src.href = f.source;
-          src.target = "_blank";
-          src.rel = "noopener noreferrer";
-          src.className = "link";
-          src.textContent = host(f.source);
-          quote.append(src);
-          li.append(head, quote);
-          const current = field(name).value.trim();
-          const status = document.createElement("p");
-          status.className = "mt-2 text-xs text-gray-500 dark:text-gray-400";
-          if (!current) {
-            setField(name, f.value);
-            status.textContent = "Filled in the form.";
-          } else if (current !== f.value) {
-            status.textContent = `Kept your value "${current}". `;
-            const use = document.createElement("button");
-            use.type = "button";
-            use.className = "link";
-            use.textContent = "Use AI value";
-            use.addEventListener("click", () => {
-              setField(name, f.value);
-              status.textContent = "Replaced with the AI value.";
-            });
-            status.append(use);
-          } else {
-            status.textContent = "Same as your value.";
-          }
-          li.append(status);
-          return li;
-        });
-        // Victims: added straight away when the list is empty, else each gets an "Add" button.
-        const outcomeText: Record<string, string> = {
-          killed: "killed",
-          seriously_injured: "seriously injured",
-          injured: "injured",
-          unhurt: "unhurt",
-        };
-        const autoAdd = victimList.children.length === 0;
-        for (const v of draft.victims) {
-          const li = document.createElement("li");
-          li.className =
-            "rounded-lg p-3 ring-1 ring-gray-950/10 dark:ring-white/10";
-          const head = document.createElement("p");
-          head.className = "text-sm";
-          const label = document.createElement("strong");
-          label.textContent = "Victim: ";
-          head.append(
-            label,
-            [
-              v.fullName ?? "(no name)",
-              v.age != null ? `${v.age} yrs` : null,
-              v.outcome ? outcomeText[v.outcome] : null,
-            ]
-              .filter(Boolean)
-              .join(", "),
+        picks = [];
+        const rows = Object.entries(draft.fields)
+          .filter(([name]) => !only || only.has(name))
+          .map(([name, f]) => {
+            const current = field(name).value.trim();
+            const note =
+              current && current !== f.value
+                ? `Replaces your value "${current}".`
+                : null;
+            return item(
+              DRAFT_TITLES[name] ?? LABELS[name] ?? name,
+              DROPDOWNS.includes(name)
+                ? (ENUM_TEXT[f.value] ?? f.value)
+                : f.value,
+              f.quote,
+              f.source,
+              note,
+              () => setField(name, f.value),
+            );
+          });
+        const have = new Set(
+          collectVictims()
+            .map((v) => v.fullName?.toLowerCase())
+            .filter(Boolean),
+        );
+        for (const v of only ? [] : draft.victims) {
+          const dup = v.fullName && have.has(v.fullName.toLowerCase());
+          rows.push(
+            item(
+              "Victim",
+              [
+                v.fullName ?? "(no name)",
+                v.age != null ? `${v.age} yrs` : null,
+                v.outcome ? OUTCOME_TEXT[v.outcome] : null,
+              ]
+                .filter(Boolean)
+                .join(", "),
+              v.quote,
+              v.source,
+              dup ? "Already in your Victims list - adds a second row." : null,
+              () =>
+                addVictim({
+                  fullName: v.fullName,
+                  age: v.age,
+                  outcome: v.outcome,
+                }),
+            ),
           );
-          const quote = document.createElement("blockquote");
-          quote.className =
-            "mt-1 border-l-2 border-sky-500/40 pl-2 text-xs text-gray-600 dark:text-gray-400";
-          quote.textContent = `"${v.quote}" - ${host(v.source)}`;
-          const status = document.createElement("p");
-          status.className = "mt-2 text-xs text-gray-500 dark:text-gray-400";
-          const add = () => {
-            addVictim({ fullName: v.fullName, age: v.age, outcome: v.outcome });
-            form.dispatchEvent(new Event("change"));
-            status.textContent = "Added to Victims.";
-          };
-          if (autoAdd) add();
-          else {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "link";
-            btn.textContent = "Add to Victims";
-            btn.addEventListener("click", add, { once: true });
-            status.append(btn);
-          }
-          li.append(head, quote, status);
-          rows.push(li);
+          if (dup) picks[picks.length - 1].box.checked = false;
         }
-        aiFields.replaceChildren(...rows);
+        for (const l of only ? [] : draft.lawyers) {
+          const have = collectLawyers().some(
+            (x) => x.name.toLowerCase() === l.name.toLowerCase(),
+          );
+          rows.push(
+            item(
+              "Lawyer",
+              [
+                l.name,
+                l.role === "prosecution"
+                  ? "prosecution"
+                  : l.role === "defence"
+                    ? "defence"
+                    : null,
+                l.firm,
+              ]
+                .filter(Boolean)
+                .join(", "),
+              l.quote,
+              l.source,
+              have ? "Already in your Lawyers list - adds a second row." : null,
+              () => addLawyer({ name: l.name, role: l.role, firm: l.firm }),
+            ),
+          );
+          if (have) picks[picks.length - 1].box.checked = false;
+        }
+        items.replaceChildren(...rows);
         if (!rows.length)
-          aiFields.textContent =
+          items.textContent =
             "Nothing could be confirmed from these pages - fill the form by hand.";
-        aiNotes.replaceChildren(
+        all.parentElement!.classList.toggle("hidden", !rows.length);
+        notes.replaceChildren(
           ...[
             ...draft.conflicts.map(
               (c) => `Conflict (${LABELS[c.field] ?? c.field}): ${c.note}`,
@@ -612,20 +1313,20 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
             Object.assign(document.createElement("li"), { textContent: t }),
           ),
         );
-        aiPanel.classList.remove("hidden");
-        aiPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        setBusy(false);
+        countPicked();
+        if (!sheet.open) sheet.showModal(); // closed while waiting - the draft is ready now
       } catch (error) {
+        setBusy(false);
+        sheet.close();
         toast({
           type: "error",
           title: "AI draft failed",
           message: formatErrorMessage(error, "Could not read the sources.", {})
             .message,
         });
-      } finally {
-        aiBtn.disabled = false;
-        aiLabel.textContent = "Fill from sources (AI)";
       }
-    });
+    };
 
     const renderPhotos = () => {
       if (!id || !record) return;
@@ -689,9 +1390,20 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         return;
       }
       for (const name of TEXT_FIELDS) field(name).value = record[name] ?? "";
-      field("sources").value = record.sources.join("\n");
+      setSources(record.sources);
+      courtDocs.set(record.courtDocuments);
+      field("alcoholReading").value =
+        record.alcoholReading == null ? "" : String(record.alcoholReading);
+      field("licenceDisqualifiedMonths").value =
+        record.licenceDisqualifiedMonths == null
+          ? ""
+          : String(record.licenceDisqualifiedMonths);
+      record.lawyers.forEach((l) => addLawyer(l));
+      for (const name of DROPDOWNS)
+        field(name).dispatchEvent(new Event("change")); // show the option label
       field("age").value = record.age == null ? "" : String(record.age);
       record.victims.forEach((v) => addVictim(v));
+      updateHints();
       driverAuto();
       field("published").checked = record.published;
       renderPhotos();
@@ -713,6 +1425,23 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
         details: text("details"),
         convictedOn: text("convictedOn"),
         caseReference: text("caseReference"),
+        charge: text("charge"),
+        sentence: text("sentence"),
+        caseStatus: text("caseStatus") as DrunkDriverPayload["caseStatus"],
+        appealStatus: text(
+          "appealStatus",
+        ) as DrunkDriverPayload["appealStatus"],
+        appealDecidedOn: text("appealDecidedOn"),
+        appealNotes: text("appealNotes"),
+        courtDocuments: courtDocs.list(),
+        alcoholTest: text("alcoholTest") as DrunkDriverPayload["alcoholTest"],
+        alcoholReading: numberOrNull(String(fd.get("alcoholReading") ?? "")),
+        licenceDisqualifiedMonths: numberOrNull(
+          String(fd.get("licenceDisqualifiedMonths") ?? ""),
+        ),
+        licenceDisqualifiedFrom: text("licenceDisqualifiedFrom"),
+        lawyers: collectLawyers(),
+        lastCheckedOn: text("lastCheckedOn"),
         sources: sourceList(),
         victims: collectVictims(),
         published: fd.has("published"),
@@ -775,3 +1504,61 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
   }
   document.addEventListener("astro:page-load", initPage);
 </script>
+
+<style>
+  .dd-sheet {
+    margin: 0 0 0 auto;
+    height: 100dvh;
+    max-height: 100dvh;
+    width: 100%;
+    max-width: 28rem;
+    padding: 0;
+    background: var(--color-white);
+    box-shadow: 0 0 40px rgb(0 0 0 / 0.2);
+  }
+  :global(.dark) .dd-sheet {
+    background: var(--color-gray-950);
+    color: var(--color-gray-100);
+  }
+  .dd-sheet::backdrop {
+    background: rgb(0 0 0 / 0.4);
+  }
+  .dd-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(127 127 127 / 0.08) 25%,
+      rgb(14 165 233 / 0.15) 50%,
+      rgb(127 127 127 / 0.08) 75%
+    );
+    background-size: 200% 100%;
+    animation: dd-shimmer 1.4s linear infinite;
+  }
+  @keyframes dd-shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .dd-sheet[open] {
+      animation: dd-slide 0.25s ease-out;
+    }
+    .dd-sheet[open]::backdrop {
+      animation: dd-fade 0.25s ease-out;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dd-shimmer {
+      animation: none;
+    }
+  }
+  @keyframes dd-slide {
+    from {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes dd-fade {
+    from {
+      opacity: 0;
+    }
+  }
+</style>

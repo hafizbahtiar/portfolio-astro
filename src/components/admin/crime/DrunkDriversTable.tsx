@@ -61,6 +61,20 @@ export const DrunkDriversTable = () => {
         cell: ({ row }) => <CellText>{row.original.convictedOn || "-"}</CellText>,
       },
       {
+        accessorKey: "lastCheckedOn",
+        header: "Checked",
+        cell: ({ row }) => {
+          const on = row.original.lastCheckedOn;
+          // 90 days: an appeal can change the case; a stale record should be re-checked before it stays public.
+          const stale = !on || Date.now() - Date.parse(`${on}T00:00:00Z`) > 90 * 86_400_000;
+          return stale ? (
+            <AdminBadge variant="warning">{on ? `${on} - recheck` : "Never"}</AdminBadge>
+          ) : (
+            <CellText>{on}</CellText>
+          );
+        },
+      },
+      {
         id: "victims",
         header: "Victims",
         accessorFn: (r) => r.victims.length,
