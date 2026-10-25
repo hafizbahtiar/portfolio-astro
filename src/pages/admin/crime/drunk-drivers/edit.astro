@@ -1,0 +1,385 @@
+---
+// New (no ?id) and edit (?id=) in one page. Photos need a saved record, so the
+// photo card appears after the first save.
+import { ArrowLeft, Check, ImagePlus } from "lucide-react";
+import PrivateLayout from "../../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../../components/admin/AdminPageHeader.astro";
+import AlertToast from "../../../../components/ui/AlertToast.astro";
+---
+
+<PrivateLayout title="Drunk Driver Record">
+  <div class="space-y-6">
+    <AdminPageHeader
+      title="Drunk Driver Record"
+      description="Everything here is private except the name, conviction date and source link - and only once published."
+    >
+      <a
+        slot="actions"
+        href="/admin/crime/drunk-drivers"
+        class="admin-btn admin-btn-secondary"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to list
+      </a>
+    </AdminPageHeader>
+
+    <form id="dd-form" class="space-y-8">
+      <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
+        <div class="admin-card">
+          <h3 class="admin-card-title">Person &amp; incident</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2 md:col-span-2">
+              <label class="admin-label" for="dd-name">Full name</label>
+              <input
+                id="dd-name"
+                name="fullName"
+                required
+                maxlength="120"
+                class="admin-input"
+              />
+              <p class="admin-help">
+                Public once published - exactly as in the court record.
+              </p>
+            </div>
+            <div class="space-y-2">
+              <label class="admin-label" for="dd-ic">IC number</label>
+              <input
+                id="dd-ic"
+                name="icNumber"
+                inputmode="numeric"
+                maxlength="14"
+                placeholder="900101-14-5678"
+                class="admin-input"
+                autocomplete="off"
+              />
+              <p class="admin-help">
+                Optional. Never public - visitors only see that an IC is on
+                file.
+              </p>
+            </div>
+            <div class="space-y-2">
+              <label class="admin-label" for="dd-incident">Incident date</label>
+              <input
+                id="dd-incident"
+                type="date"
+                name="incidentDate"
+                class="admin-input"
+              />
+            </div>
+            <div class="space-y-2 md:col-span-2">
+              <label class="admin-label" for="dd-location">Location</label>
+              <input
+                id="dd-location"
+                name="location"
+                maxlength="200"
+                class="admin-input"
+              />
+            </div>
+            <div class="space-y-2 md:col-span-2">
+              <label class="admin-label" for="dd-details">Details</label>
+              <textarea
+                id="dd-details"
+                name="details"
+                maxlength="2000"
+                rows="5"
+                class="admin-input"></textarea>
+              <p class="admin-help">
+                Private notes (vehicle, sentence, victims...).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="admin-card-title">Conviction &amp; publishing</h3>
+          <div class="grid grid-cols-1 gap-6">
+            <div class="space-y-2">
+              <label class="admin-label" for="dd-convicted"
+                >Conviction date</label
+              >
+              <input
+                id="dd-convicted"
+                type="date"
+                name="convictedOn"
+                class="admin-input"
+              />
+            </div>
+            <div class="space-y-2">
+              <label class="admin-label" for="dd-case">Case reference</label>
+              <input
+                id="dd-case"
+                name="caseReference"
+                maxlength="100"
+                placeholder="Court + case no."
+                class="admin-input"
+              />
+            </div>
+            <div class="space-y-2">
+              <label class="admin-label" for="dd-source">Source link</label>
+              <input
+                id="dd-source"
+                type="url"
+                name="sourceUrl"
+                maxlength="500"
+                placeholder="https://"
+                class="admin-input"
+              />
+              <p class="admin-help">
+                Court record or news report naming this person.
+              </p>
+            </div>
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="published"
+                class="h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20"
+              />
+              <span class="text-sm text-gray-700 dark:text-gray-300"
+                >Published (needs the three fields above)</span
+              >
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-form-actions">
+        <button
+          type="submit"
+          id="dd-submit"
+          class="admin-btn admin-btn-primary"
+        >
+          <Check className="h-4 w-4" />
+          Save
+        </button>
+      </div>
+    </form>
+
+    <section id="dd-photos" class="admin-card hidden">
+      <h3 class="admin-card-title">Evidence photos</h3>
+      <p class="admin-help mb-4">
+        Private - never shown on the public page. Up to 10, JPEG/PNG/WebP/GIF,
+        resized before upload.
+      </p>
+      <label class="admin-btn admin-btn-secondary cursor-pointer">
+        <ImagePlus className="h-4 w-4" />
+        <span id="dd-photo-label">Add photos</span>
+        <input
+          id="dd-photo-input"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          multiple
+          class="sr-only"
+        />
+      </label>
+      <ul
+        id="dd-photo-grid"
+        class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+      >
+      </ul>
+    </section>
+  </div>
+  <AlertToast id="dd-alert" />
+</PrivateLayout>
+
+<script>
+  import {
+    showToast,
+    confirmDialog,
+    formatErrorMessage,
+    normalizeOptionalText,
+  } from "../../../../lib/admin-ui";
+  import { setupFormGuard } from "../../../../lib/form-guard";
+  import { compressImage } from "../../../../lib/upload";
+  import { drunkDriversService } from "../../../../lib/crime";
+  import type {
+    DrunkDriver,
+    DrunkDriverPayload,
+  } from "../../../../types/crime";
+
+  const LABELS: Record<string, string> = {
+    fullName: "Full name",
+    icNumber: "IC number",
+    incidentDate: "Incident date",
+    location: "Location",
+    details: "Details",
+    convictedOn: "Conviction date",
+    caseReference: "Case reference",
+    sourceUrl: "Source link",
+  };
+  const TEXT_FIELDS = [
+    "fullName",
+    "icNumber",
+    "incidentDate",
+    "location",
+    "details",
+    "convictedOn",
+    "caseReference",
+    "sourceUrl",
+  ] as const;
+
+  // <ClientRouter> runs a page's bundled script once per session - init on every visit.
+  async function initPage() {
+    if (
+      location.pathname.replace(/\/+$/, "") !==
+      "/admin/crime/drunk-drivers/edit"
+    )
+      return;
+    const form = document.getElementById("dd-form") as HTMLFormElement;
+    const submit = document.getElementById("dd-submit") as HTMLButtonElement;
+    const photos = document.getElementById("dd-photos")!;
+    const grid = document.getElementById("dd-photo-grid")!;
+    const input = document.getElementById("dd-photo-input") as HTMLInputElement;
+    const inputLabel = document.getElementById("dd-photo-label")!;
+    const toast = (o: Omit<Parameters<typeof showToast>[0], "id">) =>
+      showToast({ ...o, id: "dd-alert" });
+
+    let id = Number(new URLSearchParams(location.search).get("id")) || null;
+    let record: DrunkDriver | null = null;
+
+    const field = (name: string) =>
+      form.elements.namedItem(name) as HTMLInputElement;
+
+    const renderPhotos = () => {
+      if (!id || !record) return;
+      photos.classList.remove("hidden");
+      grid.replaceChildren(
+        ...record.photos.map((p) => {
+          const li = document.createElement("li");
+          li.className =
+            "relative overflow-hidden rounded-lg ring-1 ring-gray-950/10 dark:ring-white/10";
+          const link = document.createElement("a");
+          link.href = drunkDriversService.photoUrl(id!, p.id);
+          link.target = "_blank";
+          link.rel = "noopener";
+          const img = document.createElement("img");
+          img.src = link.href;
+          img.alt = `Evidence photo ${p.id}`;
+          img.loading = "lazy";
+          img.className = "aspect-square w-full object-cover";
+          link.append(img);
+          const del = document.createElement("button");
+          del.type = "button";
+          del.className =
+            "admin-btn admin-btn-secondary absolute right-1 top-1 px-2! py-1! text-xs";
+          del.textContent = "Delete";
+          del.addEventListener("click", async () => {
+            if (
+              !(await confirmDialog({
+                title: "Delete photo",
+                message: "Delete this photo?",
+                confirmText: "Delete",
+                variant: "danger",
+              }))
+            )
+              return;
+            try {
+              await drunkDriversService.removePhoto(id!, p.id);
+              record!.photos = record!.photos.filter((x) => x.id !== p.id);
+              renderPhotos();
+            } catch {
+              toast({
+                type: "error",
+                title: "Delete failed",
+                message: "Failed to delete the photo.",
+              });
+            }
+          });
+          li.append(link, del);
+          return li;
+        }),
+      );
+    };
+
+    if (id) {
+      record = await drunkDriversService.getById(id).catch(() => null);
+      if (!record) {
+        toast({
+          type: "error",
+          title: "Not found",
+          message: "Record was not found.",
+        });
+        return;
+      }
+      for (const name of TEXT_FIELDS) field(name).value = record[name] ?? "";
+      field("published").checked = record.published;
+      renderPhotos();
+    }
+    const guard = setupFormGuard(form);
+    document.addEventListener("astro:before-swap", () => guard.cleanup(), {
+      once: true,
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      submit.disabled = true;
+      const fd = new FormData(form);
+      const text = (name: string) => normalizeOptionalText(fd.get(name) ?? "");
+      const payload: DrunkDriverPayload = {
+        fullName: text("fullName") ?? "",
+        icNumber: text("icNumber"),
+        incidentDate: text("incidentDate"),
+        location: text("location"),
+        details: text("details"),
+        convictedOn: text("convictedOn"),
+        caseReference: text("caseReference"),
+        sourceUrl: text("sourceUrl"),
+        published: fd.has("published"),
+      };
+      try {
+        const saved = id
+          ? await drunkDriversService.update(id, payload)
+          : await drunkDriversService.create(payload);
+        if (!saved) throw new Error("Save failed");
+        guard.updateInitialState();
+        const created = !id;
+        id = saved.id;
+        record = saved;
+        if (created) history.replaceState(history.state, "", `?id=${id}`);
+        renderPhotos();
+        toast({
+          type: "success",
+          title: "Saved",
+          message: created
+            ? "Saved - you can add photos now."
+            : "Record updated.",
+        });
+      } catch (error) {
+        const { message, field: bad } = formatErrorMessage(
+          error,
+          "Failed to save.",
+          LABELS,
+        );
+        if (bad) (form.elements.namedItem(bad) as HTMLElement | null)?.focus();
+        toast({ type: "error", title: "Save failed", message });
+      } finally {
+        submit.disabled = false;
+      }
+    });
+
+    input.addEventListener("change", async () => {
+      const files = [...(input.files ?? [])];
+      input.value = "";
+      if (!files.length || !id || !record) return;
+      inputLabel.textContent = "Uploading...";
+      try {
+        // Re-encoding also drops EXIF (GPS, device) from the stored copy.
+        const ready = await Promise.all(
+          files.map(async (f) => (await compressImage(f)).file),
+        );
+        record.photos.push(
+          ...(await drunkDriversService.uploadPhotos(id, ready)),
+        );
+        renderPhotos();
+      } catch (error) {
+        toast({
+          type: "error",
+          title: "Upload failed",
+          message: formatErrorMessage(error, "Failed to upload.", {}).message,
+        });
+      } finally {
+        inputLabel.textContent = "Add photos";
+      }
+    });
+  }
+  document.addEventListener("astro:page-load", initPage);
+</script>

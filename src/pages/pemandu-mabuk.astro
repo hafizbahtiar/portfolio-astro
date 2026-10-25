@@ -1,0 +1,126 @@
+---
+export const prerender = false;
+import BackLink from "../components/ui/BackLink.astro";
+import Alert from "../components/ui/Alert.astro";
+import TechHeading from "../components/layout/TechHeading.astro";
+import PublicLayout from "../layouts/PublicLayout.astro";
+import { drunkDriversService } from "../lib/crime";
+import { CONTACT_EMAIL } from "../lib/constants";
+import type { PublicDrunkDriver } from "../types/crime";
+
+// Owner switch `crime_drunk_drivers` off = the API answers 404 = this page is a 404 too.
+// The API sends only name, IC mask, conviction date and source (services/crime-drunk-drivers.ts).
+let list: PublicDrunkDriver[] | null = null;
+let failed = false;
+try {
+  list = await drunkDriversService.getPublic();
+} catch {
+  failed = true;
+}
+if (!failed && !list) return Astro.rewrite("/404");
+
+const date = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString("ms-MY", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+---
+
+<PublicLayout
+  title="Senarai Pemandu Mabuk | Hafiz Bahtiar"
+  description="Kes memandu di bawah pengaruh alkohol yang telah disabitkan mahkamah di Malaysia, dengan pautan ke sumber."
+  noindex
+>
+  <div class="relative mx-auto mt-8 max-lg:max-w-2xl sm:mt-24">
+    <BackLink />
+    <div class="line-y">
+      <h1
+        class="mx-2 text-4xl tracking-tighter text-balance sm:text-7xl lg:text-8xl"
+      >
+        <TechHeading
+          text="Pemandu Mabuk"
+          fontSize={96}
+          fontWeight={400}
+          box="-my-12 h-48"
+        />
+      </h1>
+    </div>
+    <div class="line-y mt-10">
+      <p class="mx-2 text-lg">
+        Kes memandu di bawah pengaruh alkohol yang telah <strong
+          >disabitkan mahkamah</strong
+        >. Setiap nama ada pautan ke sumber. Nombor kad pengenalan tidak
+        dipaparkan.
+      </p>
+    </div>
+
+    {
+      failed ? (
+        <div class="line-y mt-6">
+          <Alert variant="danger" class="mx-2">
+            Senarai tak dapat dimuatkan sekarang. Cuba lagi sebentar.
+          </Alert>
+        </div>
+      ) : list!.length === 0 ? (
+        <div class="line-y mt-6">
+          <p class="mx-2 text-gray-500 dark:text-gray-400">
+            Belum ada kes disenaraikan.
+          </p>
+        </div>
+      ) : (
+        <div class="line-y mt-6">
+          <ul class="divide-y divide-gray-950/5 dark:divide-white/10">
+            {list!.map((p) => (
+              <li class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 px-2 py-4">
+                <div class="min-w-0">
+                  <p class="text-lg font-medium text-gray-950 dark:text-white">
+                    {p.name}
+                  </p>
+                  {p.ic && (
+                    <p class="font-mono text-sm text-gray-500 dark:text-gray-400">
+                      <span class="sr-only">Nombor IC disembunyikan: </span>
+                      <span aria-hidden="true">IC {p.ic}</span>
+                    </p>
+                  )}
+                </div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                  Disabitkan {date(p.convictedOn)} ·{" "}
+                  <a
+                    class="link"
+                    href={p.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                  >
+                    Sumber
+                  </a>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <div class="line-y mt-6">
+      <Alert variant="warning" title="Penafian" class="mx-2">
+        <p>
+          Senarai ini hanya memuatkan kes yang telah disabitkan oleh mahkamah,
+          berdasarkan rekod mahkamah atau laporan berita yang dipautkan pada
+          setiap nama. Laman ini
+          <strong>bukan laman rasmi</strong> dan maklumat dipaparkan seadanya; sumber
+          asal sentiasa mengatasinya. Nama yang sama tidak bermaksud orang yang sama.
+        </p>
+        <p>
+          Ada kesilapan, rayuan yang berjaya atau permintaan untuk dibuang?
+          E-mel{" "}
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> dan ia akan disemak
+          segera.
+        </p>
+        <p><a href="/penafian">Baca penafian penuh</a></p>
+      </Alert>
+    </div>
+    <div class="mb-16 sm:mb-46"></div>
+  </div>
+</PublicLayout>

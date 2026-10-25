@@ -7,7 +7,13 @@ import Alert from "../components/ui/Alert.astro";
 // Small public apps that live on this site (each under its own route). Add one
 // entry per app. Linked from the footer for now; a navbar/home section waits
 // until there are enough of them (see CLAUDE.md -> Showcase).
-const apps = [
+const apps: {
+  title: string;
+  href: string;
+  description: string;
+  tags: string[];
+  gate?: string;
+}[] = [
   {
     title: "Pengangkutan Awam",
     href: "/pengangkutan-awam",
@@ -141,6 +147,15 @@ const apps = [
       "Tarikh buka sekolah, cuti penggal, cuti akhir tahun dan cuti perayaan KPM mengikut negeri - Kumpulan A atau B - dan berapa hari lagi ke cuti seterusnya.",
     tags: ["KPM", "Cuti sekolah", "Kumpulan A/B"],
   },
+  {
+    title: "Pemandu Mabuk",
+    href: "/pemandu-mabuk",
+    description:
+      "Kes memandu di bawah pengaruh alkohol yang telah disabitkan mahkamah, dengan pautan ke rekod atau berita bagi setiap nama.",
+    tags: ["Disabitkan mahkamah", "Keselamatan jalan raya"],
+    // Shown only while the owner switch is on (the API answers 200, not 404).
+    gate: "crime/drunk-drivers",
+  },
 ];
 ---
 
@@ -177,7 +192,13 @@ const apps = [
   >
     {
       apps.map((app) => (
-        <a href={app.href} class="frame group block" data-app-card>
+        <a
+          href={app.href}
+          class="frame group block"
+          data-app-card
+          hidden={!!app.gate}
+          data-gate={app.gate}
+        >
           <div class="frame-inner h-full p-6 transition-colors group-hover:bg-gray-50 dark:group-hover:bg-white/5">
             <h2 class="text-xl font-medium tracking-tight text-gray-950 dark:text-white">
               {app.title}
@@ -202,3 +223,19 @@ const apps = [
     }
   </div>
 </PublicLayout>
+
+<script>
+  import { API_BASE_URL } from "../lib/config";
+
+  // Prerendered page: cards behind an owner switch start hidden and appear when their API is on.
+  document.addEventListener("astro:page-load", () => {
+    document
+      .querySelectorAll<HTMLElement>("[data-gate]")
+      .forEach(async (card) => {
+        const res = await fetch(`${API_BASE_URL}/${card.dataset.gate}`, {
+          method: "HEAD",
+        }).catch(() => null);
+        if (res?.ok) card.hidden = false;
+      });
+  });
+</script>

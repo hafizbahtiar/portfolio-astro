@@ -3,6 +3,7 @@ import {
   AppWindow,
   Bot,
   Briefcase,
+  Car,
   CircleUser,
   Folder,
   Inbox,
@@ -78,6 +79,12 @@ const links = [
     icon: Scale,
   },
   {
+    text: "Drunk Drivers",
+    href: "/admin/crime/drunk-drivers",
+    perm: "roles.assign", // owner only - the API refuses everyone else
+    icon: Car,
+  },
+  {
     text: "Contacts",
     href: "/admin/contact",
     perm: "contact.read",
@@ -135,9 +142,9 @@ const links = [
 
 const groups = [
   { label: "Overview", items: links.slice(0, 1) },
-  { label: "Content", items: links.slice(1, 9) },
-  { label: "Inbox", items: links.slice(9, 11) }, // Contacts, Moderation
-  { label: "System", items: links.slice(11) }, // Users, Roles, App Access, AI Models, System Logs, Settings, Profile
+  { label: "Content", items: links.slice(1, 10) },
+  { label: "Inbox", items: links.slice(10, 12) }, // Contacts, Moderation
+  { label: "System", items: links.slice(12) }, // Users, Roles, App Access, AI Models, System Logs, Settings, Profile
 ];
 
 const currentPath = Astro.url.pathname;
