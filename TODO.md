@@ -30,7 +30,6 @@ Fail ni senarai **kerja yang belum siap** sahaja - item siap dibuang (butiran da
 
 ## Frontend
 
-- [ ] **[P2] Hantar beacon lawatan** - backend `POST /api/v1/public/visit` dah ada (migration 015) tapi frontend belum hantar; satu baris dalam `PublicLayout`. Kemudian panel admin untuk `GET /owner/dashboard/visits`.
 - [ ] **[P2] `kl-boundary.json` (15.8 KB) dalam bundle setiap pelawat** (`MapCanvas.tsx:15`, import statik) - kecilkan titik atau ambil sebagai aset runtime.
 - [ ] **[P3] Cover blog** dalam kad `/blog` dan/atau hero post (sekarang social card sahaja).
 - [ ] **[P3] Nota privasi "IP download dilog"** - tiada page privasi site; pilih nota footer, page site-level, atau biar.

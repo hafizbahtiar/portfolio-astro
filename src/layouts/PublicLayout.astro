@@ -64,22 +64,8 @@ const { title, description, image, type, publishedTime, imageAlt, noindex } =
     TransitionBeforePreparationEvent,
     TransitionBeforeSwapEvent,
   } from "astro:transitions/client";
-  import {
-    isResumePdfHref,
-    trackResumeDownload,
-    trackVisit,
-  } from "../lib/track";
+  import { isResumePdfHref, trackResumeDownload } from "../lib/track";
   import "../lib/pixel-swipe";
-
-  // One visit per public page (astro:page-load fires on the first load too).
-  let laluanTerakhir = "";
-  const kiraLawatan = () => {
-    if (location.pathname === laluanTerakhir) return;
-    laluanTerakhir = location.pathname;
-    trackVisit();
-  };
-  kiraLawatan();
-  document.addEventListener("astro:page-load", kiraLawatan);
 
   // Offline copy of the Showcase apps (public/sw.js). Production only: in dev it
   // would cache Vite's unbundled pages.

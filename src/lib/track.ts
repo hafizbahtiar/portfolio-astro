@@ -8,23 +8,6 @@ export const isResumePdfHref = (href: string | null | undefined): boolean =>
   !!href && /resume[^/]*\.pdf(?:[?#].*)?$/i.test(href);
 
 /**
- * Fire-and-forget page-view beacon (the owner dashboard's visits panel reads
- * these rows). Same cross-origin text/plain trick as the resume download.
- */
-export function trackVisit(path = location.pathname): void {
-  const url = `${API_BASE_URL}/public/visit`;
-  try {
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(url, new Blob([path], { type: "text/plain" }));
-    } else {
-      void fetch(url, { method: "POST", body: path, keepalive: true }).catch(() => { });
-    }
-  } catch {
-    /* tracking is best-effort */
-  }
-}
-
-/**
  * Fire-and-forget beacon for a resume download.
  *
  * `sendBeacon` keeps this a CORS-safelisted request (text/plain, so no
