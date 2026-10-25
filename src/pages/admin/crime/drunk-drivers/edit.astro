@@ -4,6 +4,7 @@
 import {
   ArrowLeft,
   Check,
+  Globe,
   LoaderCircle,
   Plus,
   Sparkles,
@@ -103,8 +104,8 @@ const OUTCOMES = [
       </div>
     </div>
 
-    <form id="dd-form" class="space-y-6">
-      <section data-panel="basics" role="tabpanel" class="admin-card">
+    <form id="dd-form" class="space-y-6" novalidate>
+      <section data-tab-panel="basics" role="tabpanel" class="admin-card">
         <h3 class="admin-card-title">Person &amp; incident</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2 md:col-span-2">
@@ -189,7 +190,12 @@ const OUTCOMES = [
         </div>
       </section>
 
-      <section data-panel="sources" role="tabpanel" hidden class="admin-card">
+      <section
+        data-tab-panel="sources"
+        role="tabpanel"
+        hidden
+        class="admin-card"
+      >
         <h3 class="admin-card-title">Sources</h3>
         <div class="space-y-4">
           <ul id="dd-sources" class="space-y-2"></ul>
@@ -206,15 +212,26 @@ const OUTCOMES = [
             <LoaderCircle className="h-4 w-4 dd-ai-busy hidden animate-spin" />
             <span id="dd-ai-label">Fill from sources (AI)</span>
           </button>
+          <button
+            type="button"
+            id="dd-ai-search"
+            class="admin-btn admin-btn-secondary"
+          >
+            <Globe className="h-4 w-4 dd-ai-idle" />
+            <LoaderCircle className="h-4 w-4 dd-ai-busy hidden animate-spin" />
+            Search the web (AI)
+          </button>
           <p class="admin-help">
             Reads the first 5 links and shows a draft to review: every value
             comes with its quote, untick what is wrong. IC is never filled by
-            AI.
+            AI. "Search the web" also reads the top 3 search results for the
+            name (or a victim, place and year) - kept only when the quote is on
+            that page, and a useful page is offered as a new source.
           </p>
         </div>
       </section>
 
-      <div data-panel="case" role="tabpanel" hidden class="space-y-6">
+      <div data-tab-panel="case" role="tabpanel" hidden class="space-y-6">
         <section class="admin-card">
           <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h3 class="admin-card-title mb-0!">Conviction &amp; appeal</h3>
@@ -366,7 +383,12 @@ const OUTCOMES = [
         </section>
       </div>
 
-      <section data-panel="victims" role="tabpanel" hidden class="admin-card">
+      <section
+        data-tab-panel="victims"
+        role="tabpanel"
+        hidden
+        class="admin-card"
+      >
         <h3 class="admin-card-title">Victims</h3>
         <p class="admin-help mb-4">
           Owner-only - never on the public page. Name is optional ("seorang
@@ -383,7 +405,12 @@ const OUTCOMES = [
         </button>
       </section>
 
-      <section data-panel="lawyers" role="tabpanel" hidden class="admin-card">
+      <section
+        data-tab-panel="lawyers"
+        role="tabpanel"
+        hidden
+        class="admin-card"
+      >
         <h3 class="admin-card-title">Lawyers</h3>
         <p class="admin-help mb-4">
           Owner-only. Defence counsel and the deputy public prosecutor named in
@@ -400,7 +427,7 @@ const OUTCOMES = [
         </button>
       </section>
 
-      <div data-panel="photos" role="tabpanel" hidden>
+      <div data-tab-panel="photos" role="tabpanel" hidden>
         <!-- client:only: it reads the URL and private photo routes - nothing to render on the server. -->
         <EvidencePhotos client:only="react" />
       </div>
@@ -602,6 +629,7 @@ const OUTCOMES = [
     normalizeOptionalText,
   } from "../../../../lib/admin-ui";
   import { setupFormGuard } from "../../../../lib/form-guard";
+  import { formErrors } from "../../../../lib/form-errors";
   import {
     addMonths,
     drunkDriversService,
@@ -710,21 +738,29 @@ const OUTCOMES = [
     const tabs = [
       ...document.querySelectorAll<HTMLButtonElement>("#dd-tabs [data-tab]"),
     ];
-    const panels = [...form.querySelectorAll<HTMLElement>("[data-panel]")];
+    const panels = [...form.querySelectorAll<HTMLElement>("[data-tab-panel]")];
     const showTab = (tab: string) => {
       for (const t of tabs)
         t.setAttribute("aria-selected", String(t.dataset.tab === tab));
-      for (const p of panels) p.hidden = p.dataset.panel !== tab;
+      for (const p of panels) p.hidden = p.dataset.tabPanel !== tab;
     };
     const showTabOf = (el: Element | null | undefined) => {
-      const panel = el?.closest<HTMLElement>("[data-panel]");
-      if (panel) showTab(panel.dataset.panel!);
+      const panel = el?.closest<HTMLElement>("[data-tab-panel]");
+      if (panel) showTab(panel.dataset.tabPanel!);
     };
     for (const t of tabs)
       t.addEventListener("click", () => showTab(t.dataset.tab!));
-    submit.addEventListener("click", () =>
-      showTabOf(form.querySelector(":invalid")),
-    );
+    // Errors under each field (lib/form-errors.ts); the form is novalidate.
+    const errors = formErrors(form, {
+      labels: LABELS,
+      targets: {
+        sources: "dd-sources",
+        courtDocuments: "dd-court-docs",
+        victims: "dd-victims",
+        lawyers: "dd-lawyers",
+      },
+      reveal: showTabOf,
+    });
 
     // Date of birth from the IC when empty; age from the date of birth (at the incident, else today).
     // The API does the same on save - this is the live preview.
@@ -1214,8 +1250,8 @@ const OUTCOMES = [
 
     let timer = 0;
     const setBusy = (busy: boolean) => {
-      for (const b of [aiBtn, statusBtn]) b.disabled = busy;
-      const active = only ? statusBtn : aiBtn;
+      for (const b of [aiBtn, statusBtn, searchBtn]) b.disabled = busy;
+      const active = search ? searchBtn : only ? statusBtn : aiBtn;
       active.querySelector(".dd-ai-idle")?.classList.toggle("hidden", busy);
       active.querySelector(".dd-ai-busy")?.classList.toggle("hidden", !busy);
       aiLabel.textContent = busy ? "AI is reading..." : idleAiLabel();
@@ -1231,7 +1267,9 @@ const OUTCOMES = [
         elapsed.textContent = `${sec}s`;
         step.textContent =
           sec < 4
-            ? "Reading the source pages..."
+            ? search
+              ? `Searching the web: ${search}`
+              : "Reading the source pages..."
             : sec < 30
               ? only
                 ? "AI is looking for the sentence and any appeal..."
@@ -1245,13 +1283,49 @@ const OUTCOMES = [
     const statusBtn = document.getElementById(
       "dd-ai-status",
     ) as HTMLButtonElement;
+    const searchBtn = document.getElementById(
+      "dd-ai-search",
+    ) as HTMLButtonElement;
     let only: Set<string> | null = null; // null = everything; the status button = case-progress fields only
+    let search = ""; // non-empty = the web-search run
     aiBtn.addEventListener("click", () => {
       only = null;
+      search = "";
       void runDraft();
     });
     statusBtn.addEventListener("click", () => {
       only = STATUS_FIELDS;
+      search = "";
+      void runDraft();
+    });
+    // Query from what the form already knows: the name, else a victim; plus place and year.
+    const searchQuery = () => {
+      const name = undisclosed.checked ? "" : field("fullName").value.trim();
+      const victim = collectVictims().find((v) => v.fullName)?.fullName ?? "";
+      const place = field("location").value.trim();
+      const who = name || victim;
+      if (!who && !place) return "";
+      return [
+        who ? `"${who}"` : "",
+        "pemandu mabuk",
+        place,
+        name ? "" : field("incidentDate").value.slice(0, 4),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .slice(0, 200);
+    };
+    searchBtn.addEventListener("click", () => {
+      only = null;
+      search = searchQuery();
+      if (!search) {
+        toast({
+          type: "warning",
+          title: "Nothing to search for",
+          message: "Fill the name, a victim or the location first.",
+        });
+        return;
+      }
       void runDraft();
     });
     const runDraft = async () => {
@@ -1268,31 +1342,48 @@ const OUTCOMES = [
       setBusy(true);
       sheet.showModal();
       try {
-        const draft = await drunkDriversService.extract(urls.slice(0, 5));
+        const draft = await drunkDriversService.extract(
+          urls.slice(0, 5),
+          search || undefined,
+        );
         picks = [];
         // A name not disclosed yet is always re-checked, the status button too.
         const wanted = (name: string) =>
           !only ||
           only.has(name) ||
-          (undisclosed.checked && (name === "fullName" || name === "accusedDescription"));
+          (undisclosed.checked &&
+            (name === "fullName" || name === "accusedDescription"));
         let same = 0;
         const rows = Object.entries(draft.fields)
           .filter(([name]) => wanted(name))
           // A description only helps while the accused is unnamed.
-          .filter(([name]) => name !== "accusedDescription" || undisclosed.checked || !field("fullName").value.trim())
+          .filter(
+            ([name]) =>
+              name !== "accusedDescription" ||
+              undisclosed.checked ||
+              !field("fullName").value.trim(),
+          )
           .filter(([name, f]) => {
-            const match = name !== "accusedDescription" && field(name).value.trim() === f.value;
+            const match =
+              name !== "accusedDescription" &&
+              field(name).value.trim() === f.value;
             if (match) same++;
             return !match;
           })
           .map(([name, f]) => {
             if (name === "accusedDescription")
-              return item(DRAFT_TITLES[name], f.value, f.quote, f.source,
-                "Used as the working label - the name stays marked not disclosed.", () => {
+              return item(
+                DRAFT_TITLES[name],
+                f.value,
+                f.quote,
+                f.source,
+                "Used as the working label - the name stays marked not disclosed.",
+                () => {
                   setField("fullName", f.value);
                   undisclosed.checked = true;
                   syncName();
-                });
+                },
+              );
             const current = field(name).value.trim();
             const note =
               name === "fullName" && undisclosed.checked
@@ -1376,14 +1467,50 @@ const OUTCOMES = [
           if (have) picks[picks.length - 1].box.checked = false;
         }
         const haveDocs = new Set(courtDocs.list());
-        for (const d of only && !only.has("caseReference") ? [] : draft.documentLinks) {
+        for (const d of only && !only.has("caseReference")
+          ? []
+          : draft.documentLinks) {
           if (haveDocs.has(d.url)) continue;
           rows.push(
-            item("Court document", d.text || host(d.url), d.url, d.source,
+            item(
+              "Court document",
+              d.text || host(d.url),
+              d.url,
+              d.source,
               "A link on the source page that looks like a judgment or court record - open it before keeping it.",
-              () => courtDocs.set([...courtDocs.list(), d.url].slice(0, 10))),
+              () => courtDocs.set([...courtDocs.list(), d.url].slice(0, 10)),
+            ),
           );
           picks[picks.length - 1].box.checked = false; // a guess from the link alone - opt in
+        }
+        // Search hits: offer the ones the draft used as new sources, so later checks read them too.
+        const cited = new Set(
+          [
+            ...Object.values(draft.fields),
+            ...draft.victims,
+            ...draft.lawyers,
+          ].map((x) => x.source),
+        );
+        const unused: string[] = [];
+        for (const src of draft.sources.filter((x) => x.found && x.ok)) {
+          if (!cited.has(src.url)) {
+            unused.push(host(src.url));
+            continue;
+          }
+          rows.push(
+            item(
+              "New source",
+              src.title || host(src.url),
+              src.url,
+              src.url,
+              "Found by the web search - adds it to Sources.",
+              () => {
+                const list = sourceList();
+                if (!list.includes(src.url))
+                  setSources([...list, src.url].slice(0, 10));
+              },
+            ),
+          );
         }
         items.replaceChildren(...rows);
         if (!rows.length)
@@ -1395,7 +1522,21 @@ const OUTCOMES = [
             ...draft.conflicts.map(
               (c) => `Conflict (${LABELS[c.field] ?? c.field}): ${c.note}`,
             ),
-            ...(same ? [`${same} value(s) already match the form - not shown.`] : []),
+            ...(same
+              ? [`${same} value(s) already match the form - not shown.`]
+              : []),
+            ...(draft.search
+              ? [
+                  draft.search.error
+                    ? `Web search failed (${draft.search.error}) - only your links were read.`
+                    : `Searched: ${draft.search.query}`,
+                ]
+              : []),
+            ...(unused.length
+              ? [
+                  `Search results with nothing for this case: ${unused.join(", ")}`,
+                ]
+              : []),
             ...draft.rejected.map(
               (r) => `Dropped ${LABELS[r.field] ?? r.field}: ${r.reason}`,
             ),
@@ -1461,6 +1602,15 @@ const OUTCOMES = [
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const lines = errors.check();
+      if (lines) {
+        toast({
+          type: "error",
+          title: `Check ${lines.length} field(s)`,
+          message: lines.join("\n"),
+        });
+        return;
+      }
       submit.disabled = true;
       const fd = new FormData(form);
       const text = (name: string) => normalizeOptionalText(fd.get(name) ?? "");
@@ -1516,17 +1666,21 @@ const OUTCOMES = [
             : "Record updated.",
         });
       } catch (error) {
-        const { message, field: bad } = formatErrorMessage(
-          error,
-          "Failed to save.",
-          LABELS,
-        );
-        if (bad) {
-          const el = form.elements.namedItem(bad) as HTMLElement | null;
-          showTabOf(el ?? form.querySelector(`[name^="${bad}"]`));
-          el?.focus();
+        const lines = errors.fromApi(error);
+        if (!lines) {
+          toast({
+            type: "error",
+            title: "Save failed",
+            message: formatErrorMessage(error, "Failed to save.", LABELS)
+              .message,
+          });
+          return;
         }
-        toast({ type: "error", title: "Save failed", message });
+        toast({
+          type: "error",
+          title: "Save failed",
+          message: lines.join("\n"),
+        });
       } finally {
         submit.disabled = false;
       }

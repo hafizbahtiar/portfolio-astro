@@ -94,6 +94,8 @@ export interface DrunkDriverDraft {
   documentLinks: { url: string; text: string; source: string }[];
   rejected: { field: string; reason: string }[];
   conflicts: { field: string; note: string }[];
-  sources: { url: string; ok: boolean; title: string | null; error: string | null }[];
+  /** found = came from the web search, not the owner's list. */
+  sources: { url: string; ok: boolean; title: string | null; error: string | null; found?: boolean }[];
+  search: { query: string; error: string | null } | null;
   model: string;
 }

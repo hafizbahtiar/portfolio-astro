@@ -5,6 +5,7 @@ import {
   Briefcase,
   Car,
   CircleUser,
+  CreditCard,
   Folder,
   Inbox,
   LayoutGrid,
@@ -128,6 +129,12 @@ const links = [
     icon: LayoutGrid,
   },
   {
+    text: "Subscriptions",
+    href: "/admin/subscriptions",
+    perm: "roles.assign", // owner only (the API checks the owner role)
+    icon: CreditCard,
+  },
+  {
     text: "System Logs",
     href: "/admin/system",
     perm: "audit.read",
@@ -152,7 +159,7 @@ const groups = [
   { label: "Content", items: links.slice(1, 9) },
   { label: "Showcase", items: links.slice(9, 10) }, // Drunk Drivers
   { label: "Inbox", items: links.slice(10, 12) }, // Contacts, Moderation
-  { label: "System", items: links.slice(12) }, // Users, Roles, App Access, AI Models, Showcase Modules, System Logs, Settings, Profile
+  { label: "System", items: links.slice(12) }, // Users, Roles, App Access, AI Models, Showcase Modules, Subscriptions, System Logs, Settings, Profile
 ];
 
 const currentPath = Astro.url.pathname;

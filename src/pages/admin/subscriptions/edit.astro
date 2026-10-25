@@ -1,0 +1,328 @@
+---
+// New (no ?id) and edit (?id=) in one page, like the drunk-driver record.
+import { ArrowLeft, Check } from "lucide-react";
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
+import Dropdown from "../../../components/ui/Dropdown.astro";
+import DateInput from "../../../components/ui/DateInput.astro";
+
+const BILLINGS = [
+  { value: "monthly", label: "Monthly" },
+  { value: "yearly", label: "Yearly" },
+  { value: "usage", label: "By use only" },
+  { value: "free", label: "Free" },
+];
+const CURRENCIES = [
+  { value: "USD", label: "USD ($)" },
+  { value: "MYR", label: "MYR (RM)" },
+];
+// Must match the API's METERS (services/subscriptions.ts).
+const METERS = [
+  { value: "", label: "Not metered" },
+  { value: "web_search:brave", label: "Web search - Brave" },
+  { value: "web_search:serper", label: "Web search - Serper" },
+  { value: "web_search:parallel", label: "Web search - Parallel" },
+];
+const CHECKBOX =
+  "h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20";
+---
+
+<PrivateLayout title="Subscription">
+  <div class="space-y-6">
+    <AdminPageHeader
+      title="Subscription"
+      description="Cost and renewal for one paid service. Metering only applies to services the API calls per use."
+    >
+      <a
+        slot="actions"
+        href="/admin/subscriptions"
+        class="admin-btn admin-btn-secondary"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to list
+      </a>
+    </AdminPageHeader>
+
+    <form id="sub-form" class="space-y-6" novalidate>
+      <section class="admin-card">
+        <h3 class="admin-card-title">Service</h3>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div class="space-y-2">
+            <label class="admin-label" for="sub-name">Name</label>
+            <input
+              id="sub-name"
+              name="name"
+              required
+              maxlength="100"
+              class="admin-input"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="admin-label" for="sub-plan">Plan</label>
+            <input
+              id="sub-plan"
+              name="plan"
+              maxlength="100"
+              class="admin-input"
+            />
+          </div>
+          <div class="space-y-2 md:col-span-2">
+            <label class="admin-label" for="sub-url">Dashboard link</label>
+            <input
+              id="sub-url"
+              name="vendorUrl"
+              type="url"
+              maxlength="500"
+              placeholder="https://"
+              class="admin-input"
+            />
+          </div>
+          <Dropdown
+            label="Billing"
+            name="billing"
+            options={BILLINGS}
+            value="monthly"
+            class="w-full"
+          />
+          <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
+            <div class="space-y-2">
+              <label class="admin-label" for="sub-cost">Cost per period</label>
+              <input
+                id="sub-cost"
+                name="cost"
+                type="number"
+                min="0"
+                step="0.01"
+                value="0"
+                class="admin-input"
+              />
+            </div>
+            <Dropdown
+              label="Currency"
+              name="currency"
+              options={CURRENCIES}
+              value="USD"
+              class="w-full"
+            />
+          </div>
+          <DateInput label="Renews on" name="renewsOn" />
+          <label class="flex items-center gap-3 self-end pb-2">
+            <input type="checkbox" name="active" checked class={CHECKBOX} />
+            <span class="text-sm text-gray-700 dark:text-gray-300"
+              >Active (off = metered calls stop)</span
+            >
+          </label>
+          <div class="space-y-2 md:col-span-2">
+            <label class="admin-label" for="sub-notes">Notes</label>
+            <textarea
+              id="sub-notes"
+              name="notes"
+              maxlength="1000"
+              rows="3"
+              class="admin-input"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <h3 class="admin-card-title">Metering</h3>
+        <p class="admin-help mb-4">
+          For services the API pays per call. The API counts every call and
+          refuses it once this month's count reaches the cap (UTC month). Set
+          the cap at the free allowance to never pay.
+        </p>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <Dropdown
+            label="Meter"
+            name="meterCode"
+            options={METERS}
+            value=""
+            class="w-full"
+          />
+          <div class="space-y-2">
+            <label class="admin-label" for="sub-cap">Monthly cap (calls)</label>
+            <input
+              id="sub-cap"
+              name="monthlyCap"
+              type="number"
+              min="0"
+              step="1"
+              class="admin-input"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="admin-label" for="sub-free"
+              >Free calls per month</label
+            >
+            <input
+              id="sub-free"
+              name="freeUnits"
+              type="number"
+              min="0"
+              step="1"
+              class="admin-input"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="admin-label" for="sub-price"
+              >Price per 1,000 calls</label
+            >
+            <input
+              id="sub-price"
+              name="unitPrice"
+              type="number"
+              min="0"
+              step="0.01"
+              class="admin-input"
+            />
+          </div>
+          <p id="sub-usage" class="admin-help md:col-span-2"></p>
+        </div>
+      </section>
+
+      <div class="admin-form-actions">
+        <button
+          type="submit"
+          id="sub-submit"
+          class="admin-btn admin-btn-primary"
+        >
+          <Check className="h-4 w-4" />
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</PrivateLayout>
+
+<script>
+  import {
+    showToast,
+    formatErrorMessage,
+    normalizeOptionalText,
+  } from "../../../lib/admin-ui";
+  import { setupFormGuard } from "../../../lib/form-guard";
+  import { formErrors } from "../../../lib/form-errors";
+  import { subscriptionsService } from "../../../lib/subscriptions";
+  import type { SubscriptionPayload } from "../../../types/subscriptions";
+
+  const LABELS: Record<string, string> = {
+    name: "Name",
+    plan: "Plan",
+    vendorUrl: "Dashboard link",
+    billing: "Billing",
+    cost: "Cost per period",
+    currency: "Currency",
+    renewsOn: "Renews on",
+    notes: "Notes",
+    meterCode: "Meter",
+    monthlyCap: "Monthly cap",
+    freeUnits: "Free calls per month",
+    unitPrice: "Price per 1,000 calls",
+  };
+
+  const init = async () => {
+    const form = document.getElementById("sub-form") as HTMLFormElement | null;
+    if (!form || form.dataset.bound) return;
+    form.dataset.bound = "1";
+    const submit = document.getElementById("sub-submit") as HTMLButtonElement;
+    const field = (name: string) =>
+      form.elements.namedItem(name) as HTMLInputElement;
+    const num = (name: string) =>
+      field(name).value.trim() === "" ? null : Number(field(name).value);
+    const errors = formErrors(form, { labels: LABELS });
+    let id = Number(new URLSearchParams(location.search).get("id")) || null;
+
+    if (id) {
+      const s = await subscriptionsService.getById(id).catch(() => null);
+      if (!s) {
+        showToast({
+          type: "error",
+          title: "Not found",
+          message: "This subscription no longer exists.",
+        });
+        return;
+      }
+      for (const name of [
+        "name",
+        "plan",
+        "vendorUrl",
+        "billing",
+        "cost",
+        "currency",
+        "renewsOn",
+        "notes",
+        "meterCode",
+        "monthlyCap",
+        "freeUnits",
+        "unitPrice",
+      ] as const)
+        field(name).value = s[name] == null ? "" : String(s[name]);
+      field("active").checked = s.active;
+      // Dropdown / DatePicker show a value set from script on `change`.
+      for (const name of ["billing", "currency", "meterCode", "renewsOn"])
+        field(name).dispatchEvent(new Event("change"));
+      document.getElementById("sub-usage")!.textContent = s.meterCode
+        ? `This month: ${s.usedThisMonth.toLocaleString()} call(s).`
+        : "";
+    }
+    const guard = setupFormGuard(form);
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const invalid = errors.check();
+      if (invalid) {
+        showToast({
+          type: "error",
+          title: `Check ${invalid.length} field(s)`,
+          message: invalid.join("\n"),
+        });
+        return;
+      }
+      const text = (name: string) => normalizeOptionalText(field(name).value);
+      const payload: SubscriptionPayload = {
+        name: field("name").value.trim(),
+        plan: text("plan"),
+        vendorUrl: text("vendorUrl"),
+        billing: field("billing").value as SubscriptionPayload["billing"],
+        cost: num("cost") ?? 0,
+        currency: field("currency").value as SubscriptionPayload["currency"],
+        renewsOn: text("renewsOn"),
+        notes: text("notes"),
+        active: field("active").checked,
+        meterCode:
+          (text("meterCode") as SubscriptionPayload["meterCode"]) ?? null,
+        monthlyCap: num("monthlyCap"),
+        freeUnits: num("freeUnits"),
+        unitPrice: num("unitPrice"),
+      };
+      submit.disabled = true;
+      try {
+        const saved = id
+          ? await subscriptionsService.update(id, payload)
+          : await subscriptionsService.create(payload);
+        if (!saved) throw new Error("Save failed");
+        guard.updateInitialState();
+        if (!id) history.replaceState(history.state, "", `?id=${saved.id}`);
+        id = saved.id;
+        showToast({
+          type: "success",
+          title: "Saved",
+          message: `${saved.name} saved.`,
+        });
+      } catch (error) {
+        const lines = errors.fromApi(error);
+        showToast({
+          type: "error",
+          title: "Save failed",
+          message: lines
+            ? lines.join("\n")
+            : formatErrorMessage(error, "Failed to save.", LABELS).message,
+        });
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  };
+
+  document.addEventListener("astro:page-load", () => void init());
+</script>

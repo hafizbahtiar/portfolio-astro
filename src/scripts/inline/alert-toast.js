@@ -56,7 +56,7 @@
       }
       remaining = 0;
       root.classList.remove("opacity-100", "translate-y-0");
-      root.classList.add("opacity-0", "translate-y-2");
+      root.classList.add("opacity-0", "-translate-y-2");
       window.setTimeout(() => {
         root.classList.add("hidden");
       }, 240);
@@ -84,7 +84,7 @@
       if (titleEl) titleEl.textContent = title;
       if (messageEl) messageEl.textContent = message;
 
-      root.classList.remove("hidden", "opacity-0", "translate-y-2");
+      root.classList.remove("hidden", "opacity-0", "-translate-y-2");
       root.classList.add("opacity-100", "translate-y-0");
 
       if (hideTimer) clearTimeout(hideTimer);

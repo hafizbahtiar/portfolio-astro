@@ -53,8 +53,9 @@ export class DrunkDriversService extends ApiClient {
   }
 
   /** AI draft from up to 5 links (owner reviews; nothing saved). Throws ApiError with `code` on failure. */
-  async extract(urls: string[]): Promise<DrunkDriverDraft> {
-    const draft = await this.post<DrunkDriverDraft>(`${OWNER}/extract`, { urls });
+  /** `search` = also read the top web results for this query (the API's web search provider). */
+  async extract(urls: string[], search?: string): Promise<DrunkDriverDraft> {
+    const draft = await this.post<DrunkDriverDraft>(`${OWNER}/extract`, search ? { urls, search } : { urls });
     if (!draft) throw new Error("Empty AI draft");
     return draft;
   }
