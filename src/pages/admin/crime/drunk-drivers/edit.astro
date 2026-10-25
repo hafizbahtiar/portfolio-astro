@@ -1212,6 +1212,7 @@ const OUTCOMES = [
       countPicked();
     });
 
+    const SUPPORT_MIN = 0.7;
     const item = (
       title: string,
       value: string,
@@ -1219,6 +1220,7 @@ const OUTCOMES = [
       source: string,
       note: string | null,
       apply: () => void,
+      support?: number, // Clef-flash P(the quote states this value); undefined = not scored
     ) => {
       const li = document.createElement("li");
       const label = document.createElement("label");
@@ -1237,6 +1239,31 @@ const OUTCOMES = [
       const strong = document.createElement("strong");
       strong.textContent = `${title}: `;
       head.append(strong, value);
+      if (support !== undefined) {
+        const pct = Math.round(support * 100);
+        const badge = document.createElement("span");
+        badge.className = `ml-2 inline-block rounded-full px-1.5 py-px align-middle text-[11px] font-medium tabular-nums ring-1 ${
+          support >= 0.8
+            ? "text-emerald-700 ring-emerald-500/40 dark:text-emerald-300"
+            : support >= SUPPORT_MIN
+              ? "text-amber-700 ring-amber-500/40 dark:text-amber-300"
+              : "text-red-700 ring-red-500/40 dark:text-red-300"
+        }`;
+        badge.textContent = `Clef ${pct}%`;
+        badge.title =
+          "Clef-flash: how sure it is that the quote states exactly this value";
+        head.append(badge);
+        // Weak match: shown, but starts unticked (same SUPPORT_MIN as the API, services/crime-relevance.ts).
+        if (support < SUPPORT_MIN) {
+          box.checked = false;
+          note = [
+            note,
+            `Clef: the quote may not state this (${pct}%) - read it before ticking.`,
+          ]
+            .filter(Boolean)
+            .join(" ");
+        }
+      }
       const q = document.createElement("blockquote");
       q.className =
         "border-l-2 border-sky-500/40 pl-2 text-xs text-gray-600 dark:text-gray-400";
@@ -1423,6 +1450,7 @@ const OUTCOMES = [
                   undisclosed.checked = true;
                   syncName();
                 },
+                f.support,
               );
             const current = field(name).value.trim();
             const note =
@@ -1446,6 +1474,7 @@ const OUTCOMES = [
                   syncName();
                 }
               },
+              f.support,
             );
           });
         const have = new Set(
@@ -1476,6 +1505,7 @@ const OUTCOMES = [
                   outcome: v.outcome,
                   notes: v.notes,
                 }),
+              v.support,
             ),
           );
           if (dup) picks[picks.length - 1].box.checked = false;
@@ -1502,6 +1532,7 @@ const OUTCOMES = [
               l.source,
               have ? "Already in your Lawyers list - adds a second row." : null,
               () => addLawyer({ name: l.name, role: l.role, firm: l.firm }),
+              l.support,
             ),
           );
           if (have) picks[picks.length - 1].box.checked = false;
@@ -1584,11 +1615,19 @@ const OUTCOMES = [
               : []),
             // Clef-flash relevance (advisory for your links; search pages under 50% same case were skipped).
             ...draft.sources
-              .filter((s) => s.dropped)
+              .filter((s) => s.dropped === "other_case")
               .map(
                 (s) =>
                   `Skipped ${host(s.url)}: a different case (Clef: ${pct(s.relevance?.sameCase)} same case)`,
               ),
+            ...(draft.sources.some((s) => s.dropped === "extra")
+              ? [
+                  `Not read by the AI (only the 3 closest search results are): ${draft.sources
+                    .filter((s) => s.dropped === "extra")
+                    .map((s) => host(s.url))
+                    .join(", ")}`,
+                ]
+              : []),
             ...draft.sources
               .filter(
                 (s) => !s.found && s.relevance && s.relevance.drunkCase < 0.5,

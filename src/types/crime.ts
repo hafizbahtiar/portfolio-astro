@@ -87,21 +87,22 @@ export type ExtractField =
 
 /** AI draft from source links - every field's quote was found on its page by the API. Nothing is saved. */
 export interface DrunkDriverDraft {
-  fields: Partial<Record<ExtractField, { value: string; source: string; quote: string }>>;
-  victims: { fullName: string | null; notes: string | null; age: number | null; outcome: VictimOutcome | null; source: string; quote: string }[];
-  lawyers: (DrunkDriverLawyer & { source: string; quote: string })[];
+  fields: Partial<Record<ExtractField, { value: string; source: string; quote: string; support?: number }>>;
+  victims: { fullName: string | null; notes: string | null; age: number | null; outcome: VictimOutcome | null; source: string; quote: string; support?: number }[];
+  lawyers: (DrunkDriverLawyer & { source: string; quote: string; support?: number })[];
   /** Court-document-looking links found on the source pages (no AI). */
   documentLinks: { url: string; text: string; source: string }[];
   rejected: { field: string; reason: string }[];
   conflicts: { field: string; note: string }[];
   /**
    * found = came from the web search, not the owner's list. relevance = Clef-flash P(drunk-driving case) and
-   * P(same case as S1, null for S1); null when Clef was off or failed. dropped = a search page Clef put below
-   * 50% same case - the draft never read it.
+   * P(same case as S1, null for S1); null when Clef was off or failed. dropped = a search page the draft never
+   * read: "other_case" (Clef under 50% same case) or "extra" (only the 3 closest results are read).
+   * support (fields, victims, lawyers) = Clef-flash P(the quote states exactly this value).
    */
   sources: {
     url: string; ok: boolean; title: string | null; error: string | null; found?: boolean;
-    relevance?: { drunkCase: number; sameCase: number | null } | null; dropped?: boolean;
+    relevance?: { drunkCase: number; sameCase: number | null } | null; dropped?: "other_case" | "extra" | null;
   }[];
   search: { query: string; error: string | null } | null;
   model: string;
