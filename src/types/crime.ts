@@ -81,15 +81,17 @@ export interface PublicDrunkDriver {
 }
 
 export type ExtractField =
-  | "fullName" | "age" | "incidentDate" | "location" | "convictedOn" | "caseReference" | "details"
+  | "fullName" | "accusedDescription" | "age" | "incidentDate" | "location" | "convictedOn" | "caseReference" | "details"
   | "charge" | "sentence" | "caseStatus" | "appealStatus" | "appealDecidedOn" | "appealNotes"
   | "alcoholTest" | "alcoholReading" | "licenceDisqualifiedMonths";
 
 /** AI draft from source links - every field's quote was found on its page by the API. Nothing is saved. */
 export interface DrunkDriverDraft {
   fields: Partial<Record<ExtractField, { value: string; source: string; quote: string }>>;
-  victims: { fullName: string | null; age: number | null; outcome: VictimOutcome | null; source: string; quote: string }[];
+  victims: { fullName: string | null; notes: string | null; age: number | null; outcome: VictimOutcome | null; source: string; quote: string }[];
   lawyers: (DrunkDriverLawyer & { source: string; quote: string })[];
+  /** Court-document-looking links found on the source pages (no AI). */
+  documentLinks: { url: string; text: string; source: string }[];
   rejected: { field: string; reason: string }[];
   conflicts: { field: string; note: string }[];
   sources: { url: string; ok: boolean; title: string | null; error: string | null }[];

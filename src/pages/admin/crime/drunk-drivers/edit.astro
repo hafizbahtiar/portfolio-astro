@@ -401,7 +401,8 @@ const OUTCOMES = [
       </section>
 
       <div data-panel="photos" role="tabpanel" hidden>
-        <EvidencePhotos client:load />
+        <!-- client:only: it reads the URL and private photo routes - nothing to render on the server. -->
+        <EvidencePhotos client:only="react" />
       </div>
 
       <div class="admin-form-actions">
@@ -1113,6 +1114,7 @@ const OUTCOMES = [
     };
     const DRAFT_TITLES: Record<string, string> = {
       fullName: "Accused - name",
+      accusedDescription: "Accused - description (no name yet)",
       age: "Accused - age",
     };
     const OUTCOME_TEXT: Record<string, string> = {
@@ -1268,9 +1270,29 @@ const OUTCOMES = [
       try {
         const draft = await drunkDriversService.extract(urls.slice(0, 5));
         picks = [];
+        // A name not disclosed yet is always re-checked, the status button too.
+        const wanted = (name: string) =>
+          !only ||
+          only.has(name) ||
+          (undisclosed.checked && (name === "fullName" || name === "accusedDescription"));
+        let same = 0;
         const rows = Object.entries(draft.fields)
-          .filter(([name]) => !only || only.has(name))
+          .filter(([name]) => wanted(name))
+          // A description only helps while the accused is unnamed.
+          .filter(([name]) => name !== "accusedDescription" || undisclosed.checked || !field("fullName").value.trim())
+          .filter(([name, f]) => {
+            const match = name !== "accusedDescription" && field(name).value.trim() === f.value;
+            if (match) same++;
+            return !match;
+          })
           .map(([name, f]) => {
+            if (name === "accusedDescription")
+              return item(DRAFT_TITLES[name], f.value, f.quote, f.source,
+                "Used as the working label - the name stays marked not disclosed.", () => {
+                  setField("fullName", f.value);
+                  undisclosed.checked = true;
+                  syncName();
+                });
             const current = field(name).value.trim();
             const note =
               name === "fullName" && undisclosed.checked
@@ -1309,6 +1331,7 @@ const OUTCOMES = [
                 v.fullName ?? "(no name)",
                 v.age != null ? `${v.age} yrs` : null,
                 v.outcome ? OUTCOME_TEXT[v.outcome] : null,
+                v.notes,
               ]
                 .filter(Boolean)
                 .join(", "),
@@ -1320,6 +1343,7 @@ const OUTCOMES = [
                   fullName: v.fullName,
                   age: v.age,
                   outcome: v.outcome,
+                  notes: v.notes,
                 }),
             ),
           );
@@ -1351,6 +1375,16 @@ const OUTCOMES = [
           );
           if (have) picks[picks.length - 1].box.checked = false;
         }
+        const haveDocs = new Set(courtDocs.list());
+        for (const d of only && !only.has("caseReference") ? [] : draft.documentLinks) {
+          if (haveDocs.has(d.url)) continue;
+          rows.push(
+            item("Court document", d.text || host(d.url), d.url, d.source,
+              "A link on the source page that looks like a judgment or court record - open it before keeping it.",
+              () => courtDocs.set([...courtDocs.list(), d.url].slice(0, 10))),
+          );
+          picks[picks.length - 1].box.checked = false; // a guess from the link alone - opt in
+        }
         items.replaceChildren(...rows);
         if (!rows.length)
           items.textContent =
@@ -1361,6 +1395,7 @@ const OUTCOMES = [
             ...draft.conflicts.map(
               (c) => `Conflict (${LABELS[c.field] ?? c.field}): ${c.note}`,
             ),
+            ...(same ? [`${same} value(s) already match the form - not shown.`] : []),
             ...draft.rejected.map(
               (r) => `Dropped ${LABELS[r.field] ?? r.field}: ${r.reason}`,
             ),
