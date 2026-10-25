@@ -6,11 +6,25 @@ export interface DrunkDriverPhoto {
   createdAt: string;
 }
 
+export type VictimOutcome = "killed" | "seriously_injured" | "injured" | "unhurt";
+
+/** Owner-only, never public. dateOfBirth comes from the IC when empty; age = at the incident. */
+export interface DrunkDriverVictim {
+  fullName: string | null;
+  icNumber: string | null;
+  dateOfBirth: string | null;
+  age: number | null;
+  outcome: VictimOutcome | null;
+  notes: string | null;
+}
+
 /** Owner view - full record. Never rendered on a public page. */
 export interface DrunkDriver {
   id: number;
   fullName: string;
   icNumber: string | null;
+  dateOfBirth: string | null;
+  age: number | null;
   incidentDate: string | null;
   location: string | null;
   details: string | null;
@@ -22,6 +36,7 @@ export interface DrunkDriver {
   createdAt: string;
   updatedAt: string;
   photos: DrunkDriverPhoto[];
+  victims: DrunkDriverVictim[];
 }
 
 export type DrunkDriverPayload = Omit<DrunkDriver, "id" | "createdAt" | "updatedAt" | "photos">;
@@ -35,11 +50,12 @@ export interface PublicDrunkDriver {
   sources: string[];
 }
 
-export type ExtractField = "fullName" | "incidentDate" | "location" | "convictedOn" | "caseReference" | "details";
+export type ExtractField = "fullName" | "age" | "incidentDate" | "location" | "convictedOn" | "caseReference" | "details";
 
 /** AI draft from source links - every field's quote was found on its page by the API. Nothing is saved. */
 export interface DrunkDriverDraft {
   fields: Partial<Record<ExtractField, { value: string; source: string; quote: string }>>;
+  victims: { fullName: string | null; age: number | null; outcome: VictimOutcome | null; source: string; quote: string }[];
   rejected: { field: string; reason: string }[];
   conflicts: { field: string; note: string }[];
   sources: { url: string; ok: boolean; title: string | null; error: string | null }[];

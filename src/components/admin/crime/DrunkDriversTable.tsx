@@ -61,6 +61,15 @@ export const DrunkDriversTable = () => {
         cell: ({ row }) => <CellText>{row.original.convictedOn || "-"}</CellText>,
       },
       {
+        id: "victims",
+        header: "Victims",
+        accessorFn: (r) => r.victims.length,
+        cell: ({ row }) => {
+          const killed = row.original.victims.filter((v) => v.outcome === "killed").length;
+          return <CellText>{row.original.victims.length}{killed ? ` (${killed} killed)` : ""}</CellText>;
+        },
+      },
+      {
         id: "photos",
         header: "Photos",
         accessorFn: (r) => r.photos.length,
