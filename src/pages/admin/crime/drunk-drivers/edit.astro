@@ -581,6 +581,38 @@ const OUTCOMES = [
         <div class="dd-shimmer h-16 rounded-lg"></div>
       </div>
       <div
+        id="dd-draft-error"
+        hidden
+        role="alert"
+        class="flex-1 space-y-3 overflow-y-auto px-5 py-5 wrap-anywhere"
+      >
+        <p class="text-sm font-semibold text-red-600 dark:text-red-400">
+          AI draft failed
+        </p>
+        <p
+          id="dd-draft-error-msg"
+          class="text-sm text-gray-700 dark:text-gray-300"
+        >
+        </p>
+        <ul
+          id="dd-draft-error-sources"
+          class="list-disc space-y-1 pl-5 text-sm text-amber-700 dark:text-amber-300"
+        >
+        </ul>
+        <p class="admin-help">
+          A 502 / timeout is the AI provider - try again, or with fewer or
+          shorter links.
+        </p>
+        <button
+          type="button"
+          id="dd-draft-retry"
+          class="admin-btn admin-btn-secondary"
+        >
+          <Sparkles className="h-4 w-4" />
+          Try again
+        </button>
+      </div>
+      <div
         id="dd-draft-body"
         class="hidden flex-1 space-y-4 overflow-y-auto px-5 py-5"
       >
@@ -597,12 +629,12 @@ const OUTCOMES = [
         <ul id="dd-draft-items" class="space-y-3"></ul>
         <ul
           id="dd-draft-notes"
-          class="space-y-1 text-sm text-amber-700 dark:text-amber-300"
+          class="list-disc space-y-1 pl-5 text-sm text-amber-700 wrap-anywhere dark:text-amber-300"
         >
         </ul>
       </div>
       <footer
-        class="flex gap-3 border-t border-gray-950/5 px-5 py-4 dark:border-white/10"
+        class="flex gap-3 border-t border-gray-950/5 px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] dark:border-white/10"
       >
         <button
           type="button"
@@ -638,6 +670,7 @@ const OUTCOMES = [
   import { ageOn, dobFromIc } from "../../../../lib/mykad";
   import type {
     DrunkDriver,
+    DrunkDriverDraft,
     DrunkDriverPayload,
     DrunkDriverLawyer,
     DrunkDriverVictim,
@@ -1198,7 +1231,7 @@ const OUTCOMES = [
         "mt-1 shrink-0 h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20";
       box.addEventListener("change", countPicked);
       const text = document.createElement("div");
-      text.className = "min-w-0 space-y-1";
+      text.className = "min-w-0 flex-1 space-y-1 wrap-anywhere";
       const head = document.createElement("p");
       head.className = "text-sm";
       const strong = document.createElement("strong");
@@ -1207,13 +1240,13 @@ const OUTCOMES = [
       const q = document.createElement("blockquote");
       q.className =
         "border-l-2 border-sky-500/40 pl-2 text-xs text-gray-600 dark:text-gray-400";
-      q.textContent = `"${quote}" - `;
+      q.textContent = quote ? `"${quote}" - ` : "";
       const a = document.createElement("a");
       a.href = source;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       a.className = "link";
-      a.textContent = host(source);
+      a.textContent = quote ? host(source) : source;
       q.append(a);
       text.append(head, q);
       if (note) {
@@ -1248,6 +1281,12 @@ const OUTCOMES = [
       });
     });
 
+    const failBox = document.getElementById("dd-draft-error")!;
+    const failMsg = document.getElementById("dd-draft-error-msg")!;
+    const failList = document.getElementById("dd-draft-error-sources")!;
+    document
+      .getElementById("dd-draft-retry")!
+      .addEventListener("click", () => void runDraft());
     let timer = 0;
     const setBusy = (busy: boolean) => {
       for (const b of [aiBtn, statusBtn, searchBtn]) b.disabled = busy;
@@ -1257,6 +1296,7 @@ const OUTCOMES = [
       aiLabel.textContent = busy ? "AI is reading..." : idleAiLabel();
       loading.classList.toggle("hidden", !busy);
       body.classList.toggle("hidden", busy);
+      failBox.hidden = true;
       clearInterval(timer);
       if (!busy) return;
       fillBtn.disabled = true;
@@ -1474,10 +1514,11 @@ const OUTCOMES = [
           rows.push(
             item(
               "Court document",
-              d.text || host(d.url),
+              d.text ||
+                decodeURIComponent(d.url.split("/").pop() || host(d.url)),
+              "",
               d.url,
-              d.source,
-              "A link on the source page that looks like a judgment or court record - open it before keeping it.",
+              `Linked from ${host(d.source)} - looks like a judgment or court record. Open it before keeping it.`,
               () => courtDocs.set([...courtDocs.list(), d.url].slice(0, 10)),
             ),
           );
@@ -1552,13 +1593,31 @@ const OUTCOMES = [
         if (!sheet.open) sheet.showModal(); // closed while waiting - the draft is ready now
       } catch (error) {
         setBusy(false);
-        sheet.close();
-        toast({
-          type: "error",
-          title: "AI draft failed",
-          message: formatErrorMessage(error, "Could not read the sources.", {})
-            .message,
-        });
+        // Stay open with the reason - closing hid it (and the 502's message) behind a toast.
+        body.classList.add("hidden");
+        failBox.hidden = false;
+        failMsg.textContent = formatErrorMessage(
+          error,
+          "Could not read the sources.",
+          {},
+        ).message;
+        const sources =
+          (
+            error as {
+              data?: { data?: { sources?: DrunkDriverDraft["sources"] } };
+            }
+          )?.data?.data?.sources ?? [];
+        failList.replaceChildren(
+          ...sources
+            .filter((x) => !x.ok)
+            .map((x) =>
+              Object.assign(document.createElement("li"), {
+                textContent: `${host(x.url)}: ${x.error}`,
+              }),
+            ),
+        );
+        fillBtn.disabled = true;
+        if (!sheet.open) sheet.showModal();
       }
     };
 
