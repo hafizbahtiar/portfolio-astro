@@ -1532,8 +1532,12 @@ const OUTCOMES = [
             ...draft.lawyers,
           ].map((x) => x.source),
         );
+        const pct = (p: number | null | undefined) =>
+          `${Math.round((p ?? 0) * 100)}%`;
         const unused: string[] = [];
-        for (const src of draft.sources.filter((x) => x.found && x.ok)) {
+        for (const src of draft.sources.filter(
+          (x) => x.found && x.ok && !x.dropped,
+        )) {
           if (!cited.has(src.url)) {
             unused.push(host(src.url));
             continue;
@@ -1578,6 +1582,21 @@ const OUTCOMES = [
                   `Search results with nothing for this case: ${unused.join(", ")}`,
                 ]
               : []),
+            // Clef-flash relevance (advisory for your links; search pages under 50% same case were skipped).
+            ...draft.sources
+              .filter((s) => s.dropped)
+              .map(
+                (s) =>
+                  `Skipped ${host(s.url)}: a different case (Clef: ${pct(s.relevance?.sameCase)} same case)`,
+              ),
+            ...draft.sources
+              .filter(
+                (s) => !s.found && s.relevance && s.relevance.drunkCase < 0.5,
+              )
+              .map(
+                (s) =>
+                  `Check ${host(s.url)}: may not be a drunk-driving case (Clef: ${pct(s.relevance?.drunkCase)})`,
+              ),
             ...draft.rejected.map(
               (r) => `Dropped ${LABELS[r.field] ?? r.field}: ${r.reason}`,
             ),

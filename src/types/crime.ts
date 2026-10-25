@@ -94,8 +94,21 @@ export interface DrunkDriverDraft {
   documentLinks: { url: string; text: string; source: string }[];
   rejected: { field: string; reason: string }[];
   conflicts: { field: string; note: string }[];
-  /** found = came from the web search, not the owner's list. */
-  sources: { url: string; ok: boolean; title: string | null; error: string | null; found?: boolean }[];
+  /**
+   * found = came from the web search, not the owner's list. relevance = Clef-flash P(drunk-driving case) and
+   * P(same case as S1, null for S1); null when Clef was off or failed. dropped = a search page Clef put below
+   * 50% same case - the draft never read it.
+   */
+  sources: {
+    url: string; ok: boolean; title: string | null; error: string | null; found?: boolean;
+    relevance?: { drunkCase: number; sameCase: number | null } | null; dropped?: boolean;
+  }[];
   search: { query: string; error: string | null } | null;
   model: string;
+}
+
+/** POST /owner/crime/drunk-drivers/source-images - up to 5 photos read from the source pages (base64). */
+export interface SourceImages {
+  images: { url: string; source: string; contentType: string; data: string }[];
+  sources: { url: string; ok: boolean; error: string | null }[];
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Loader2, RotateCcw, Trash2 } from "lucide-react";
+import { ImageDown, Loader2, RotateCcw, Trash2 } from "lucide-react";
 import { ImageDropZone } from "../../ui/ImageDropZone";
-import { drunkDriversService } from "../../../lib/crime";
+import { drunkDriversService, isSafeSourceUrl } from "../../../lib/crime";
 import { compressImage, UPLOAD_TYPES } from "../../../lib/upload";
 import { confirmDialog, formatErrorMessage, showToast } from "../../../lib/admin-ui";
 import type { DrunkDriverPhoto } from "../../../types/crime";
@@ -87,6 +87,30 @@ export function EvidencePhotos() {
     ]);
   };
 
+  // Photos from the Sources tab links - they join the same queue as picked files (resize, EXIF strip, upload).
+  const [fetching, setFetching] = useState(false);
+  const fromSources = async () => {
+    // The page's Sources tab inputs (edit.astro) - read at click time, so unsaved edits count.
+    const urls = [...document.querySelectorAll<HTMLInputElement>("#dd-sources input")].map((i) => i.value.trim()).filter(isSafeSourceUrl);
+    if (!urls.length) {
+      showToast({ type: "warning", title: "No sources", message: "Add a source link in the Sources & AI tab first." });
+      return;
+    }
+    setFetching(true);
+    try {
+      const { files, failed } = await drunkDriversService.sourceImages(urls.slice(0, 5));
+      if (files.length) add(files);
+      const unread = failed.map((f) => `${new URL(f.url).hostname}: ${f.error}`).join("\n");
+      showToast(files.length
+        ? { type: "success", title: `${files.length} photo(s) found`, message: `Remove any that are not evidence before saving.${unread ? `\nCould not read:\n${unread}` : ""}` }
+        : { type: "warning", title: "No photos found", message: unread ? `Could not read:\n${unread}` : "The source pages have no usable photos (JPG, PNG, WebP or GIF, not icons)." });
+    } catch (error) {
+      showToast({ type: "error", title: "Could not get photos", message: formatErrorMessage(error, "Could not read the sources.", {}).message });
+    } finally {
+      setFetching(false);
+    }
+  };
+
   const remove = async (p: DrunkDriverPhoto) => {
     if (!id || !(await confirmDialog({ title: "Delete photo", message: "Delete this photo? This cannot be undone.", confirmText: "Delete", variant: "danger" }))) return;
     try {
@@ -105,6 +129,13 @@ export function EvidencePhotos() {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="admin-card-title mb-0!">Evidence photos</h3>
         <span className="admin-help">{photos.length + pending.length} / {MAX_PHOTOS} · private, never on the public page</span>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" onClick={() => void fromSources()} disabled={full || fetching} className="admin-btn admin-btn-secondary">
+          {fetching ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ImageDown className="h-4 w-4" aria-hidden="true" />}
+          {fetching ? "Reading the sources…" : "Get photos from sources"}
+        </button>
+        <span className="admin-help">Up to 5 from the source links: the article's main photo first. Check each one.</span>
       </div>
       <ImageDropZone
         onFiles={add}

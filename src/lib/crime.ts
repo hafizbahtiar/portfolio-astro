@@ -1,4 +1,4 @@
-import type { DrunkDriver, DrunkDriverDraft, DrunkDriverPayload, DrunkDriverPhoto, PublicDrunkDriver } from "../types/crime";
+import type { DrunkDriver, DrunkDriverDraft, DrunkDriverPayload, DrunkDriverPhoto, PublicDrunkDriver, SourceImages } from "../types/crime";
 import { ApiClient, ApiError } from "./api-client";
 import { authService } from "./auth";
 import { API_BASE_URL } from "./config";
@@ -58,6 +58,17 @@ export class DrunkDriversService extends ApiClient {
     const draft = await this.post<DrunkDriverDraft>(`${OWNER}/extract`, search ? { urls, search } : { urls });
     if (!draft) throw new Error("Empty AI draft");
     return draft;
+  }
+
+  /** Up to 5 photos from the source pages, as files ready for the normal photo upload. */
+  async sourceImages(urls: string[]): Promise<{ files: File[]; failed: SourceImages["sources"] }> {
+    const r = await this.post<SourceImages>(`${OWNER}/source-images`, { urls });
+    const files = (r?.images ?? []).map((img, i) => {
+      const bytes = Uint8Array.from(atob(img.data), (ch) => ch.charCodeAt(0));
+      const name = decodeURIComponent(new URL(img.url).pathname.split("/").pop() || `source-${i + 1}`);
+      return new File([bytes], name, { type: img.contentType });
+    });
+    return { files, failed: (r?.sources ?? []).filter((x) => !x.ok) };
   }
 
   async remove(id: number): Promise<void> {
