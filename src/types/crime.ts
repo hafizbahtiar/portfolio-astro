@@ -87,9 +87,9 @@ export type ExtractField =
 
 /** AI draft from source links - every field's quote was found on its page by the API. Nothing is saved. */
 export interface DrunkDriverDraft {
-  fields: Partial<Record<ExtractField, { value: string; source: string; quote: string; support?: number }>>;
-  victims: { fullName: string | null; notes: string | null; age: number | null; outcome: VictimOutcome | null; source: string; quote: string; support?: number }[];
-  lawyers: (DrunkDriverLawyer & { source: string; quote: string; support?: number })[];
+  fields: Partial<Record<ExtractField, { value: string; source: string; quote: string; support?: number | null }>>;
+  victims: { fullName: string | null; notes: string | null; age: number | null; outcome: VictimOutcome | null; source: string; quote: string; support?: number | null }[];
+  lawyers: (DrunkDriverLawyer & { source: string; quote: string; support?: number | null })[];
   /** Court-document-looking links found on the source pages (no AI). */
   documentLinks: { url: string; text: string; source: string }[];
   rejected: { field: string; reason: string }[];

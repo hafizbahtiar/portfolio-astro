@@ -1213,6 +1213,61 @@ const OUTCOMES = [
     });
 
     const SUPPORT_MIN = 0.7;
+    /** Clef-flash P(the quote states this value): green >= 80%, amber >= SUPPORT_MIN, red below; null = not scored. */
+    const clefBadge = (support: number | null) => {
+      const badge = document.createElement("span");
+      badge.dataset.clef = "";
+      const tone =
+        support === null
+          ? "text-gray-500 ring-gray-500/30 dark:text-gray-400"
+          : support >= 0.8
+            ? "text-emerald-700 ring-emerald-500/40 dark:text-emerald-300"
+            : support >= SUPPORT_MIN
+              ? "text-amber-700 ring-amber-500/40 dark:text-amber-300"
+              : "text-red-700 ring-red-500/40 dark:text-red-300";
+      badge.className = `ml-2 inline-block rounded-full px-1.5 py-px align-middle text-[11px] font-medium normal-case tracking-normal tabular-nums ring-1 ${tone}`;
+      badge.textContent =
+        support === null ? "Clef -" : `Clef ${Math.round(support * 100)}%`;
+      badge.title =
+        support === null
+          ? "Clef-flash could not score this value - check its quote yourself"
+          : "Clef-flash: how sure it is that the quote states exactly this value";
+      return badge;
+    };
+    // After Fill form the score stays on the field's label (and on added victim/lawyer rows) until you edit it.
+    const markClef = (
+      host: Element | null | undefined,
+      support: number | null | undefined,
+      watch: Element,
+    ) => {
+      if (!host || support === undefined) return;
+      host.querySelector(":scope > [data-clef]")?.remove();
+      const badge = clefBadge(support);
+      host.append(badge);
+      const drop = () => badge.remove();
+      // Added after the fill's own input/change events, so only a later edit removes it.
+      watch.addEventListener("input", drop, { once: true });
+      watch.addEventListener("change", drop, { once: true });
+    };
+    const labelOf = (el: Element) => {
+      for (let n = el.parentElement; n && n !== form; n = n.parentElement) {
+        const l = n.querySelector(
+          ":scope > .admin-label, :scope > label > .admin-label",
+        );
+        if (l) return l;
+      }
+      return null;
+    };
+    const markField = (name: string, support: number | null | undefined) =>
+      markClef(labelOf(field(name)), support, field(name));
+    const markRow = (li: HTMLElement, support: number | null | undefined) => {
+      if (support === undefined) return;
+      const line = document.createElement("p");
+      line.className = "mb-3 text-xs text-gray-500 dark:text-gray-400";
+      line.textContent = "From the AI draft";
+      li.prepend(line);
+      markClef(line, support, li);
+    };
     const item = (
       title: string,
       value: string,
@@ -1220,7 +1275,7 @@ const OUTCOMES = [
       source: string,
       note: string | null,
       apply: () => void,
-      support?: number, // Clef-flash P(the quote states this value); undefined = not scored
+      support?: number | null, // Clef-flash P(the quote states this value); null = not scored, undefined = not an AI value
     ) => {
       const li = document.createElement("li");
       const label = document.createElement("label");
@@ -1240,21 +1295,10 @@ const OUTCOMES = [
       strong.textContent = `${title}: `;
       head.append(strong, value);
       if (support !== undefined) {
-        const pct = Math.round(support * 100);
-        const badge = document.createElement("span");
-        badge.className = `ml-2 inline-block rounded-full px-1.5 py-px align-middle text-[11px] font-medium tabular-nums ring-1 ${
-          support >= 0.8
-            ? "text-emerald-700 ring-emerald-500/40 dark:text-emerald-300"
-            : support >= SUPPORT_MIN
-              ? "text-amber-700 ring-amber-500/40 dark:text-amber-300"
-              : "text-red-700 ring-red-500/40 dark:text-red-300"
-        }`;
-        badge.textContent = `Clef ${pct}%`;
-        badge.title =
-          "Clef-flash: how sure it is that the quote states exactly this value";
-        head.append(badge);
+        const pct = Math.round((support ?? 0) * 100);
+        head.append(clefBadge(support));
         // Weak match: shown, but starts unticked (same SUPPORT_MIN as the API, services/crime-relevance.ts).
-        if (support < SUPPORT_MIN) {
+        if (support !== null && support < SUPPORT_MIN) {
           box.checked = false;
           note = [
             note,
@@ -1449,8 +1493,9 @@ const OUTCOMES = [
                   setField("fullName", f.value);
                   undisclosed.checked = true;
                   syncName();
+                  markField("fullName", f.support ?? null);
                 },
-                f.support,
+                f.support ?? null,
               );
             const current = field(name).value.trim();
             const note =
@@ -1473,8 +1518,9 @@ const OUTCOMES = [
                   undisclosed.checked = false;
                   syncName();
                 }
+                markField(name, f.support ?? null);
               },
-              f.support,
+              f.support ?? null,
             );
           });
         const have = new Set(
@@ -1499,13 +1545,16 @@ const OUTCOMES = [
               v.source,
               dup ? "Already in your Victims list - adds a second row." : null,
               () =>
-                addVictim({
-                  fullName: v.fullName,
-                  age: v.age,
-                  outcome: v.outcome,
-                  notes: v.notes,
-                }),
-              v.support,
+                markRow(
+                  addVictim({
+                    fullName: v.fullName,
+                    age: v.age,
+                    outcome: v.outcome,
+                    notes: v.notes,
+                  }),
+                  v.support ?? null,
+                ),
+              v.support ?? null,
             ),
           );
           if (dup) picks[picks.length - 1].box.checked = false;
@@ -1531,8 +1580,12 @@ const OUTCOMES = [
               l.quote,
               l.source,
               have ? "Already in your Lawyers list - adds a second row." : null,
-              () => addLawyer({ name: l.name, role: l.role, firm: l.firm }),
-              l.support,
+              () =>
+                markRow(
+                  addLawyer({ name: l.name, role: l.role, firm: l.firm }),
+                  l.support ?? null,
+                ),
+              l.support ?? null,
             ),
           );
           if (have) picks[picks.length - 1].box.checked = false;
