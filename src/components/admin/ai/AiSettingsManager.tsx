@@ -13,17 +13,13 @@ import {
   type Reasoning,
 } from "../../../lib/ai-settings";
 import { authService, can } from "../../../lib/auth";
-import { confirmDialog, showToast } from "../../../lib/admin-ui";
+import { adminTime, confirmDialog, showToast } from "../../../lib/admin-ui";
+import { FeaturesCard } from "../FeatureSwitches";
 
 // /admin/ai: model + reasoning effort per backend AI use case. Owner only - same gate as
 // App Access (roles.assign is never grantable). The backend's /owner/ai gate is the real wall.
 
-const WHEN = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "short", timeStyle: "short" });
-/** ISO or D1 "YYYY-MM-DD HH:MM:SS" (UTC, no zone) -> dd/mm/yyyy, hh:mm Malaysian time. */
-const when = (s: string) => {
-  const d = new Date(/[zZ]$|[+-]\d\d:?\d\d$/.test(s) ? s : `${s.replace(" ", "T")}Z`);
-  return Number.isNaN(d.getTime()) ? "-" : WHEN.format(d);
-};
+const when = adminTime;
 const ctx = (n: number | null) => (n === null ? "" : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}M` : `${Math.round(n / 1e3)}K`);
 const endpointLabel = (endpoint: string) => endpoint.replace(/^\//, "");
 const endpointsOf = (m: AiModel): string[] => (Array.isArray(m.supportedEndpoints) ? m.supportedEndpoints : []);
@@ -72,6 +68,7 @@ export function AiSettingsManager() {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [loadError, setLoadError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [tab, setTab] = useState<"models" | "features">("models");
 
   const loadModels = async (refresh = false) => {
     setRefreshing(true);
@@ -93,7 +90,8 @@ export function AiSettingsManager() {
       setAllowed(true);
       try {
         setRoutes(await aiSettingsService.routes());
-        setFeatures(await aiSettingsService.features());
+        // Showcase switches live on /admin/showcase-modules.
+        setFeatures((await aiSettingsService.features()).filter((f) => f.group !== "showcase"));
       } catch (e) {
         setLoadError(aiSettingsError(e));
       }
@@ -108,62 +106,38 @@ export function AiSettingsManager() {
   const messagesOnly = list?.models.filter((m) => endpointsOf(m).includes("/messages")).length ?? 0;
   return (
     <div className="space-y-6">
-      {features.length > 0 && (
-        <FeaturesCard features={features} onSaved={(n) => setFeatures((prev) => prev.map((f) => (f.code === n.code ? n : f)))} />
-      )}
-      <div className="admin-card flex flex-wrap items-center justify-between gap-3">
-        <p className="admin-help">
-          {list
-            ? `${list.models.length} models from Command Code · ${usable} chat-ready · ${messagesOnly} /messages-only · fetched ${when(list.fetchedAt)}`
-            : "Loading the Command Code model list…"}
-        </p>
-        <button type="button" className="admin-btn admin-btn-secondary" onClick={() => void loadModels(true)} disabled={refreshing}>
-          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} /> Refresh list
-        </button>
-        {list?.stale && (
-          <p className="admin-error w-full">Command Code didn't answer - this is the last list the backend fetched.</p>
-        )}
+      {/* Same tab style as the project editor. Showcase switches have their own page (/admin/showcase-modules). */}
+      <div className="border-b border-gray-950/5 dark:border-white/10">
+        <div className="flex -mb-px overflow-x-auto">
+          {([["models", "Models"], ["features", "Features"]] as const).map(([id, label]) => (
+            <button key={id} type="button" onClick={() => setTab(id)} aria-current={tab === id ? "page" : undefined}
+              className={`inline-flex shrink-0 items-center px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === id ? "border-sky-500 text-gray-950 dark:text-white" : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
-      {routes.map((r) => (
-        <RouteCard key={r.useCase} route={r} list={list} onSaved={(n) => setRoutes((prev) => prev.map((x) => (x.useCase === n.useCase ? n : x)))} />
-      ))}
-    </div>
-  );
-}
-
-// Owner on/off switches for optional AI features. Saves on toggle.
-function FeaturesCard({ features, onSaved }: { features: Feature[]; onSaved: (f: Feature) => void }) {
-  const [busy, setBusy] = useState("");
-  const toggle = async (f: Feature, enabled: boolean) => {
-    setBusy(f.code);
-    try {
-      const next = await aiSettingsService.setFeature(f.code, enabled);
-      if (next) onSaved(next);
-      showToast({ type: "success", title: `${f.label} ${enabled ? "on" : "off"}` });
-    } catch (e) {
-      fail("Couldn't change the feature", e);
-    } finally {
-      setBusy("");
-    }
-  };
-  return (
-    <div className="admin-card space-y-3">
-      <h3 className="admin-card-title">Features</h3>
-      <ul className="space-y-3">
-        {features.map((f) => (
-          <li key={f.code} className="flex items-start gap-3">
-            <input id={`feature-${f.code}`} type="checkbox" className="mt-1" checked={f.enabled} disabled={busy === f.code}
-              onChange={(e) => void toggle(f, e.target.checked)} />
-            <label htmlFor={`feature-${f.code}`} className="space-y-0.5">
-              <span className="admin-label block">{f.label}</span>
-              <span className="admin-help block">{f.description}</span>
-              <span className="admin-help block">
-                {f.overridden && f.updatedAt ? `Set ${when(f.updatedAt)}${f.updatedBy?.displayName ? ` by ${f.updatedBy.displayName}` : ""}` : `Default (${f.enabled ? "on" : "off"})`}
-              </span>
-            </label>
-          </li>
+      {tab === "features" && (features.length > 0
+        ? <FeaturesCard features={features} onSaved={(n) => setFeatures((prev) => prev.map((f) => (f.code === n.code ? n : f)))} />
+        : <p className="admin-help">No AI switches.</p>)}
+      {tab === "models" && <>
+        <div className="admin-card flex flex-wrap items-center justify-between gap-3">
+          <p className="admin-help">
+            {list
+              ? `${list.models.length} models from Command Code · ${usable} chat-ready · ${messagesOnly} /messages-only · fetched ${when(list.fetchedAt)}`
+              : "Loading the Command Code model list…"}
+          </p>
+          <button type="button" className="admin-btn admin-btn-secondary" onClick={() => void loadModels(true)} disabled={refreshing}>
+            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} /> Refresh list
+          </button>
+          {list?.stale && (
+            <p className="admin-error w-full">Command Code didn't answer - this is the last list the backend fetched.</p>
+          )}
+        </div>
+        {routes.map((r) => (
+          <RouteCard key={r.useCase} route={r} list={list} onSaved={(n) => setRoutes((prev) => prev.map((x) => (x.useCase === n.useCase ? n : x)))} />
         ))}
-      </ul>
+      </>}
     </div>
   );
 }

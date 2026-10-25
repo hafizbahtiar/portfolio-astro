@@ -7,6 +7,7 @@ import {
   CircleUser,
   Folder,
   Inbox,
+  LayoutGrid,
   Layers,
   LayoutDashboard,
   LogOut,
@@ -121,6 +122,12 @@ const links = [
     icon: Bot,
   },
   {
+    text: "Showcase Modules",
+    href: "/admin/showcase-modules",
+    perm: "roles.assign", // owner only, like AI Models
+    icon: LayoutGrid,
+  },
+  {
     text: "System Logs",
     href: "/admin/system",
     perm: "audit.read",
@@ -142,9 +149,10 @@ const links = [
 
 const groups = [
   { label: "Overview", items: links.slice(0, 1) },
-  { label: "Content", items: links.slice(1, 10) },
+  { label: "Content", items: links.slice(1, 9) },
+  { label: "Showcase", items: links.slice(9, 10) }, // Drunk Drivers
   { label: "Inbox", items: links.slice(10, 12) }, // Contacts, Moderation
-  { label: "System", items: links.slice(12) }, // Users, Roles, App Access, AI Models, System Logs, Settings, Profile
+  { label: "System", items: links.slice(12) }, // Users, Roles, App Access, AI Models, Showcase Modules, System Logs, Settings, Profile
 ];
 
 const currentPath = Astro.url.pathname;

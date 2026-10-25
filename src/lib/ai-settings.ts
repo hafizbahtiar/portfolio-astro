@@ -65,6 +65,8 @@ export interface Feature {
   code: string;
   label: string;
   description: string;
+  /** Which admin page lists it: moderation -> /admin/ai, showcase -> /admin/showcase-modules. */
+  group: "moderation" | "showcase";
   enabled: boolean;
   overridden: boolean;
   updatedAt: string | null;

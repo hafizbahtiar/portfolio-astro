@@ -78,3 +78,10 @@ export function parseJsonArray(value: FormDataEntryValue): unknown[] {
       .filter(Boolean);
   }
 }
+
+const ADMIN_TIME = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "short", timeStyle: "short" });
+/** ISO or D1 "YYYY-MM-DD HH:MM:SS" (UTC, no zone) -> dd/mm/yyyy, hh:mm Malaysian time. */
+export function adminTime(s: string): string {
+  const d = new Date(/[zZ]$|[+-]\d\d:?\d\d$/.test(s) ? s : `${s.replace(" ", "T")}Z`);
+  return Number.isNaN(d.getTime()) ? "-" : ADMIN_TIME.format(d);
+}

@@ -1,0 +1,22 @@
+---
+import PrivateLayout from "../../../layouts/PrivateLayout.astro";
+import AdminPageHeader from "../../../components/admin/AdminPageHeader.astro";
+import { FeatureGroupSwitches } from "../../../components/admin/FeatureSwitches";
+
+export const prerender = false;
+---
+
+<PrivateLayout title="Showcase Modules">
+  <div class="space-y-6">
+    <AdminPageHeader
+      title="Showcase Modules"
+      description="Turn showcase apps on or off. Off = the public page and its API answer 404 and the /showcase card is hidden; you can still manage the data. Owner only."
+    />
+    <FeatureGroupSwitches
+      client:load
+      group="showcase"
+      title="Modules"
+      empty="No showcase module has a switch yet."
+    />
+  </div>
+</PrivateLayout>
