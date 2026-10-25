@@ -362,9 +362,9 @@ import AlertToast from "../../../../components/ui/AlertToast.astro";
       if (!files.length || !id || !record) return;
       inputLabel.textContent = "Uploading...";
       try {
-        // Re-encoding also drops EXIF (GPS, device) from the stored copy.
+        // Quality 95% (owner choice, evidence detail); re-encoding also drops EXIF (GPS, device).
         const ready = await Promise.all(
-          files.map(async (f) => (await compressImage(f)).file),
+          files.map(async (f) => (await compressImage(f, 2560, 0.95)).file),
         );
         record.photos.push(
           ...(await drunkDriversService.uploadPhotos(id, ready)),
