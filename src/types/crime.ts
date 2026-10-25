@@ -34,6 +34,8 @@ export interface DrunkDriverVictim {
 export interface DrunkDriver {
   id: number;
   fullName: string;
+  /** false = the accused is not named yet; fullName is a working label. Never public. */
+  nameDisclosed: boolean;
   icNumber: string | null;
   dateOfBirth: string | null;
   age: number | null;

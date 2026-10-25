@@ -81,7 +81,13 @@ const OUTCOMES = [
                 maxlength="120"
                 class="admin-input"
               />
-              <p class="admin-help">
+              <label
+                class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+              >
+                <input type="checkbox" name="nameUndisclosed" class="h-4 w-4" />
+                Name not disclosed yet
+              </label>
+              <p id="dd-name-help" class="admin-help">
                 Public once published - exactly as in the court record.
               </p>
             </div>
@@ -753,6 +759,29 @@ const OUTCOMES = [
       field("incidentDate").addEventListener("change", update);
       return update;
     };
+    // Name not disclosed yet: the name box becomes an optional working label and publishing is off
+    // (the API refuses it too). The AI button then reads as a re-check.
+    const undisclosed = field("nameUndisclosed");
+    const nameHelp = document.getElementById("dd-name-help")!;
+    const syncName = () => {
+      const off = undisclosed.checked;
+      field("fullName").required = !off;
+      field("fullName").placeholder = off
+        ? "Working label, e.g. Lelaki, 35, Proton Saga"
+        : "";
+      nameHelp.textContent = off
+        ? "Not public while the name is undisclosed. Re-check the sources with the AI once the court names the accused."
+        : "Public once published - exactly as in the court record.";
+      if (off) field("published").checked = false;
+      field("published").disabled = off;
+      aiLabel.textContent = idleAiLabel();
+    };
+    undisclosed.addEventListener("change", syncName);
+    const idleAiLabel = () =>
+      undisclosed.checked || id
+        ? "Re-check from sources (AI)"
+        : "Fill from sources (AI)";
+
     const driverAuto = autoPerson(
       field("icNumber"),
       field("dateOfBirth"),
@@ -815,7 +844,8 @@ const OUTCOMES = [
     });
     const numberOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
     const collectVictims = (): DrunkDriverVictim[] =>
-      [...victimList.querySelectorAll("li")]
+      // Direct rows only - each row's <Dropdown> menu has <li> options of its own.
+      [...victimList.querySelectorAll(":scope > li")]
         .map((li) => {
           const val = (k: string) =>
             (
@@ -852,7 +882,7 @@ const OUTCOMES = [
     });
     // A row without a name is not a lawyer (the API needs the name).
     const collectLawyers = (): DrunkDriverLawyer[] =>
-      [...lawyerList.querySelectorAll("li")]
+      [...lawyerList.querySelectorAll(":scope > li")]
         .map((li) => {
           const val = (k: string) =>
             (
@@ -1164,9 +1194,7 @@ const OUTCOMES = [
       const active = only ? statusBtn : aiBtn;
       active.querySelector(".dd-ai-idle")?.classList.toggle("hidden", busy);
       active.querySelector(".dd-ai-busy")?.classList.toggle("hidden", !busy);
-      aiLabel.textContent = busy
-        ? "AI is reading..."
-        : "Fill from sources (AI)";
+      aiLabel.textContent = busy ? "AI is reading..." : idleAiLabel();
       loading.classList.toggle("hidden", !busy);
       body.classList.toggle("hidden", busy);
       clearInterval(timer);
@@ -1223,9 +1251,11 @@ const OUTCOMES = [
           .map(([name, f]) => {
             const current = field(name).value.trim();
             const note =
-              current && current !== f.value
-                ? `Replaces your value "${current}".`
-                : null;
+              name === "fullName" && undisclosed.checked
+                ? "Name found - applying it marks the name as disclosed."
+                : current && current !== f.value
+                  ? `Replaces your value "${current}".`
+                  : null;
             return item(
               DRAFT_TITLES[name] ?? LABELS[name] ?? name,
               DROPDOWNS.includes(name)
@@ -1234,7 +1264,13 @@ const OUTCOMES = [
               f.quote,
               f.source,
               note,
-              () => setField(name, f.value),
+              () => {
+                setField(name, f.value);
+                if (name === "fullName" && undisclosed.checked) {
+                  undisclosed.checked = false;
+                  syncName();
+                }
+              },
             );
           });
         const have = new Set(
@@ -1390,6 +1426,9 @@ const OUTCOMES = [
         return;
       }
       for (const name of TEXT_FIELDS) field(name).value = record[name] ?? "";
+      undisclosed.checked = !record.nameDisclosed;
+      if (!record.nameDisclosed && record.fullName === "Belum didedahkan")
+        field("fullName").value = ""; // the API's default label - show the placeholder instead
       setSources(record.sources);
       courtDocs.set(record.courtDocuments);
       field("alcoholReading").value =
@@ -1408,6 +1447,7 @@ const OUTCOMES = [
       field("published").checked = record.published;
       renderPhotos();
     }
+    syncName(); // after the record is loaded (label, required, publish lock)
     const guard = setupFormGuard(form);
 
     form.addEventListener("submit", async (e) => {
@@ -1417,6 +1457,7 @@ const OUTCOMES = [
       const text = (name: string) => normalizeOptionalText(fd.get(name) ?? "");
       const payload: DrunkDriverPayload = {
         fullName: text("fullName") ?? "",
+        nameDisclosed: !fd.has("nameUndisclosed"),
         icNumber: text("icNumber"),
         dateOfBirth: text("dateOfBirth"),
         age: numberOrNull(String(fd.get("age") ?? "")),

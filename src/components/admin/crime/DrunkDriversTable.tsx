@@ -51,7 +51,9 @@ export const DrunkDriversTable = () => {
         cell: ({ row }) => (
           <div className="min-w-0">
             <CellPrimary>{row.original.fullName}</CellPrimary>
-            <CellSecondary>{row.original.icNumber ? "IC on file" : "No IC"}</CellSecondary>
+            <CellSecondary>
+              {row.original.nameDisclosed ? (row.original.icNumber ? "IC on file" : "No IC") : "Name not disclosed yet"}
+            </CellSecondary>
           </div>
         ),
       },
