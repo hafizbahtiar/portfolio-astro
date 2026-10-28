@@ -115,7 +115,10 @@ export function LoginForm({ siteKey }: { siteKey: string }) {
               value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center">
+              <Label htmlFor="password">Password</Label>
+              <a href="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">Forgot password?</a>
+            </div>
             <div className="relative">
               <Input id="password" type={show ? "text" : "password"} autoComplete="current-password" className="pr-10"
                 value={password} onChange={(e) => setPassword(e.target.value)} required />

@@ -95,6 +95,17 @@ class AuthService extends ApiClient {
     return this.post('/auth/verify-email', { token });
   }
 
+  // Password reset (hono-workers /auth/forgot-password, /auth/reset-password). The
+  // request answers the same whether or not the account exists.
+  forgotPassword(email: string, captchaToken?: string) {
+    return this.post('/auth/forgot-password', { email, ...(captchaToken ? { captchaToken } : {}) });
+  }
+
+  // Single use; ends every session of that user.
+  resetPassword(token: string, password: string) {
+    return this.post('/auth/reset-password', { token, password });
+  }
+
   tryRefresh(): Promise<boolean> {
     return this.refreshAccessToken();
   }

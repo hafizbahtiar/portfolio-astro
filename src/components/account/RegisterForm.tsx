@@ -13,9 +13,11 @@ type FieldErrors = Partial<Record<Field, string>>;
 const FieldError = ({ id, message }: { id: string; message?: string }) =>
   message ? <p id={`${id}-error`} className="text-xs text-destructive">{message}</p> : null;
 
-// mode "resend" (from /login: ?resend=1) asks only for the email and re-sends the link.
-export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "register" | "resend" }) {
-  const resend = mode === "resend";
+// mode "resend" (from /login: ?resend=1) re-sends the confirmation link, "forgot" (/forgot-password)
+// sends a password reset link - both ask only for the email.
+export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "register" | "resend" | "forgot" }) {
+  const resend = mode !== "register";
+  const forgot = mode === "forgot";
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [busy, setBusy] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -25,8 +27,8 @@ export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "regist
   const turnstile = useRef<ReturnType<typeof createTurnstile> | null>(null);
 
   useEffect(() => {
-    turnstile.current = createTurnstile("turnstile-register", siteKey, "register");
-  }, [siteKey]);
+    turnstile.current = createTurnstile("turnstile-register", siteKey, forgot ? "reset" : "register");
+  }, [siteKey, forgot]);
 
   const submit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -49,7 +51,8 @@ export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "regist
     try {
       const captchaToken = siteKey ? await turnstile.current!.execute() : "";
       if (siteKey && !captchaToken) throw new Error("captcha");
-      if (resend) await authService.resendVerification(email, captchaToken || undefined);
+      if (forgot) await authService.forgotPassword(email, captchaToken || undefined);
+      else if (resend) await authService.resendVerification(email, captchaToken || undefined);
       else await authService.register({ email, password: form.password, name: form.name.trim(), captchaToken: captchaToken || undefined });
       // Same answer whether or not the email exists - the API never says.
       setSentTo(email);
@@ -81,7 +84,9 @@ export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "regist
         <div className="grid gap-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
           <p className="text-sm text-balance text-muted-foreground">
-            If {sentTo} can be registered, a confirmation link is on its way. It expires in 24 hours.
+            {forgot
+              ? `If ${sentTo} has an account, a reset link is on its way. It expires in 1 hour.`
+              : `If ${sentTo} can be registered, a confirmation link is on its way. It expires in 24 hours.`}
           </p>
         </div>
         <div>
@@ -106,9 +111,9 @@ export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "regist
   return (
     <div className="grid gap-6">
       <div className="grid gap-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">{resend ? "Resend confirmation" : "Create an account"}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{forgot ? "Forgot password" : resend ? "Resend confirmation" : "Create an account"}</h1>
         <p className="text-sm text-balance text-muted-foreground">
-          {resend ? "We'll send the confirmation link again." : "Write blog posts and share quotes. Posts go live straight away and are moderated."}
+          {forgot ? "We'll email you a link to set a new password." : resend ? "We'll send the confirmation link again." : "Write blog posts and share quotes. Posts go live straight away and are moderated."}
         </p>
       </div>
       <form onSubmit={submit} noValidate>
@@ -147,7 +152,7 @@ export function RegisterForm({ siteKey, mode }: { siteKey: string; mode: "regist
         </div>
         <div className="mt-6 flex flex-col gap-3">
           <Button type="submit" className="w-full" disabled={busy}>
-            {busy ? "Sending..." : resend ? "Send link" : "Create account"}
+            {busy ? "Sending..." : forgot ? "Send reset link" : resend ? "Send link" : "Create account"}
           </Button>
           <p className="text-sm text-muted-foreground">
             Already have an account? <a href="/login" className="underline underline-offset-4">Sign in</a>
