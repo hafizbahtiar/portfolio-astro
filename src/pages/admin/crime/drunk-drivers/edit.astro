@@ -35,6 +35,16 @@ const CASE_STATUSES = [
   { value: "under_appeal", label: "Under appeal" },
   { value: "closed", label: "Closed (final)" },
 ];
+// Per charge. DNAA = discharged, not acquitted (the charge can come back).
+const CHARGE_STATUSES = [
+  { value: "charged", label: "Charged" },
+  { value: "on_trial", label: "On trial" },
+  { value: "convicted", label: "Convicted" },
+  { value: "acquitted", label: "Acquitted" },
+  { value: "dnaa", label: "DNAA (discharged, not acquitted)" },
+  { value: "withdrawn", label: "Withdrawn" },
+  { value: "amended", label: "Amended (replaced by a newer charge)" },
+];
 const APPEAL_STATUSES = [
   { value: "", label: "Unknown" },
   { value: "none", label: "No appeal" },
@@ -233,8 +243,27 @@ const OUTCOMES = [
 
       <div data-tab-panel="case" role="tabpanel" hidden class="space-y-6">
         <section class="admin-card">
+          <h3 class="admin-card-title">Charges</h3>
+          <p class="admin-help mb-4">
+            Every charge against the accused, oldest first - one person often
+            has several (APJ 45A plus a drugs charge, or an APJ charge later
+            replaced by murder). Convicted, acquitted and DNAA need the date.
+            Publishing needs a convicted charge with its case number.
+          </p>
+          <ul id="dd-charges" class="space-y-4"></ul>
+          <button
+            type="button"
+            id="dd-charge-add"
+            class="admin-btn admin-btn-secondary mt-4"
+          >
+            <Plus className="h-4 w-4" />
+            Add charge
+          </button>
+        </section>
+
+        <section class="admin-card">
           <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h3 class="admin-card-title mb-0!">Conviction &amp; appeal</h3>
+            <h3 class="admin-card-title mb-0!">Case &amp; appeal</h3>
             <button
               type="button"
               id="dd-ai-status"
@@ -249,43 +278,11 @@ const OUTCOMES = [
           </div>
           <p class="admin-help mb-4">
             Owner-only. The AI cannot search the web - it re-reads the source
-            links, so add the newest news or court link first. An appeal that
-            quashed the conviction blocks publishing.
+            links, so add the newest news or court link first. The appeal is
+            about the convicted charge; one that quashed the conviction blocks
+            publishing.
           </p>
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <DateInput label="Conviction date" name="convictedOn" />
-            <div class="space-y-2">
-              <label class="admin-label" for="dd-case">Case reference</label>
-              <input
-                id="dd-case"
-                name="caseReference"
-                maxlength="100"
-                placeholder="Court + case no."
-                class="admin-input"
-              />
-            </div>
-            <div class="space-y-2 md:col-span-2">
-              <label class="admin-label" for="dd-charge">Charge</label>
-              <input
-                id="dd-charge"
-                name="charge"
-                maxlength="300"
-                placeholder="Seksyen 45A(1) APJ 1987"
-                class="admin-input"
-              />
-            </div>
-            <div class="space-y-2 md:col-span-2">
-              <label class="admin-label" for="dd-sentence"
-                >Sentence imposed</label
-              >
-              <textarea
-                id="dd-sentence"
-                name="sentence"
-                maxlength="500"
-                rows="2"
-                placeholder="Penjara, denda RM, lesen digantung..."
-                class="admin-input"></textarea>
-            </div>
             <Dropdown
               label="Case status"
               name="caseStatus"
@@ -454,6 +451,52 @@ const OUTCOMES = [
       </div>
     </form>
   </div>
+  <template id="dd-charge-row">
+    <li class="rounded-lg p-4 ring-1 ring-gray-950/10 dark:ring-white/10">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <label class="space-y-2 md:col-span-3"
+          ><span class="admin-label">Charge</span>
+          <input
+            name="charge.charge"
+            maxlength="300"
+            placeholder="Seksyen 45A(1) Akta Pengangkutan Jalan 1987 - ..."
+            class="admin-input"
+          /></label
+        >
+        <Dropdown
+          label="Status"
+          name="charge.status"
+          options={CHARGE_STATUSES}
+          placeholder="Charged"
+          class="w-full"
+        />
+        <DateInput label="Decided on" name="charge.decidedOn" />
+        <label class="space-y-2"
+          ><span class="admin-label">Court + case no.</span>
+          <input
+            name="charge.caseNumber"
+            maxlength="100"
+            placeholder="Mahkamah Majistret Klang, kes no. ..."
+            class="admin-input"
+          /></label
+        >
+        <label class="space-y-2 md:col-span-3"
+          ><span class="admin-label">Sentence for this charge</span>
+          <textarea
+            name="charge.sentence"
+            maxlength="500"
+            rows="2"
+            placeholder="Penjara, denda RM, lesen digantung..."
+            class="admin-input"></textarea></label
+        >
+      </div>
+      <button
+        type="button"
+        data-remove
+        class="admin-btn admin-btn-secondary mt-3 text-xs">Remove charge</button
+      >
+    </li>
+  </template>
   <template id="dd-victim-row">
     <li class="rounded-lg p-4 ring-1 ring-gray-950/10 dark:ring-white/10">
       <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -616,6 +659,11 @@ const OUTCOMES = [
         id="dd-draft-body"
         class="hidden flex-1 space-y-4 overflow-y-auto px-5 py-5"
       >
+        <p
+          id="dd-draft-summary"
+          class="rounded-lg bg-gray-950/3 px-3 py-2 text-sm text-gray-700 dark:bg-white/5 dark:text-gray-300"
+        >
+        </p>
         <label
           class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
         >
@@ -627,6 +675,12 @@ const OUTCOMES = [
           /> Select all
         </label>
         <ul id="dd-draft-items" class="space-y-3"></ul>
+        <p
+          id="dd-draft-notes-title"
+          class="pt-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400"
+        >
+          Notes
+        </p>
         <ul
           id="dd-draft-notes"
           class="list-disc space-y-1 pl-5 text-sm text-amber-700 wrap-anywhere dark:text-amber-300"
@@ -672,6 +726,8 @@ const OUTCOMES = [
     DrunkDriver,
     DrunkDriverDraft,
     DrunkDriverPayload,
+    ChargeStatus,
+    DrunkDriverCharge,
     DrunkDriverLawyer,
     DrunkDriverVictim,
     VictimOutcome,
@@ -683,6 +739,7 @@ const OUTCOMES = [
     dateOfBirth: "Date of birth",
     age: "Age",
     victims: "Victims",
+    charges: "Charges",
     incidentDate: "Incident date",
     location: "Location",
     details: "Details",
@@ -705,10 +762,7 @@ const OUTCOMES = [
   };
   // "Check case status (AI)" shows only these.
   const STATUS_FIELDS = new Set([
-    "convictedOn",
-    "caseReference",
-    "charge",
-    "sentence",
+    "charges",
     "caseStatus",
     "appealStatus",
     "appealDecidedOn",
@@ -735,10 +789,6 @@ const OUTCOMES = [
     "incidentDate",
     "location",
     "details",
-    "convictedOn",
-    "caseReference",
-    "charge",
-    "sentence",
     "caseStatus",
     "appealStatus",
     "appealDecidedOn",
@@ -791,6 +841,7 @@ const OUTCOMES = [
         courtDocuments: "dd-court-docs",
         victims: "dd-victims",
         lawyers: "dd-lawyers",
+        charges: "dd-charges",
       },
       reveal: showTabOf,
     });
@@ -918,6 +969,56 @@ const OUTCOMES = [
       addVictim().querySelector("input")?.focus();
     });
     const numberOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
+
+    const chargeList = document.getElementById("dd-charges")!;
+    const chargeTemplate = document.getElementById(
+      "dd-charge-row",
+    ) as HTMLTemplateElement;
+    const CHARGE_KEYS = [
+      "charge",
+      "status",
+      "decidedOn",
+      "caseNumber",
+      "sentence",
+    ] as const;
+    const chargeInput = (li: HTMLElement, k: string) =>
+      li.querySelector(`[name="charge.${k}"]`) as HTMLInputElement;
+    // Show the values set in a row in its Dropdown / DatePicker.
+    const showCharge = (li: HTMLElement) => {
+      chargeInput(li, "status").dispatchEvent(new Event("change"));
+      chargeInput(li, "decidedOn").dispatchEvent(new Event("change"));
+    };
+    const addCharge = (c: Partial<DrunkDriverCharge> = {}) => {
+      const li = cloneRow(chargeTemplate);
+      for (const k of CHARGE_KEYS)
+        chargeInput(li, k).value = c[k] == null ? "" : String(c[k]);
+      chargeList.append(li);
+      initDropdowns();
+      showCharge(li);
+      return li;
+    };
+    document.getElementById("dd-charge-add")!.addEventListener("click", () => {
+      addCharge().querySelector("input")?.focus();
+    });
+    const chargeRows = () => [
+      ...chargeList.querySelectorAll<HTMLElement>(":scope > li"),
+    ];
+    const collectCharges = (): DrunkDriverCharge[] =>
+      chargeRows()
+        .map((li) => {
+          const val = (k: string) => chargeInput(li, k).value.trim();
+          return {
+            charge: val("charge"),
+            status: (val("status") || "charged") as ChargeStatus,
+            decidedOn: val("decidedOn") || null,
+            caseNumber: val("caseNumber") || null,
+            sentence: val("sentence") || null,
+          };
+        })
+        .filter((c) => c.charge); // a row without the charge text is not a charge
+    const firstConvicted = () =>
+      collectCharges().find((c) => c.status === "convicted" && c.decidedOn)
+        ?.decidedOn ?? "";
     const collectVictims = (): DrunkDriverVictim[] =>
       // Direct rows only - each row's <Dropdown> menu has <li> options of its own.
       [...victimList.querySelectorAll(":scope > li")]
@@ -1015,8 +1116,8 @@ const OUTCOMES = [
         field(name).addEventListener(ev, updateHints);
     // Default the start to the conviction date the first time months are entered.
     field("licenceDisqualifiedMonths").addEventListener("change", () => {
-      if (!field("licenceDisqualifiedFrom").value && field("convictedOn").value)
-        setField("licenceDisqualifiedFrom", field("convictedOn").value);
+      if (!field("licenceDisqualifiedFrom").value && firstConvicted())
+        setField("licenceDisqualifiedFrom", firstConvicted());
       updateHints();
     });
     updateHints();
@@ -1154,6 +1255,10 @@ const OUTCOMES = [
     const items = document.getElementById("dd-draft-items")!;
     const notes = document.getElementById("dd-draft-notes")!;
     const all = document.getElementById("dd-draft-all") as HTMLInputElement;
+    const summary = document.getElementById("dd-draft-summary")!;
+    const notesTitle = document.getElementById("dd-draft-notes-title")!;
+    // Group heading tick-boxes (Accused, Charges, ...): each ticks its own rows.
+    let groupBoxes: { box: HTMLInputElement; members: HTMLInputElement[] }[] = [];
     const fillBtn = document.getElementById(
       "dd-draft-fill",
     ) as HTMLButtonElement;
@@ -1188,6 +1293,35 @@ const OUTCOMES = [
       dateOfBirth: "Accused - date of birth",
       age: "Accused - age",
     };
+    const ACCUSED_FIELDS = new Set([
+      "fullName",
+      "accusedDescription",
+      "icNumber",
+      "dateOfBirth",
+      "age",
+    ]);
+    const CHARGE_TEXT: Record<string, string> = {
+      charged: "Charged",
+      on_trial: "On trial",
+      convicted: "Convicted",
+      acquitted: "Acquitted",
+      dnaa: "DNAA",
+      withdrawn: "Withdrawn",
+      amended: "Amended",
+    };
+    // Same charge = same section of the same law ("Seksyen 302 Kanun Keseksaan" = "Section 302 of the Penal Code");
+    // a charge without a section matches only the same text.
+    const chargeKey = (t: string) => {
+      const section = /(?:seksyen|section|s\.)\s*(\d+[a-z]?)/i
+        .exec(t)?.[1]
+        ?.toLowerCase();
+      const law = /kanun keseksaan|penal code/i.test(t)
+        ? "kk"
+        : /dadah|drug/i.test(t)
+          ? "dadah"
+          : "apj";
+      return section ? `${law}:${section}` : t.trim().toLowerCase();
+    };
     const OUTCOME_TEXT: Record<string, string> = {
       killed: "killed",
       seriously_injured: "seriously injured",
@@ -1208,6 +1342,11 @@ const OUTCOMES = [
       fillLabel.textContent = n ? `Fill form (${n})` : "Nothing selected";
       all.checked = n === picks.length && n > 0;
       all.indeterminate = n > 0 && n < picks.length;
+      for (const g of groupBoxes) {
+        const on = g.members.filter((b) => b.checked).length;
+        g.box.checked = on === g.members.length;
+        g.box.indeterminate = on > 0 && on < g.members.length;
+      }
     };
     all.addEventListener("change", () => {
       for (const p of picks) p.box.checked = all.checked;
@@ -1280,9 +1419,10 @@ const OUTCOMES = [
       support?: number | null, // Clef-flash P(the quote states this value); null = not scored, undefined = not an AI value
     ) => {
       const li = document.createElement("li");
+      li.className =
+        "rounded-lg p-3 ring-1 ring-gray-950/10 has-checked:ring-sky-500/40 data-look:bg-amber-500/5 data-look:ring-amber-500/40 dark:ring-white/10";
       const label = document.createElement("label");
-      label.className =
-        "flex cursor-pointer gap-3 rounded-lg p-3 ring-1 ring-gray-950/10 has-checked:ring-sky-500/40 dark:ring-white/10";
+      label.className = "flex cursor-pointer gap-3";
       const box = document.createElement("input");
       box.type = "checkbox";
       box.checked = true;
@@ -1290,12 +1430,14 @@ const OUTCOMES = [
         "mt-1 shrink-0 h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20";
       box.addEventListener("change", countPicked);
       const text = document.createElement("div");
-      text.className = "min-w-0 flex-1 space-y-1 wrap-anywhere";
+      text.className = "min-w-0 flex-1 wrap-anywhere";
       const head = document.createElement("p");
-      head.className = "text-sm";
-      const strong = document.createElement("strong");
-      strong.textContent = `${title}: `;
-      head.append(strong, value);
+      head.className =
+        "flex flex-wrap items-center gap-x-2 text-xs text-gray-500 dark:text-gray-400";
+      head.append(title);
+      const val = document.createElement("p");
+      val.className = "mt-0.5 text-sm font-medium text-gray-950 dark:text-white";
+      val.textContent = value;
       if (support !== undefined) {
         const pct = Math.round((support ?? 0) * 100);
         head.append(clefBadge(support));
@@ -1310,9 +1452,15 @@ const OUTCOMES = [
             .join(" ");
         }
       }
+      text.append(head, val);
+      label.append(box, text);
+      const more = document.createElement("div");
+      more.className = "mt-2 space-y-1 pl-7 wrap-anywhere";
       const q = document.createElement("blockquote");
       q.className =
-        "border-l-2 border-sky-500/40 pl-2 text-xs text-gray-600 dark:text-gray-400";
+        "line-clamp-2 cursor-pointer border-l-2 border-sky-500/40 pl-2 text-xs text-gray-600 dark:text-gray-400";
+      q.title = "Show the whole quote";
+      q.addEventListener("click", () => q.classList.toggle("line-clamp-2"));
       q.textContent = quote ? `"${quote}" - ` : "";
       const a = document.createElement("a");
       a.href = source;
@@ -1320,16 +1468,17 @@ const OUTCOMES = [
       a.rel = "noopener noreferrer";
       a.className = "link";
       a.textContent = quote ? host(source) : source;
+      a.addEventListener("click", (e) => e.stopPropagation());
       q.append(a);
-      text.append(head, q);
+      more.append(q);
       if (note) {
+        li.dataset.look = "";
         const p = document.createElement("p");
         p.className = "text-xs text-amber-700 dark:text-amber-300";
         p.textContent = note;
-        text.append(p);
+        more.append(p);
       }
-      label.append(box, text);
-      li.append(label);
+      li.append(label, more);
       picks.push({ box, apply });
       return li;
     };
@@ -1467,6 +1616,7 @@ const OUTCOMES = [
           (undisclosed.checked &&
             (name === "fullName" || name === "accusedDescription"));
         let same = 0;
+        const fieldNames: string[] = []; // rows[i] is the field fieldNames[i] (for the group headings)
         const rows = Object.entries(draft.fields)
           .filter(([name]) => wanted(name))
           // A description only helps while the accused is unnamed.
@@ -1484,6 +1634,7 @@ const OUTCOMES = [
             return !match;
           })
           .map(([name, f]) => {
+            fieldNames.push(name);
             if (name === "accusedDescription")
               return item(
                 DRAFT_TITLES[name],
@@ -1536,6 +1687,87 @@ const OUTCOMES = [
               picks[picks.length - 1].box.checked = false;
             return row;
           });
+        // Rows under headings in reading order: who, what they are charged with, the case, then the people around it.
+        const group = new Map<HTMLElement, string>();
+        rows.forEach((r, i) =>
+          group.set(r, ACCUSED_FIELDS.has(fieldNames[i]) ? "Accused" : "Case"),
+        );
+        const push = (g: string, li: HTMLLIElement) => {
+          group.set(li, g);
+          rows.push(li);
+        };
+
+        // Charges: one the form already has (same section of the same law) is updated, not added again - a
+        // follow-up usually changes its status (charged -> DNAA / convicted), date or sentence.
+        for (const c of only && !only.has("charges") ? [] : draft.charges) {
+          const row = chargeRows().find(
+            (li) =>
+              chargeKey(chargeInput(li, "charge").value) ===
+              chargeKey(c.charge),
+          );
+          const was = (k: string) =>
+            row ? chargeInput(row, k).value.trim() : "";
+          // Status and date follow the newer report; court/case no. and sentence only fill an empty box.
+          const changes = row
+            ? [
+                c.status !== (was("status") || "charged") &&
+                  `status ${CHARGE_TEXT[was("status") || "charged"]} -> ${CHARGE_TEXT[c.status]}`,
+                c.decidedOn &&
+                  c.decidedOn !== was("decidedOn") &&
+                  `decided on ${c.decidedOn}`,
+                c.caseNumber && !was("caseNumber") && "court + case no.",
+                c.sentence && !was("sentence") && "sentence",
+              ].filter((x): x is string => !!x)
+            : [];
+          if (row && !changes.length) {
+            same++; // nothing new about this charge
+            continue;
+          }
+          push(
+            "Charges",
+            item(
+              row ? "Charge - update" : "Charge",
+              [
+                c.charge,
+                CHARGE_TEXT[c.status] +
+                  (c.decidedOn ? ` (${c.decidedOn})` : ""),
+                c.caseNumber,
+                c.sentence,
+              ]
+                .filter(Boolean)
+                .join(" - "),
+              c.quote,
+              c.source,
+              row
+                ? `Already in your charges - updates: ${changes.join(", ")}.`
+                : ["convicted", "acquitted", "dnaa"].includes(c.status) &&
+                    !c.decidedOn
+                  ? "No date on the page - add the date of the decision before saving."
+                  : null,
+              () => {
+                // A new charge goes into the empty starting row when there is one.
+                const li =
+                  row ??
+                  chargeRows().find(
+                    (r) => !chargeInput(r, "charge").value.trim(),
+                  ) ??
+                  addCharge();
+                if (!row) chargeInput(li, "charge").value = c.charge;
+                chargeInput(li, "status").value = c.status;
+                if (c.decidedOn)
+                  chargeInput(li, "decidedOn").value = c.decidedOn;
+                if (c.caseNumber && !chargeInput(li, "caseNumber").value.trim())
+                  chargeInput(li, "caseNumber").value = c.caseNumber;
+                if (c.sentence && !chargeInput(li, "sentence").value.trim())
+                  chargeInput(li, "sentence").value = c.sentence;
+                showCharge(li);
+                markRow(li, c.support ?? null);
+              },
+              c.support ?? null,
+            ),
+          );
+        }
+
         // A victim already in the list (same name) is filled in, not added again: a follow-up often brings only
         // the IC or date of birth. Only the row's empty boxes are filled - the owner's own values stay.
         const VICTIM_KEYS = [
@@ -1568,7 +1800,8 @@ const OUTCOMES = [
             continue;
           }
           const newIc = v.icNumber && (!row || fills.includes("icNumber"));
-          rows.push(
+          push(
+            "Victims",
             item(
               row ? "Victim - fill in" : "Victim",
               [
@@ -1633,7 +1866,8 @@ const OUTCOMES = [
           const have = collectLawyers().some(
             (x) => x.name.toLowerCase() === l.name.toLowerCase(),
           );
-          rows.push(
+          push(
+            "Lawyers",
             item(
               "Lawyer",
               [
@@ -1661,11 +1895,12 @@ const OUTCOMES = [
           if (have) picks[picks.length - 1].box.checked = false;
         }
         const haveDocs = new Set(courtDocs.list());
-        for (const d of only && !only.has("caseReference")
+        for (const d of only && !only.has("charges")
           ? []
           : draft.documentLinks) {
           if (haveDocs.has(d.url)) continue;
-          rows.push(
+          push(
+            "Sources",
             item(
               "Court document",
               d.text ||
@@ -1682,6 +1917,7 @@ const OUTCOMES = [
         const cited = new Set(
           [
             ...Object.values(draft.fields),
+            ...draft.charges,
             ...draft.victims,
             ...draft.lawyers,
           ].map((x) => x.source),
@@ -1696,7 +1932,8 @@ const OUTCOMES = [
             unused.push(host(src.url));
             continue;
           }
-          rows.push(
+          push(
+            "Sources",
             item(
               "New source",
               src.title || host(src.url),
@@ -1711,19 +1948,62 @@ const OUTCOMES = [
             ),
           );
         }
-        items.replaceChildren(...rows);
+        const GROUPS = [
+          "Accused",
+          "Charges",
+          "Case",
+          "Victims",
+          "Lawyers",
+          "Sources",
+        ];
+        const boxOf = (r: HTMLElement) =>
+          r.querySelector<HTMLInputElement>("input[type=checkbox]")!;
+        // Unticked from the start (weak quote, an IC, a guess) = read it first, like a row with a note.
+        for (const r of rows) if (!boxOf(r).checked) r.dataset.look = "";
+        groupBoxes = [];
+        items.replaceChildren(
+          ...GROUPS.flatMap((g) => {
+            const inGroup = rows.filter((r) => group.get(r) === g);
+            if (!inGroup.length) return [];
+            const h = document.createElement("li");
+            const label = document.createElement("label");
+            label.className =
+              "flex cursor-pointer items-center gap-2 pt-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400";
+            const box = document.createElement("input");
+            box.type = "checkbox";
+            box.className = all.className;
+            const members = inGroup.map(boxOf);
+            box.addEventListener("change", () => {
+              for (const b of members) b.checked = box.checked;
+              countPicked();
+            });
+            groupBoxes.push({ box, members });
+            label.append(box, `${g} (${inGroup.length})`);
+            h.append(label);
+            return [h, ...inGroup];
+          }),
+        );
+        const look = rows.filter((r) => "look" in r.dataset).length;
+        summary.textContent = rows.length
+          ? [
+              `${rows.length} item(s) found`,
+              look ? `${look} to check first (amber, unticked or with a note)` : "",
+              same ? `${same} already in the form` : "",
+            ]
+              .filter(Boolean)
+              .join(" · ")
+          : "";
+        summary.hidden = !rows.length;
         if (!rows.length)
-          items.textContent =
-            "Nothing could be confirmed from these pages - fill the form by hand.";
+          items.textContent = same
+            ? `Nothing new - the ${same} value(s) these pages state are already in the form.`
+            : "Nothing could be confirmed from these pages - fill the form by hand.";
         all.parentElement!.classList.toggle("hidden", !rows.length);
         notes.replaceChildren(
           ...[
             ...draft.conflicts.map(
               (c) => `Conflict (${LABELS[c.field] ?? c.field}): ${c.note}`,
             ),
-            ...(same
-              ? [`${same} value(s) already match the form - not shown.`]
-              : []),
             ...(draft.search
               ? [
                   draft.search.error
@@ -1769,6 +2049,7 @@ const OUTCOMES = [
             Object.assign(document.createElement("li"), { textContent: t }),
           ),
         );
+        notesTitle.hidden = !notes.children.length;
         setBusy(false);
         countPicked();
         if (!sheet.open) sheet.showModal(); // closed while waiting - the draft is ready now
@@ -1833,10 +2114,12 @@ const OUTCOMES = [
         el.dispatchEvent(new Event("change")); // DatePicker shows the loaded date
       field("age").value = record.age == null ? "" : String(record.age);
       record.victims.forEach((v) => addVictim(v));
+      record.charges.forEach((c) => addCharge(c));
       updateHints();
       driverAuto();
       field("published").checked = record.published;
     }
+    if (!chargeRows().length) addCharge(); // one empty row to start from
     syncName(); // after the record is loaded (label, required, publish lock)
     const guard = setupFormGuard(form);
 
@@ -1863,10 +2146,7 @@ const OUTCOMES = [
         incidentDate: text("incidentDate"),
         location: text("location"),
         details: text("details"),
-        convictedOn: text("convictedOn"),
-        caseReference: text("caseReference"),
-        charge: text("charge"),
-        sentence: text("sentence"),
+        charges: collectCharges(),
         caseStatus: text("caseStatus") as DrunkDriverPayload["caseStatus"],
         appealStatus: text(
           "appealStatus",

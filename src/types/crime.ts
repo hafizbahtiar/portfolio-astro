@@ -12,6 +12,18 @@ export type AppealStatus = "none" | "filed" | "dismissed" | "allowed" | "partly_
 
 export type AlcoholTest = "breath" | "blood" | "urine";
 
+/** Per charge. dnaa = discharged, NOT acquitted (can come back). amended = replaced by a newer charge. */
+export type ChargeStatus = "charged" | "on_trial" | "convicted" | "acquitted" | "dnaa" | "withdrawn" | "amended";
+
+/** One charge against the accused. convicted / acquitted / dnaa need decidedOn. */
+export interface DrunkDriverCharge {
+  charge: string;
+  caseNumber: string | null;
+  status: ChargeStatus;
+  decidedOn: string | null;
+  sentence: string | null;
+}
+
 export interface DrunkDriverLawyer {
   name: string;
   role: "defence" | "prosecution" | null;
@@ -42,10 +54,10 @@ export interface DrunkDriver {
   incidentDate: string | null;
   location: string | null;
   details: string | null;
+  /** Earliest convicted charge's date - worked out by the API, not sent back. */
   convictedOn: string | null;
-  caseReference: string | null;
-  charge: string | null;
-  sentence: string | null;
+  /** In order. The appeal and licence fields belong to the convicted one (else the first). */
+  charges: DrunkDriverCharge[];
   caseStatus: CaseStatus | null;
   appealStatus: AppealStatus | null;
   appealDecidedOn: string | null;
@@ -69,7 +81,7 @@ export interface DrunkDriver {
   victims: DrunkDriverVictim[];
 }
 
-export type DrunkDriverPayload = Omit<DrunkDriver, "id" | "createdAt" | "updatedAt" | "photos" | "licenceDisqualifiedUntil">;
+export type DrunkDriverPayload = Omit<DrunkDriver, "id" | "createdAt" | "updatedAt" | "photos" | "licenceDisqualifiedUntil" | "convictedOn">;
 
 /** Public view - all the API ever sends to visitors. `ic` is a mask, never digits. */
 export interface PublicDrunkDriver {
@@ -81,13 +93,14 @@ export interface PublicDrunkDriver {
 }
 
 export type ExtractField =
-  | "fullName" | "accusedDescription" | "icNumber" | "dateOfBirth" | "age" | "incidentDate" | "location" | "convictedOn" | "caseReference" | "details"
-  | "charge" | "sentence" | "caseStatus" | "appealStatus" | "appealDecidedOn" | "appealNotes"
+  | "fullName" | "accusedDescription" | "icNumber" | "dateOfBirth" | "age" | "incidentDate" | "location" | "details"
+  | "caseStatus" | "appealStatus" | "appealDecidedOn" | "appealNotes"
   | "alcoholTest" | "alcoholReading" | "licenceDisqualifiedMonths";
 
 /** AI draft from source links - every field's quote was found on its page by the API. Nothing is saved. */
 export interface DrunkDriverDraft {
   fields: Partial<Record<ExtractField, { value: string; source: string; quote: string; support?: number | null }>>;
+  charges: (DrunkDriverCharge & { source: string; quote: string; support?: number | null })[];
   victims: { fullName: string | null; icNumber: string | null; dateOfBirth: string | null; notes: string | null; age: number | null; outcome: VictimOutcome | null; source: string; quote: string; support?: number | null }[];
   lawyers: (DrunkDriverLawyer & { source: string; quote: string; support?: number | null })[];
   /** Court-document-looking links found on the source pages (no AI). */
