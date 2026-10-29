@@ -273,14 +273,16 @@ const OUTCOMES = [
               <LoaderCircle
                 className="h-4 w-4 dd-ai-busy hidden animate-spin"
               />
-              Check case status (AI)
+              Check for updates (AI)
             </button>
           </div>
           <p class="admin-help mb-4">
-            Owner-only. The AI cannot search the web - it re-reads the source
-            links, so add the newest news or court link first. The appeal is
-            about the convicted charge; one that quashed the conviction blocks
-            publishing.
+            Owner-only. "Check for updates" re-reads your source links and
+            searches the web for newer news on the accused (or a victim) -
+            a new hearing, DNAA, conviction, sentence, appeal, a changed charge,
+            a victim who later died, new lawyers. What the form already has is
+            not shown again. The appeal is about the convicted charge; one that
+            quashed the conviction blocks publishing.
           </p>
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             <Dropdown
@@ -1534,7 +1536,7 @@ const OUTCOMES = [
               : "Reading the source pages..."
             : sec < 30
               ? only
-                ? "AI is looking for the sentence and any appeal..."
+                ? "AI is looking for what changed: charges, hearings, sentence, appeal..."
                 : "AI is picking out the accused, victims and dates..."
               : "Still working - long pages take up to a minute...";
       };
@@ -1555,9 +1557,11 @@ const OUTCOMES = [
       search = "";
       void runDraft();
     });
+    // A follow-up searches too when the form knows who to look for - the news that moved the case is
+    // rarely in the links already saved. Nothing to search for = just re-read the links.
     statusBtn.addEventListener("click", () => {
       only = STATUS_FIELDS;
-      search = "";
+      search = searchQuery();
       void runDraft();
     });
     // Query from what the form already knows: the name, else a victim; plus place and year.
@@ -1788,7 +1792,7 @@ const OUTCOMES = [
           );
         const victimInput = (li: HTMLElement, k: string) =>
           li.querySelector(`[name="victim.${k}"]`) as HTMLInputElement;
-        for (const v of only ? [] : draft.victims) {
+        for (const v of draft.victims) {
           const row = v.fullName ? victimRow(v.fullName) : undefined;
           const fills = row
             ? VICTIM_KEYS.filter(
@@ -1862,7 +1866,7 @@ const OUTCOMES = [
           );
           if (newIc) picks[picks.length - 1].box.checked = false;
         }
-        for (const l of only ? [] : draft.lawyers) {
+        for (const l of draft.lawyers) {
           const have = collectLawyers().some(
             (x) => x.name.toLowerCase() === l.name.toLowerCase(),
           );
