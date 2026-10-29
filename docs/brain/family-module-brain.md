@@ -95,7 +95,8 @@ Children: `FamilyToolbar`, `FamilyTreeCanvas` (tree only - the public List view 
 - **Real d3 zoom** via `f3.handlers.manualZoom({ amount, svg, transition_time })` and `f3.handlers.zoomTo(svg, 1)` - **not** fake card-spacing. (✅ both handlers confirmed to exist in the installed package types.)
 - Exposed `FamilyChartApi`: `zoomIn` (×1.25), `zoomOut` (×0.8), `fit`, `resetView` (zoomTo 1 + fit), `centerMain` (`main_to_middle`), `setOrientation`. Selecting a card only reports the id via `onSelect`; the `mainId` effect is the single place that re-centers.
 - **Reduced motion**: `prefersReducedMotion()` → `transitionTime = 0` (✅ respected).
-- Init effect deps: `[ancestryDepth, data, progenyDepth]` (callbacks held in refs so they don't re-init). A separate effect re-centers when `mainId` changes.
+- **Read-only placeholders**: `setSingleParentEmptyCard(false)` - the library's "ADD" cards never render (public cannot add people). `initialView` is `"fit"` (default) or `"center"` (opens on the main person at 1:1; used by `/salasilah-rasulullah`).
+- Init effect deps: `[ancestryDepth, data, initialView, progenyDepth]` (callbacks held in refs so they don't re-init). A separate effect re-centers when `mainId` changes.
 - **Cleanup**: sets `destroyed`, nulls refs, `onApiReady(null)`, `container.innerHTML = ""`. No `chart.destroy()` exists in the lib; clearing the container removes the SVG and its listeners.
 
 `FamilyTreeCanvas.tsx` is the thin wrapper: `role="application"` with an aria-label telling

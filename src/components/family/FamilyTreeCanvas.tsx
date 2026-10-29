@@ -10,6 +10,7 @@ interface Props {
   mainId: string | null;
   ancestryDepth?: number;
   progenyDepth?: number;
+  initialView?: "fit" | "center";
   onSelect: (id: string) => void;
   apiRefOut: React.RefObject<FamilyChartApi | null>;
 }
@@ -19,6 +20,7 @@ export const FamilyTreeCanvas = ({
   mainId,
   ancestryDepth,
   progenyDepth,
+  initialView,
   onSelect,
   apiRefOut,
 }: Props) => {
@@ -34,6 +36,7 @@ export const FamilyTreeCanvas = ({
     mainId,
     ancestryDepth,
     progenyDepth,
+    initialView,
     onSelect,
     onApiReady: handleApiReady,
   });

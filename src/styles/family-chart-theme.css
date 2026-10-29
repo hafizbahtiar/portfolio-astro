@@ -3,16 +3,15 @@
    builder (below) keeps its own look. The library's card classes are
    card-inner / card-rect / card-image-circle / card-main (hyphen). */
 .f3.family-chart--public {
-  --female-color: var(--color-gray-200);
-  --male-color: var(--color-gray-200);
-  --genderless-color: var(--color-gray-200);
+  --female-color: rgb(196 138 146);
+  --male-color: rgb(120 159 172);
+  --genderless-color: var(--color-gray-500);
   --background-color: var(--color-white);
-  --text-color: var(--color-gray-950);
-  --f3-card-bg: var(--color-white);
+  --text-color: var(--color-white);
   --f3-card-label-bg: var(--color-white);
-  --f3-card-border: color-mix(in oklab, var(--color-gray-950) 6%, transparent);
-  --f3-card-border-hover: color-mix(in oklab, var(--color-gray-950) 16%, transparent);
-  --f3-card-sub: var(--color-gray-500);
+  --f3-card-border: color-mix(in oklab, var(--color-gray-950) 12%, transparent);
+  --f3-card-border-hover: color-mix(in oklab, var(--color-gray-950) 24%, transparent);
+  --f3-card-sub: rgb(255 255 255 / 0.8);
   --f3-card-accent: var(--color-sky-500);
   --f3-link: var(--color-gray-300);
 
@@ -20,24 +19,22 @@
 }
 
 .dark .f3.family-chart--public {
-  --female-color: var(--color-gray-700);
-  --male-color: var(--color-gray-700);
-  --genderless-color: var(--color-gray-700);
+  --female-color: rgb(196 138 146);
+  --male-color: rgb(120 159 172);
+  --genderless-color: var(--color-gray-600);
   --background-color: var(--color-gray-950);
   --text-color: var(--color-white);
-  --f3-card-bg: color-mix(in oklab, var(--color-white) 5%, transparent);
   --f3-card-label-bg: var(--color-gray-900);
-  --f3-card-border: color-mix(in oklab, var(--color-white) 10%, transparent);
-  --f3-card-border-hover: color-mix(in oklab, var(--color-white) 22%, transparent);
-  --f3-card-sub: var(--color-gray-400);
+  --f3-card-border: color-mix(in oklab, var(--color-white) 18%, transparent);
+  --f3-card-border-hover: color-mix(in oklab, var(--color-white) 32%, transparent);
+  --f3-card-sub: rgb(255 255 255 / 0.8);
   --f3-card-accent: var(--color-sky-400);
   --f3-link: var(--color-gray-700);
 }
 
-/* .card parent: out-specifies the library's .f3 div.card-<gender> .card-inner
-   background rule (which otherwise paints cards with the gender colour). */
+/* No background here: the library paints card-inner with --male-color /
+   --female-color / --genderless-color. Keep the hairline and no shadow. */
 .f3.family-chart--public .card .card-inner {
-  background: var(--f3-card-bg);
   border: 1px solid var(--f3-card-border);
   outline: none;
   box-shadow: none;
@@ -67,8 +64,12 @@
   background: var(--f3-card-label-bg);
   border: 1px solid var(--f3-card-border);
   border-radius: 0.5rem;
-  color: var(--text-color);
+  color: var(--color-gray-950);
   padding: 2px 8px;
+}
+
+.dark .f3.family-chart--public .card-image-circle .card-label {
+  color: var(--color-white);
 }
 
 .f3.family-chart--public .card-image-circle img {

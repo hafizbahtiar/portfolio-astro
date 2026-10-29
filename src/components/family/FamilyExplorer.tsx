@@ -13,6 +13,7 @@ interface Props {
   detail: PublicFamilyTreeDetail;
   ancestryDepth?: number;
   progenyDepth?: number;
+  initialView?: "fit" | "center";
 }
 
 const resolveDeepLink = (detail: PublicFamilyTreeDetail): number | null => {
@@ -33,6 +34,7 @@ export const FamilyExplorer = ({
   detail,
   ancestryDepth,
   progenyDepth,
+  initialView,
 }: Props) => {
   const chartData = useMemo(() => buildChartData(detail), [detail]);
   const [vertical, setVertical] = useState(true);
@@ -114,6 +116,7 @@ export const FamilyExplorer = ({
             mainId={selectedId !== null ? String(selectedId) : null}
             ancestryDepth={ancestryDepth}
             progenyDepth={progenyDepth}
+            initialView={initialView}
             onSelect={(id) => selectPerson(Number(id), { openSheet: true })}
             apiRefOut={apiRef}
           />

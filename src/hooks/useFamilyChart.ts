@@ -17,6 +17,8 @@ interface Options {
   mainId: string | null;
   ancestryDepth?: number;
   progenyDepth?: number;
+  /** "fit" (default) shows the whole tree; "center" opens on the main person at 1:1. */
+  initialView?: "fit" | "center";
   onSelect?: (id: string) => void;
   onApiReady?: (api: FamilyChartApi | null) => void;
 }
@@ -30,6 +32,7 @@ export function useFamilyChart({
   mainId,
   ancestryDepth,
   progenyDepth,
+  initialView = "fit",
   onSelect,
   onApiReady,
 }: Options) {
@@ -69,7 +72,8 @@ export function useFamilyChart({
         .setCardXSpacing(250)
         .setCardYSpacing(150)
         .setShowSiblingsOfMain(true)
-        .setDuplicateBranchToggle(true);
+        .setDuplicateBranchToggle(true)
+        .setSingleParentEmptyCard(false);
 
       if (typeof ancestryDepth === "number") {
         chart.setAncestryDepth(ancestryDepth);
@@ -134,11 +138,20 @@ export function useFamilyChart({
 
       chart.setOrientationVertical();
       if (mainIdRef.current) chart.updateMainId(mainIdRef.current);
-      chart.updateTree({
-        initial: true,
-        tree_position: "fit",
-        transition_time: transitionTime,
-      });
+      chart.updateTree(
+        initialView === "center"
+          ? {
+            initial: false,
+            tree_position: "main_to_middle",
+            scale: 1,
+            transition_time: transitionTime,
+          }
+          : {
+            initial: true,
+            tree_position: "fit",
+            transition_time: transitionTime,
+          },
+      );
     })().catch((error) => {
       console.error("Failed to initialize family chart:", error);
     });
@@ -149,7 +162,7 @@ export function useFamilyChart({
       onApiReadyRef.current?.(null);
       if (container) container.innerHTML = "";
     };
-  }, [ancestryDepth, data, progenyDepth]);
+  }, [ancestryDepth, data, initialView, progenyDepth]);
 
   useEffect(() => {
     const chart = chartRef.current;

@@ -5,11 +5,13 @@
  * Sahih Muslim 2276 (Allah memilih Kinanah daripada anak Isma'il, Quraysh
  * daripada Kinanah, dan Bani Hashim daripada Quraysh). Disusun dengan tangan.
  *
- * Skop: nasab Bani Hashim sehingga Adnan, ibu (Aminah), 11 isteri, 7 anak, dan
- * cucu melalui Fatimah & Ali. Nasab selepas Adnan hingga Nabi Isma'il tidak
- * dipaparkan kerana riwayat tidak sepakat. Mariyah al-Qibtiyyah (ibu Ibrahim),
- * bapa/ibu saudara dan keturunan seterusnya sengaja tidak dimasukkan; Ibrahim
- * dipautkan kepada Nabi SAW sahaja. Tarikh hanya anggaran (570-632 M).
+ * Skop: nasab Bani Hashim sehingga Adnan, ibu (Aminah), datuk/nenek (Abdul
+ * Muttalib, Fatimah binti Amr), bapa saudara (Abu Talib, Hamzah, Al-Abbas),
+ * ibu bapa Ali (Abu Talib, Fatimah binti Asad), 11 isteri, 7 anak, cucu melalui
+ * Zainab, Ruqaiyah dan Fatimah, serta Mariyah al-Qibtiyyah (ibu Ibrahim;
+ * status isteri/hamba diperselisihkan, jadi tiada pautan isteri). Nasab selepas
+ * Adnan hingga Nabi Isma'il tidak dipaparkan kerana riwayat tidak sepakat.
+ * Muhsin ibn Ali tidak dimasukkan (diperselisihkan). Tarikh hanya anggaran.
  */
 import type {
   PublicFamilyPerson,
@@ -64,6 +66,17 @@ const P = {
   husain: 44,
   zainabAli: 45,
   ummKulthumAli: 46,
+  fatimahAmr: 47,
+  abuTalib: 48,
+  fatimahAsad: 49,
+  hamzah: 50,
+  abbas: 51,
+  abuAlAs: 52,
+  aliAbiAlAs: 53,
+  umamah: 54,
+  uthman: 55,
+  abdullahUthman: 56,
+  mariyah: 57,
 } as const;
 
 const person = (
@@ -108,6 +121,8 @@ const RELATIONSHIPS: [number, number, FamilyRelationshipType][] = [
   [P.maadd, P.nizar, "parent"],
   [P.adnan, P.maadd, "parent"],
   [P.aminah, P.muhammad, "parent"],
+  // Ibu dan bapa Nabi SAW adalah suami isteri.
+  [P.abdullah, P.aminah, "spouse"],
   // Isteri-isteri (Khadijah hingga Maimunah).
   [P.muhammad, P.khadijah, "spouse"],
   [P.muhammad, P.sawdah, "spouse"],
@@ -145,6 +160,31 @@ const RELATIONSHIPS: [number, number, FamilyRelationshipType][] = [
   [P.ali, P.husain, "parent"],
   [P.ali, P.zainabAli, "parent"],
   [P.ali, P.ummKulthumAli, "parent"],
+  // Datuk dan nenek: Fatimah binti Amr ibu Abdullah dan Abu Talib.
+  [P.abdulMuttalib, P.fatimahAmr, "spouse"],
+  [P.fatimahAmr, P.abdullah, "parent"],
+  [P.fatimahAmr, P.abuTalib, "parent"],
+  // Bapa saudara.
+  [P.abdulMuttalib, P.abuTalib, "parent"],
+  [P.abdulMuttalib, P.hamzah, "parent"],
+  [P.abdulMuttalib, P.abbas, "parent"],
+  // Ibu bapa Ali.
+  [P.abuTalib, P.fatimahAsad, "spouse"],
+  [P.abuTalib, P.ali, "parent"],
+  [P.fatimahAsad, P.ali, "parent"],
+  // Cucu melalui Zainab dan Abu al-As.
+  [P.zainab, P.abuAlAs, "spouse"],
+  [P.zainab, P.aliAbiAlAs, "parent"],
+  [P.abuAlAs, P.aliAbiAlAs, "parent"],
+  [P.zainab, P.umamah, "parent"],
+  [P.abuAlAs, P.umamah, "parent"],
+  // Cucu melalui Ruqaiyah (Uthman juga suami Umm Kulthum).
+  [P.ruqaiyah, P.uthman, "spouse"],
+  [P.ummKulthum, P.uthman, "spouse"],
+  [P.ruqaiyah, P.abdullahUthman, "parent"],
+  [P.uthman, P.abdullahUthman, "parent"],
+  // Ibu Ibrahim (status isteri/hamba diperselisihkan - tiada pautan isteri).
+  [P.mariyah, P.ibrahim, "parent"],
 ];
 
 export const SALASILAH_NABI: PublicFamilyTreeDetail = {
@@ -152,7 +192,7 @@ export const SALASILAH_NABI: PublicFamilyTreeDetail = {
     slug: "salasilah-rasulullah",
     name: "Salasilah Rasulullah SAW",
     description:
-      "Nasab Nabi Muhammad SAW sehingga Adnan, bersama ibu, isteri, anak dan cucu.",
+      "Nasab Nabi Muhammad SAW sehingga Adnan, bersama ibu, isteri, anak, cucu dan kerabat terdekatnya.",
     defaultMainPersonId: P.muhammad,
   },
   people: [
@@ -215,6 +255,37 @@ export const SALASILAH_NABI: PublicFamilyTreeDetail = {
       P.ummKulthumAli,
       "Umm Kulthum binti Ali",
       "umm-kulthum-binti-ali",
+      "female",
+    ),
+    person(P.fatimahAmr, "Fatimah binti Amr", "fatimah-binti-amr", "female"),
+    person(P.abuTalib, "Abu Talib", "abu-talib", "male"),
+    person(P.fatimahAsad, "Fatimah binti Asad", "fatimah-binti-asad", "female"),
+    person(P.hamzah, "Hamzah", "hamzah-bin-abdul-muttalib", "male"),
+    person(P.abbas, "Al-Abbas", "al-abbas-bin-abdul-muttalib", "male"),
+    person(
+      P.abuAlAs,
+      "Abu al-As bin al-Rabi'",
+      "abu-al-as-bin-al-rabi",
+      "male",
+    ),
+    person(P.aliAbiAlAs, "Ali bin Abi al-As", "ali-bin-abi-al-as", "male"),
+    person(
+      P.umamah,
+      "Umamah binti Abi al-As",
+      "umamah-binti-abi-al-as",
+      "female",
+    ),
+    person(P.uthman, "Uthman bin Affan", "uthman-bin-affan", "male"),
+    person(
+      P.abdullahUthman,
+      "Abdullah bin Uthman",
+      "abdullah-bin-uthman",
+      "male",
+    ),
+    person(
+      P.mariyah,
+      "Mariyah al-Qibtiyyah",
+      "mariyah-al-qibtiyyah",
       "female",
     ),
   ],

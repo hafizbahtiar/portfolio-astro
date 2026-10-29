@@ -118,6 +118,161 @@ while (at != null && chain.length <= people.length) {
 }
 if (chain.at(-1) !== "adnan") errors.push(`paternal chain ends at ${chain.at(-1)}, not adnan`);
 
+// Golden data, in order - a rename, reorder or dropped person fails here.
+const keyOf = (id: number): string | undefined =>
+  byId.get(id)?.globalKey ?? undefined;
+const sameList = (label: string, actual: (string | undefined)[], expected: string[]) => {
+  if (actual.join(",") !== expected.join(","))
+    errors.push(`${label}: ${actual.join(" > ")}`);
+};
+sameList(
+  "paternal chain",
+  chain,
+  [
+    "muhammad-saw",
+    "abdullah-bin-abdul-muttalib",
+    "abdul-muttalib",
+    "hashim",
+    "abd-manaf",
+    "qusayy",
+    "kilab",
+    "murrah",
+    "kab",
+    "luayy",
+    "ghalib",
+    "fihr-quraysh",
+    "malik",
+    "an-nadr",
+    "kinanah",
+    "khuzaymah",
+    "mudrikah",
+    "ilyas",
+    "mudar",
+    "nizar",
+    "maadd",
+    "adnan",
+  ],
+);
+sameList(
+  "wives",
+  spousesOf(mainId!).map((r) => keyOf(r.personId === mainId ? r.relatedPersonId : r.personId)),
+  [
+    "khadijah-binti-khuwaylid",
+    "sawdah-binti-zamah",
+    "aisyah-binti-abu-bakr",
+    "hafsah-binti-umar",
+    "zainab-binti-khuzaymah",
+    "umm-salamah",
+    "zainab-binti-jahsh",
+    "juwairiyah",
+    "umm-habibah",
+    "safiyyah-binti-huyayy",
+    "maimunah",
+  ],
+);
+sameList(
+  "children",
+  childrenOfMain.map((r) => keyOf(r.relatedPersonId)),
+  [
+    "al-qasim",
+    "abdullah-bin-muhammad",
+    "zainab-binti-muhammad",
+    "ruqaiyah",
+    "umm-kulthum-binti-muhammad",
+    "fatimah-az-zahra",
+    "ibrahim-bin-muhammad",
+  ],
+);
+
+// Muhammad's parents are spouses of each other.
+const married = (a: number, b: number) =>
+  relationships.some(
+    (r) =>
+      r.relationshipType === "spouse" &&
+      ((r.personId === a && r.relatedPersonId === b) ||
+        (r.personId === b && r.relatedPersonId === a)),
+  );
+if (fathers[0] != null && mothers[0] != null && !married(fathers[0], mothers[0]))
+  errors.push("Muhammad's parents are not linked as spouses");
+
+// Every child except Ibrahim is also Khadijah's child.
+const khadijah = people.find((p) => p.globalKey === "khadijah-binti-khuwaylid");
+for (const r of childrenOfMain) {
+  const child = byId.get(r.relatedPersonId);
+  if (child?.globalKey === "ibrahim-bin-muhammad") continue;
+  const childMothers = parentsOf(r.relatedPersonId).filter(
+    (id) => byId.get(id)?.gender === "female",
+  );
+  if (!khadijah || !childMothers.includes(khadijah.id))
+    errors.push(`${child?.displayName}: mother is not Khadijah`);
+}
+
+// Extended family: Ali's parents, the uncles, and the daughters' children.
+const byKey = (key: string) => {
+  const found = people.find((p) => p.globalKey === key);
+  if (!found) errors.push(`missing person ${key}`);
+  return found;
+};
+const childrenOfPerson = (id: number) =>
+  relationships
+    .filter((r) => r.relationshipType === "parent" && r.personId === id)
+    .map((r) => keyOf(r.relatedPersonId));
+
+const ali = byKey("ali-bin-abi-talib");
+if (ali) sameList("Ali's parents", parentsOf(ali.id).map(keyOf), ["abu-talib", "fatimah-binti-asad"]);
+
+const abdullah = byKey("abdullah-bin-abdul-muttalib");
+if (abdullah)
+  sameList(
+    "Abdullah's mother",
+    parentsOf(abdullah.id)
+      .filter((id) => byId.get(id)?.gender === "female")
+      .map(keyOf),
+    ["fatimah-binti-amr"],
+  );
+
+const abdulMuttalib = byKey("abdul-muttalib");
+if (abdulMuttalib)
+  sameList("Abdul Muttalib's sons", childrenOfPerson(abdulMuttalib.id), [
+    "abdullah-bin-abdul-muttalib",
+    "abu-talib",
+    "hamzah-bin-abdul-muttalib",
+    "al-abbas-bin-abdul-muttalib",
+  ]);
+
+const zainab = byKey("zainab-binti-muhammad");
+if (zainab)
+  sameList("Zainab's children", childrenOfPerson(zainab.id), [
+    "ali-bin-abi-al-as",
+    "umamah-binti-abi-al-as",
+  ]);
+
+const ruqaiyah = byKey("ruqaiyah");
+if (ruqaiyah)
+  sameList("Ruqaiyah's children", childrenOfPerson(ruqaiyah.id), [
+    "abdullah-bin-uthman",
+  ]);
+
+const uthman = byKey("uthman-bin-affan");
+if (uthman)
+  sameList(
+    "Uthman's wives",
+    spousesOf(uthman.id).map((r) =>
+      keyOf(r.personId === uthman.id ? r.relatedPersonId : r.personId),
+    ),
+    ["ruqaiyah", "umm-kulthum-binti-muhammad"],
+  );
+
+const ibrahim = byKey("ibrahim-bin-muhammad");
+if (ibrahim)
+  sameList("Ibrahim's parents", parentsOf(ibrahim.id).map(keyOf), [
+    "muhammad-saw",
+    "mariyah-al-qibtiyyah",
+  ]);
+const mariyah = byKey("mariyah-al-qibtiyyah");
+if (mariyah && mainId != null && spousesOf(mainId).some((r) => r.personId === mariyah.id || r.relatedPersonId === mariyah.id))
+  errors.push("Mariyah should not be linked as the main person's spouse");
+
 expect(errors, "salasilah data").toEqual([]);
 expect(chain.length, "Muhammad to Adnan").toBe(22);
 console.log(`salasilah: ok (${people.length} people, ${relationships.length} links)`);
