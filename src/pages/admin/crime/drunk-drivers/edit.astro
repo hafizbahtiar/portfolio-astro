@@ -1184,6 +1184,8 @@ const OUTCOMES = [
     const DRAFT_TITLES: Record<string, string> = {
       fullName: "Accused - name",
       accusedDescription: "Accused - description (no name yet)",
+      icNumber: "Accused - IC number",
+      dateOfBirth: "Accused - date of birth",
       age: "Accused - age",
     };
     const OUTCOME_TEXT: Record<string, string> = {
@@ -1499,12 +1501,19 @@ const OUTCOMES = [
               );
             const current = field(name).value.trim();
             const note =
-              name === "fullName" && undisclosed.checked
-                ? "Name found - applying it marks the name as disclosed."
-                : current && current !== f.value
-                  ? `Replaces your value "${current}".`
-                  : null;
-            return item(
+              [
+                name === "fullName" && undisclosed.checked
+                  ? "Name found - applying it marks the name as disclosed."
+                  : current && current !== f.value
+                    ? `Replaces your value "${current}".`
+                    : null,
+                name === "icNumber"
+                  ? "Check every digit against the page before ticking - an IC identifies one real person."
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" ") || null;
+            const row = item(
               DRAFT_TITLES[name] ?? LABELS[name] ?? name,
               DROPDOWNS.includes(name)
                 ? (ENUM_TEXT[f.value] ?? f.value)
@@ -1522,19 +1531,50 @@ const OUTCOMES = [
               },
               f.support ?? null,
             );
+            // An IC starts unticked: the owner confirms it digit by digit.
+            if (name === "icNumber")
+              picks[picks.length - 1].box.checked = false;
+            return row;
           });
-        const have = new Set(
-          collectVictims()
-            .map((v) => v.fullName?.toLowerCase())
-            .filter(Boolean),
-        );
+        // A victim already in the list (same name) is filled in, not added again: a follow-up often brings only
+        // the IC or date of birth. Only the row's empty boxes are filled - the owner's own values stay.
+        const VICTIM_KEYS = [
+          "icNumber",
+          "dateOfBirth",
+          "age",
+          "outcome",
+          "notes",
+        ] as const;
+        const victimRow = (name: string) =>
+          [...victimList.querySelectorAll<HTMLElement>(":scope > li")].find(
+            (li) =>
+              (
+                li.querySelector('[name="victim.fullName"]') as HTMLInputElement
+              ).value
+                .trim()
+                .toLowerCase() === name.toLowerCase(),
+          );
+        const victimInput = (li: HTMLElement, k: string) =>
+          li.querySelector(`[name="victim.${k}"]`) as HTMLInputElement;
         for (const v of only ? [] : draft.victims) {
-          const dup = v.fullName && have.has(v.fullName.toLowerCase());
+          const row = v.fullName ? victimRow(v.fullName) : undefined;
+          const fills = row
+            ? VICTIM_KEYS.filter(
+                (k) => v[k] != null && victimInput(row, k).value.trim() === "",
+              )
+            : [];
+          if (row && !fills.length) {
+            same++; // nothing new about this victim
+            continue;
+          }
+          const newIc = v.icNumber && (!row || fills.includes("icNumber"));
           rows.push(
             item(
-              "Victim",
+              row ? "Victim - fill in" : "Victim",
               [
                 v.fullName ?? "(no name)",
+                v.icNumber ? `IC ${v.icNumber}` : null,
+                v.dateOfBirth ? `born ${v.dateOfBirth}` : null,
                 v.age != null ? `${v.age} yrs` : null,
                 v.outcome ? OUTCOME_TEXT[v.outcome] : null,
                 v.notes,
@@ -1543,21 +1583,51 @@ const OUTCOMES = [
                 .join(", "),
               v.quote,
               v.source,
-              dup ? "Already in your Victims list - adds a second row." : null,
-              () =>
-                markRow(
-                  addVictim({
-                    fullName: v.fullName,
-                    age: v.age,
-                    outcome: v.outcome,
-                    notes: v.notes,
-                  }),
-                  v.support ?? null,
-                ),
+              [
+                row
+                  ? `Already in your Victims list - fills only its empty ${fills
+                      .map((k) => LABELS[k] ?? k)
+                      .join(", ")
+                      .toLowerCase()}.`
+                  : null,
+                newIc
+                  ? "Has an IC number - check every digit against the page before ticking."
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" ") || null,
+              () => {
+                if (!row) {
+                  markRow(
+                    addVictim({
+                      fullName: v.fullName,
+                      icNumber: v.icNumber,
+                      dateOfBirth: v.dateOfBirth,
+                      age: v.age,
+                      outcome: v.outcome,
+                      notes: v.notes,
+                    }),
+                    v.support ?? null,
+                  );
+                  return;
+                }
+                for (const k of fills) victimInput(row, k).value = String(v[k]);
+                // Show the values in the Dropdown / DatePicker, then date of birth from the IC and age from it.
+                victimInput(row, "outcome").dispatchEvent(new Event("change"));
+                victimInput(row, "dateOfBirth").dispatchEvent(
+                  new Event("change"),
+                );
+                autoPerson(
+                  victimInput(row, "icNumber"),
+                  victimInput(row, "dateOfBirth"),
+                  victimInput(row, "age"),
+                )();
+                markRow(row, v.support ?? null);
+              },
               v.support ?? null,
             ),
           );
-          if (dup) picks[picks.length - 1].box.checked = false;
+          if (newIc) picks[picks.length - 1].box.checked = false;
         }
         for (const l of only ? [] : draft.lawyers) {
           const have = collectLawyers().some(
