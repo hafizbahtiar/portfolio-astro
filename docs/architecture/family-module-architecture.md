@@ -71,8 +71,9 @@ PersonDetailPanel (desktop side panel + mobile bottom sheet)
 - **Deep link:** `resolveDeepLink()` reads `?p=` → globalKey (case-insensitive) then numeric id →
   fails safe to `null`.
 - **URL sync:** `syncUrl()` writes `?p = globalKey || id` via `replaceState` (prefers globalKey).
-- **Chart control API** (`FamilyChartApi`, from `useFamilyChart`): `setMain`, `zoomIn`, `zoomOut`,
+- **Chart control API** (`FamilyChartApi`, from `useFamilyChart`): `zoomIn`, `zoomOut`,
   `fit`, `resetView`, `centerMain`, `setOrientation` - handed to the toolbar via `apiRef`.
+  Selection only reports the id; the `mainId` effect re-centers.
 - **Tree only:** the public List view was removed (2026-09-30). Keyboard access to people is via
   `PersonSearch` in the toolbar, which opens the same details panel.
 - **Reduced motion:** transition time forced to 0.
@@ -100,7 +101,7 @@ PersonDetailPanel (desktop side panel + mobile bottom sheet)
 | `src/components/family/FamilyToolbar.tsx` | public-only | Search + view toggle + zoom/fit/reset/center/orientation (aria-labeled). |
 | `src/components/family/PersonDetailPanel.tsx` | public-only | Desktop panel + mobile bottom sheet (dialog, Esc, focus mgmt). |
 | `src/components/family/PersonSearch.tsx` | public-only | ARIA combobox, keyboard nav. |
-| `src/components/family/FamilyTreeChart.tsx` | **shared/admin** ⚠ | Legacy chart; window-event contract; inline edit; real zoom. |
+| `src/components/admin/family/FamilyTreeChart.tsx` | admin-only ⚠ | Legacy chart; window events `family:set-main` / `family:fit` / `family:center-main` / `family:set-orientation`; inline edit. |
 | `src/hooks/useFamilyChart.ts` | public-only ⚠ | Public chart lifecycle + d3 zoom; leak/duplicate-init risk. |
 | `src/lib/chart-data.ts` | **shared** ⚠ | `buildChartData` used by public + admin. |
 | `src/lib/family.ts` | shared service | `FamilyService` (public `publicGet` + admin Bearer methods) + helpers. |
@@ -109,7 +110,7 @@ PersonDetailPanel (desktop side panel + mobile bottom sheet)
 | `src/lib/family-format.ts` | shared | `displayYear` (timezone-safe year). |
 | `src/data/family.ts` | config | `COMBINED_FAMILY` (slug/name/desc/mainPersonGlobalKey). |
 | `src/styles/family-chart-theme.css` | styling | Light/dark `.f3` theme; imported by `src/styles/index.css`. |
-| `src/components/admin/family/FamilyTreeBuilder.tsx` | admin-only | Builder; passes `enableCrossTreeNavigation={false}` (no-op). |
+| `src/components/admin/family/FamilyTreeBuilder.tsx` | admin-only | Builder (tree config, inspector, inline add). |
 | `src/components/admin/family/FamilyTreesTable.tsx` | admin-only | Trees table UI. |
 | `src/pages/admin/family/{index,new,edit}.astro` | admin-only | Admin routes. |
 | `docs/brain/*`, `docs/architecture/*` | docs-only | This memory brain. |

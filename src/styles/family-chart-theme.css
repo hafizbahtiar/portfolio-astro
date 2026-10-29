@@ -1,50 +1,108 @@
-/* Light/dark theming for family-chart (.f3) to match the portfolio palette. */
-.f3 {
-  --f3-card-bg: #ffffff;
-  --f3-card-text: #0f172a;
-  --f3-card-sub: #64748b;
-  --f3-card-border: #e2e8f0;
-  --f3-card-main: #0891b2;
-  --f3-link: #94a3b8;
+/* Public /family canvas - follows the site line: gray ink, sky accent, hairline
+   rings, no shadows, Inter. Scoped with .family-chart--public so the admin
+   builder (below) keeps its own look. The library's card classes are
+   card-inner / card-rect / card-image-circle / card-main (hyphen). */
+.f3.family-chart--public {
+  --female-color: var(--color-gray-200);
+  --male-color: var(--color-gray-200);
+  --genderless-color: var(--color-gray-200);
+  --background-color: var(--color-white);
+  --text-color: var(--color-gray-950);
+  --f3-card-bg: var(--color-white);
+  --f3-card-label-bg: var(--color-white);
+  --f3-card-border: color-mix(in oklab, var(--color-gray-950) 6%, transparent);
+  --f3-card-border-hover: color-mix(in oklab, var(--color-gray-950) 16%, transparent);
+  --f3-card-sub: var(--color-gray-500);
+  --f3-card-accent: var(--color-sky-500);
+  --f3-link: var(--color-gray-300);
+
+  font-family: var(--font-inter, ui-sans-serif, system-ui, sans-serif);
 }
 
-.dark .f3 {
-  --f3-card-bg: #1e293b;
-  --f3-card-text: #f1f5f9;
-  --f3-card-sub: #94a3b8;
-  --f3-card-border: #334155;
-  --f3-card-main: #22d3ee;
-  --f3-link: #475569;
+.dark .f3.family-chart--public {
+  --female-color: var(--color-gray-700);
+  --male-color: var(--color-gray-700);
+  --genderless-color: var(--color-gray-700);
+  --background-color: var(--color-gray-950);
+  --text-color: var(--color-white);
+  --f3-card-bg: color-mix(in oklab, var(--color-white) 5%, transparent);
+  --f3-card-label-bg: var(--color-gray-900);
+  --f3-card-border: color-mix(in oklab, var(--color-white) 10%, transparent);
+  --f3-card-border-hover: color-mix(in oklab, var(--color-white) 22%, transparent);
+  --f3-card-sub: var(--color-gray-400);
+  --f3-card-accent: var(--color-sky-400);
+  --f3-link: var(--color-gray-700);
 }
 
-.f3 .card-inner,
-.f3 .card_cont .card {
-  border: 1px solid var(--f3-card-border);
+/* .card parent: out-specifies the library's .f3 div.card-<gender> .card-inner
+   background rule (which otherwise paints cards with the gender colour). */
+.f3.family-chart--public .card .card-inner {
   background: var(--f3-card-bg);
-  color: var(--f3-card-text);
+  border: 1px solid var(--f3-card-border);
+  outline: none;
+  box-shadow: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.f3 .card_cont,
-.f3 .card_cont text {
-  color: var(--f3-card-text);
-  fill: var(--f3-card-text);
+.f3.family-chart--public .card-inner.card-rect {
+  border-radius: 0.75rem;
 }
 
-.f3 .card_cont .text-overflow-mask,
-.f3 .card_cont .card-label,
-.f3 .card_cont .card_text {
+/* Name line strong, birth/death year muted - both rect and circle cards. */
+.f3.family-chart--public .card-rect>div,
+.f3.family-chart--public .card-image-circle .card-label>div {
+  color: var(--text-color);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.f3.family-chart--public .card-rect>div+div,
+.f3.family-chart--public .card-image-circle .card-label>div+div {
   color: var(--f3-card-sub);
-  fill: var(--f3-card-sub);
+  font-size: var(--text-xs);
+  font-weight: 400;
 }
 
-.f3 .link {
+.f3.family-chart--public .card-image-circle .card-label {
+  background: var(--f3-card-label-bg);
+  border: 1px solid var(--f3-card-border);
+  border-radius: 0.5rem;
+  color: var(--text-color);
+  padding: 2px 8px;
+}
+
+.f3.family-chart--public .card-image-circle img {
+  border: 1px solid var(--f3-card-border);
+}
+
+.f3.family-chart--public .card:hover>div {
+  transform: none;
+}
+
+.f3.family-chart--public .card:hover .card-inner {
+  border-color: var(--f3-card-border-hover);
+  outline: none;
+  box-shadow: none;
+}
+
+.f3.family-chart--public .card-inner.f3-path-to-main {
+  border-color: var(--f3-card-border-hover);
+  outline: none;
+}
+
+.f3.family-chart--public .card-main .card-inner {
+  border-color: var(--f3-card-accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--f3-card-accent);
+}
+
+.f3.family-chart--public .link {
   stroke: var(--f3-link);
 }
 
-.f3 .card_main .card-inner,
-.f3 .card_main .card {
-  border-color: var(--f3-card-main);
-  box-shadow: 0 0 0 1px var(--f3-card-main);
+.f3.family-chart--public .link.f3-path-to-main {
+  stroke: var(--f3-card-accent);
+  stroke-width: 2px;
 }
 
 /* ── Admin family builder ──────────────────────────────────────────────────

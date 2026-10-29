@@ -18,9 +18,10 @@ const initials = (name: string) =>
     .map((word) => word[0]?.toUpperCase() ?? "")
     .join("");
 
-const formatDate = (iso: string | null, yearOnly: boolean) => {
+const formatDate = (iso: string | null) => {
   if (!iso) return "-";
-  if (yearOnly) return displayYear(iso) ?? iso;
+  // Year-only values ("1994", "570") are shown as a year; full ISO dates format.
+  if (!iso.includes("-")) return displayYear(iso) ?? iso;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
   return date.toLocaleDateString("en-MY", {
@@ -107,14 +108,14 @@ export const PersonDetailPanel = ({
         <div>
           <dt className="text-xs text-gray-500 dark:text-gray-400">Born</dt>
           <dd className="text-gray-800 dark:text-gray-200">
-            {formatDate(person.birthDate, person.isLiving)}
+            {formatDate(person.birthDate)}
           </dd>
         </div>
         {!person.isLiving && (
           <div>
             <dt className="text-xs text-gray-500 dark:text-gray-400">Died</dt>
             <dd className="text-gray-800 dark:text-gray-200">
-              {formatDate(person.deathDate, false)}
+              {formatDate(person.deathDate)}
             </dd>
           </div>
         )}

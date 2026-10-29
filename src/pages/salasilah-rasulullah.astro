@@ -1,0 +1,76 @@
+---
+export const prerender = true;
+import PublicLayout from "../layouts/PublicLayout.astro";
+import BackLink from "../components/ui/BackLink.astro";
+import Alert from "../components/ui/Alert.astro";
+import Disclaimer from "../components/ui/Disclaimer.astro";
+import { FamilyExplorer } from "../components/family/FamilyExplorer";
+import { SALASILAH_NABI } from "../data/salasilah";
+
+// Static data only (src/data/salasilah.ts) - no API, no fallback. Reuses the
+// public family explorer so the tree gets search, deep links and details.
+const SOURCES = [
+  { name: "Sahih Muslim 2276", href: "https://sunnah.com/muslim:2276" },
+];
+---
+
+<PublicLayout
+  title="Salasilah Rasulullah SAW | Hafiz Bahtiar"
+  description="Nasab Nabi Muhammad SAW sehingga Adnan, bersama ibu, isteri, anak dan cucu - salasilah yang boleh diterokai."
+>
+  <div class="relative mx-auto mt-8 max-lg:max-w-2xl sm:mt-24">
+    <BackLink />
+    <div class="line-y">
+      <h1
+        class="mx-2 text-4xl/[1.1] font-medium tracking-tighter text-balance text-gray-950 sm:text-6xl/[1.05] dark:text-white"
+      >
+        Salasilah Rasulullah SAW
+      </h1>
+    </div>
+    <div class="line-y mt-6">
+      <p class="mx-2 max-w-3xl text-lg">
+        Nasab Nabi Muhammad SAW sehingga Adnan, bersama ibu, isteri, anak dan
+        cucu melalui Fatimah dan Ali. Tekan mana-mana nama untuk melihat
+        hubungannya.
+      </p>
+    </div>
+
+    <div class="line-y mt-6">
+      <Alert variant="warning" title="Nota" class="mx-2">
+        <ul>
+          <li>
+            Nasab dipaparkan sehingga <strong>Adnan</strong> sahaja - riwayat selepas
+            Adnan hingga Nabi Isma'il tidak sepakat.
+          </li>
+          <li>
+            Isteri, anak dan cucu mengikut karya sirah klasik (Ibn Hisham, Ibn
+            Sa'd); sebahagian butiran diperselisihkan.
+          </li>
+          <li>
+            Data disusun dengan tangan, bukan API. Tarikh Nabi SAW (570-632 M)
+            ialah anggaran; tokoh lain tiada tarikh.
+          </li>
+        </ul>
+      </Alert>
+    </div>
+
+    <div class="line-y mt-8 p-2">
+      <FamilyExplorer
+        client:load
+        detail={SALASILAH_NABI}
+        ancestryDepth={30}
+        progenyDepth={2}
+      />
+    </div>
+
+    <div class="line-y mt-6">
+      <Disclaimer class="mx-2" sources={SOURCES}>
+        Nasab, isteri dan anak disusun dengan tangan daripada Sirah Ibn Hisham
+        dan Ibn Sa'd; pautan di atas ialah rujukan hadis. Sesetengah nasab dan
+        butiran keluarga diperselisihkan - rujuk kitab sirah dan ulama, bukan
+        halaman ini.
+      </Disclaimer>
+    </div>
+    <div class="mb-16 sm:mb-46"></div>
+  </div>
+</PublicLayout>

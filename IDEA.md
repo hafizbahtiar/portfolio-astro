@@ -12,7 +12,8 @@ Paparan Masjid, Graf Harga Minyak, garisan kiblat pada peta, Widget IPU. Nombor 
 Kalkulator Bil Elektrik (`/kalkulator-bil-elektrik`), Kalkulator Cukai Jalan (`/kalkulator-cukai-jalan`),
 Takwim Persekolahan (`/takwim-sekolah`), Inflasi (`/inflasi`), Derma Darah (`/derma-darah`),
 Cuti Umum (`/cuti-umum`) - all 2026-10-14; Masjid & Surau (`/waktu-solat/masjid`, SISMIM list +
-OSM "terdekat") 2026-10-21; see CLAUDE.md -> Showcase. Ideas 20-23 checked on 2026-10-21 (OpenDOSM,
+OSM "terdekat") 2026-10-21; Salasilah Rasulullah (`/salasilah-rasulullah`, static classical-sirah
+tree) 2026-10-29; see CLAUDE.md -> Showcase. Ideas 20-23 checked on 2026-10-21 (OpenDOSM,
 data.moh.gov.my and the BNM API - see `OPEN-API.md` §1A and §4).
 Next recommended: **20** (smallest, high safety value), then **24**, then **2**. Idea 24 checked
 2026-10-21.

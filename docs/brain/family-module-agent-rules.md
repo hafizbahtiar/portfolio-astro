@@ -55,8 +55,7 @@
 | Adding a field to `PublicFamily*` interfaces | You may be leaking PII. Confirm it's whitelist-safe. |
 | Calling the public family API and assuming it's privacy-safe | It returns **full PII**. Sanitization is frontend-only. |
 | "Just" matching people by name to merge/link | Corrupts same-named people. Use `globalKey`. |
-| Editing `FamilyTreeChart.tsx` | It's shared with admin and has a window-event contract. Don't break events or inline edit. |
-| Removing `enableCrossTreeNavigation` prop | It's a deprecated no-op kept for admin compat. Removing it breaks `FamilyTreeBuilder` props. |
+| Editing `FamilyTreeChart.tsx` | It's the admin chart with a window-event contract. Don't break the events or inline edit. |
 | Hardcoding a person/name patch in merge or chart | The old name-based cross-tree logic was removed on purpose. Don't reintroduce. |
 | Reaching for `new Date(year).getFullYear()` for display | Timezone-drifts. Use `displayYear()` / regex year extraction. |
 | Running migrate against `--remote` | Forbidden here. Local only, and only if asked. |
@@ -70,7 +69,7 @@
 **Do not edit casually (shared / contract-bearing / privacy-critical):**
 - `src/lib/family-privacy.ts` - privacy boundary. Changes here can leak PII.
 - `src/lib/family-merge.ts` - identity/merge invariants.
-- `src/components/family/FamilyTreeChart.tsx` - shared with admin; window-event contract + inline edit.
+- `src/components/admin/family/FamilyTreeChart.tsx` - admin chart; window-event contract + inline edit.
 - `src/hooks/useFamilyChart.ts` - public chart lifecycle; easy to introduce leaks/duplicate inits.
 - `src/lib/chart-data.ts` - shared by public + admin charts.
 - Backend `src/services/family.ts`, `src/routes/v1/**/family.ts` (hono-workers) - API contract.

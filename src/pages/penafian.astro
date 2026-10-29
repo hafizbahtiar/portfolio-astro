@@ -7,7 +7,7 @@ import { CONTACT_EMAIL } from "../lib/constants";
 
 // Full disclaimer for the Showcase apps. Each app page shows the short version
 // (src/components/ui/Disclaimer.astro) and links here - keep the two in step.
-const UPDATED = "21 Oktober 2026";
+const UPDATED = "29 Oktober 2026";
 
 const SOURCES: {
   app: string;
@@ -45,7 +45,7 @@ const SOURCES: {
       {
         name: "© penyumbang OpenStreetMap (ODbL)",
         href: "https://www.openstreetmap.org/copyright",
-        note: "lokasi untuk \"Terdekat dengan saya\"; jarak dikira dalam peranti, lokasi anda tidak dihantar; bukan senarai rasmi JAKIM",
+        note: 'lokasi untuk "Terdekat dengan saya"; jarak dikira dalam peranti, lokasi anda tidak dihantar; bukan senarai rasmi JAKIM',
       },
     ],
   },
@@ -211,6 +211,16 @@ const SOURCES: {
     ],
   },
   {
+    app: "Salasilah Rasulullah",
+    items: [
+      {
+        name: "Sahih Muslim 2276 (sunnah.com)",
+        href: "https://sunnah.com/muslim:2276",
+        note: "nasab Quraysh dan Bani Hashim; salasilah disusun dengan tangan daripada Sirah Ibn Hisham dan Ibn Sa'd, bukan diambil secara automatik",
+      },
+    ],
+  },
+  {
     app: "Peta",
     items: [
       { name: "CARTO", href: "https://carto.com/attributions" },
@@ -351,6 +361,11 @@ const SOURCES: {
               <strong>Ayat dan hadis.</strong> Teks dan terjemahan diambil daripada
               pihak ketiga yang dinyatakan bersama setiap petikan. Untuk rujukan agama,
               semak mushaf dan kitab yang muktamad.
+            </li>
+            <li>
+              <strong>Salasilah Rasulullah.</strong> Disusun dengan tangan daripada
+              karya sirah klasik; nasab selepas Adnan dan sebahagian butiran keluarga
+              diperselisihkan. Halaman ini bukan fatwa atau rujukan agama muktamad.
             </li>
           </ul>
         </section>

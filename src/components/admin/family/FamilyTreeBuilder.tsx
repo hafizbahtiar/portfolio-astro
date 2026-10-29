@@ -1241,8 +1241,6 @@ export const FamilyTreeBuilder = ({ mode }: FamilyTreeBuilderProps) => {
                 <div className={canvasFrameClass}>
                   <FamilyTreeChart
                     detail={detail}
-                    currentSlug={detail.tree.slug}
-                    enableCrossTreeNavigation={false}
                     onSelectPerson={handleChartSelectPerson}
                     enableInlineAdd={true}
                     onInlineCreateRelative={handleCanvasInlineCreateRelative}

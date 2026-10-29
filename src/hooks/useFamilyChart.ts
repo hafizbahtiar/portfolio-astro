@@ -4,7 +4,6 @@ import "family-chart/styles/family-chart.css";
 import { cardText } from "../lib/chart-data";
 
 export interface FamilyChartApi {
-  setMain: (id: string) => void;
   zoomIn: () => void;
   zoomOut: () => void;
   fit: () => void;
@@ -18,7 +17,6 @@ interface Options {
   mainId: string | null;
   ancestryDepth?: number;
   progenyDepth?: number;
-  showSiblings?: boolean;
   onSelect?: (id: string) => void;
   onApiReady?: (api: FamilyChartApi | null) => void;
 }
@@ -32,13 +30,11 @@ export function useFamilyChart({
   mainId,
   ancestryDepth,
   progenyDepth,
-  showSiblings,
   onSelect,
   onApiReady,
 }: Options) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<Chart | null>(null);
-  const apiRef = useRef<FamilyChartApi | null>(null);
   const mainIdRef = useRef(mainId);
   const onSelectRef = useRef(onSelect);
   const onApiReadyRef = useRef(onApiReady);
@@ -72,7 +68,7 @@ export function useFamilyChart({
         .setTransitionTime(transitionTime)
         .setCardXSpacing(250)
         .setCardYSpacing(150)
-        .setShowSiblingsOfMain(showSiblings ?? true)
+        .setShowSiblingsOfMain(true)
         .setDuplicateBranchToggle(true);
 
       if (typeof ancestryDepth === "number") {
@@ -91,23 +87,11 @@ export function useFamilyChart({
       card.setOnCardClick((_event: MouseEvent, datum: any) => {
         const id = String(datum?.id ?? datum?.data?.id ?? "");
         if (!id) return;
-        chart.updateMainId(id);
-        chart.updateTree({
-          tree_position: "main_to_middle",
-          transition_time: transitionTime,
-        });
         onSelectRef.current?.(id);
       });
 
       chartRef.current = chart;
-      apiRef.current = {
-        setMain: (id) => {
-          chart.updateMainId(id);
-          chart.updateTree({
-            tree_position: "main_to_middle",
-            transition_time: transitionTime,
-          });
-        },
+      const api: FamilyChartApi = {
         zoomIn: () =>
           f3.handlers.manualZoom({
             amount: 1.25,
@@ -146,7 +130,7 @@ export function useFamilyChart({
           });
         },
       };
-      onApiReadyRef.current?.(apiRef.current);
+      onApiReadyRef.current?.(api);
 
       chart.setOrientationVertical();
       if (mainIdRef.current) chart.updateMainId(mainIdRef.current);
@@ -162,11 +146,10 @@ export function useFamilyChart({
     return () => {
       destroyed = true;
       chartRef.current = null;
-      apiRef.current = null;
       onApiReadyRef.current?.(null);
       if (container) container.innerHTML = "";
     };
-  }, [ancestryDepth, data, progenyDepth, showSiblings]);
+  }, [ancestryDepth, data, progenyDepth]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -179,5 +162,5 @@ export function useFamilyChart({
     });
   }, [mainId]);
 
-  return { containerRef, apiRef };
+  return { containerRef };
 }

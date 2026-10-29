@@ -44,7 +44,7 @@ export const FamilyTreeCanvas = ({
       aria-label="Interactive family tree. Drag to pan, scroll or pinch to zoom. Use the person search above for keyboard access."
       className="h-full w-full overflow-hidden rounded-xl bg-family-canvas outline outline-gray-950/5 dark:outline-white/10"
     >
-      <div ref={containerRef} className="f3 h-full w-full" />
+      <div ref={containerRef} className="f3 family-chart--public h-full w-full" />
     </div>
   );
 };

@@ -18,7 +18,7 @@
 //     .then(() => self.registration.unregister())));
 // and deploy; every browser drops the worker on its next visit.
 const sw = /** @type {ServiceWorkerGlobalScope} */ (/** @type {unknown} */ (self));
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `showcase-${VERSION}`;
 
 // Keep in step with the `apps` hrefs in src/pages/showcase.astro.
@@ -43,6 +43,7 @@ const PAGES = new Set([
   "/kiraan-detik",
   "/cuti-umum",
   "/takwim-sekolah",
+  "/salasilah-rasulullah",
 ]);
 
 sw.addEventListener("install", () => sw.skipWaiting());

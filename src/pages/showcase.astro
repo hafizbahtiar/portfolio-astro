@@ -7,13 +7,23 @@ import Alert from "../components/ui/Alert.astro";
 // Small public apps that live on this site (each under its own route). Add one
 // entry per app. Linked from the footer for now; a navbar/home section waits
 // until there are enough of them (see CLAUDE.md -> Showcase).
+// `featured` pins an app to the top of the list and spans the whole row.
 const apps: {
   title: string;
   href: string;
   description: string;
   tags: string[];
+  featured?: boolean;
   gate?: string;
 }[] = [
+  {
+    title: "Salasilah Rasulullah",
+    href: "/salasilah-rasulullah",
+    description:
+      "Nasab Nabi Muhammad SAW sehingga Adnan, bersama ibu, isteri, anak dan cucu melalui Fatimah - pokok keluarga yang boleh diterokai.",
+    tags: ["Sirah", "Nasab", "Ahlul Bayt"],
+    featured: true,
+  },
   {
     title: "Pengangkutan Awam",
     href: "/pengangkutan-awam",
@@ -191,35 +201,63 @@ const apps: {
     class="line-y mb-16 sm:mb-46 grid grid-cols-1 gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3"
   >
     {
-      apps.map((app) => (
-        <a
-          href={app.href}
-          class="frame group block"
-          data-app-card
-          hidden={!!app.gate}
-          data-gate={app.gate}
-        >
-          <div class="frame-inner h-full p-6 transition-colors group-hover:bg-gray-50 dark:group-hover:bg-white/5">
-            <h2 class="text-xl font-medium tracking-tight text-gray-950 dark:text-white">
-              {app.title}
-              <span
-                class="ml-1 inline-block text-sky-500 transition-transform group-hover:translate-x-0.5"
-                aria-hidden="true"
+      [...apps]
+        .sort(
+          (a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)),
+        )
+        .map((app) => (
+          <a
+            href={app.href}
+            class:list={[
+              "frame group block",
+              app.featured &&
+                "bg-sky-500/5 ring-sky-500/20 sm:col-span-2 dark:bg-sky-400/5 dark:ring-sky-400/20 lg:col-span-3",
+            ]}
+            data-app-card
+            hidden={!!app.gate}
+            data-gate={app.gate}
+          >
+            <div
+              class:list={[
+                "frame-inner h-full transition-colors group-hover:bg-gray-50 dark:group-hover:bg-white/5",
+                app.featured ? "p-6 sm:p-8" : "p-6",
+              ]}
+            >
+              {app.featured && (
+                <p class="mb-2 font-mono text-[11px]/5 font-medium tracking-widest text-sky-600 uppercase dark:text-sky-400">
+                  Utama
+                </p>
+              )}
+              <h2
+                class:list={[
+                  "font-medium tracking-tight text-gray-950 dark:text-white",
+                  app.featured ? "text-2xl sm:text-3xl" : "text-xl",
+                ]}
               >
-                →
-              </span>
-            </h2>
-            <p class="mt-2 text-sm/6 text-gray-600 dark:text-gray-400">
-              {app.description}
-            </p>
-            <div class="mt-4 flex flex-wrap gap-1.5">
-              {app.tags.map((tag) => (
-                <span class="tag">{tag}</span>
-              ))}
+                {app.title}
+                <span
+                  class="ml-1 inline-block text-sky-500 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              </h2>
+              <p
+                class:list={[
+                  "mt-2 text-gray-600 dark:text-gray-400",
+                  app.featured ? "max-w-3xl text-base/7" : "text-sm/6",
+                ]}
+              >
+                {app.description}
+              </p>
+              <div class="mt-4 flex flex-wrap gap-1.5">
+                {app.tags.map((tag) => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </div>
             </div>
-          </div>
-        </a>
-      ))
+          </a>
+        ))
     }
   </div>
 </PublicLayout>

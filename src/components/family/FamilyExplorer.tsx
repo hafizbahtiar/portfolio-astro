@@ -68,11 +68,10 @@ export const FamilyExplorer = ({
     sheetReturnFocusRef.current = null;
   };
 
-  const selectPerson = (id: number, { center = true, openSheet = false } = {}) => {
+  const selectPerson = (id: number, { openSheet = false } = {}) => {
     setSelectedId(id);
     const person = detail.people.find((candidate) => candidate.id === id) ?? null;
     syncUrl(person);
-    if (center) apiRef.current?.setMain(String(id));
     if (openSheet) {
       sheetReturnFocusRef.current =
         document.activeElement instanceof HTMLElement
@@ -115,9 +114,7 @@ export const FamilyExplorer = ({
             mainId={selectedId !== null ? String(selectedId) : null}
             ancestryDepth={ancestryDepth}
             progenyDepth={progenyDepth}
-            onSelect={(id) =>
-              selectPerson(Number(id), { center: false, openSheet: true })
-            }
+            onSelect={(id) => selectPerson(Number(id), { openSheet: true })}
             apiRefOut={apiRef}
           />
         </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import type { Chart, Data } from "family-chart";
 import "family-chart/styles/family-chart.css";
 import type { FamilyGender, FamilyTreeDetail } from "../../../types/family";
@@ -20,15 +20,11 @@ const centerOnMain = (chart: Chart, transitionTime = 0) =>
 
 interface FamilyTreeChartProps {
   detail: FamilyTreeDetail;
-  currentSlug: string;
-  useLabelOnly?: boolean;
   ancestryDepth?: number;
   progenyDepth?: number;
   showSiblings?: boolean;
   sortChildrenBy?: "label" | "metadata.birth_order";
   sortAscending?: boolean;
-  /** Deprecated no-op kept so existing admin builder props remain compatible. */
-  enableCrossTreeNavigation?: boolean;
   onSelectPerson?: (personId: number, label: string) => void;
   enableInlineAdd?: boolean;
   onInlineCreateRelative?: (payload: {
@@ -46,8 +42,6 @@ interface FamilyTreeChartProps {
 
 export const FamilyTreeChart = ({
   detail,
-  currentSlug,
-  useLabelOnly,
   ancestryDepth,
   progenyDepth,
   showSiblings,
@@ -64,41 +58,9 @@ export const FamilyTreeChart = ({
   const onInlineCreateRelativeRef = useRef<typeof onInlineCreateRelative>(
     onInlineCreateRelative,
   );
-  const chartHandlersRef = useRef<typeof import("family-chart").handlers | null>(
-    null,
-  );
   const resizeCleanupRef = useRef<(() => void) | null>(null);
   const selectedMainIdRef = useRef<string>("");
-  const [selectedMainId, setSelectedMainId] = useState<string>("");
   const dataRef = useRef<Data>([]);
-  const baselineRef = useRef<Data>([]);
-  const showSpousesRef = useRef<boolean>(true);
-  const applySpouseFilter = (base: Data) => {
-    if (showSpousesRef.current) return base;
-    return base.map((node) => ({
-      ...node,
-      rels: {
-        ...node.rels,
-        spouses: [],
-      },
-    }));
-  };
-  const getSpouseOptions = (mainId: string) => {
-    const byId = new Map<string, any>();
-    for (const x of dataRef.current) byId.set(x.id, x);
-    const me = byId.get(mainId);
-    if (!me) return [];
-    const ids: string[] = Array.isArray(me.rels?.spouses) ? me.rels.spouses : [];
-    const opts = ids
-      .map((sid) => byId.get(sid))
-      .filter(Boolean)
-      .map((node) => {
-        const dd = node.data?.data ?? node.data ?? {};
-        const lbl = dd.label || `${(dd["first name"] || "").trim()} ${(dd["last name"] || "").trim()}`.trim() || dd.name || "";
-        return { id: node.id, label: String(lbl) };
-      });
-    return opts;
-  };
 
   useEffect(() => {
     onSelectPersonRef.current = onSelectPerson;
@@ -107,10 +69,6 @@ export const FamilyTreeChart = ({
   useEffect(() => {
     onInlineCreateRelativeRef.current = onInlineCreateRelative;
   }, [onInlineCreateRelative]);
-
-  useEffect(() => {
-    selectedMainIdRef.current = selectedMainId;
-  }, [selectedMainId]);
 
   const chartData = useMemo(() => buildChartData(detail), [detail]);
 
@@ -124,7 +82,6 @@ export const FamilyTreeChart = ({
       const familyChart = await import("family-chart");
       if (destroyed) return;
       const { createChart } = familyChart;
-      chartHandlersRef.current = familyChart.handlers;
 
       container.innerHTML = "";
 
@@ -134,47 +91,7 @@ export const FamilyTreeChart = ({
         .setCardYSpacing(150);
 
       chartRef.current = chart;
-      baselineRef.current = chartData;
-      dataRef.current = applySpouseFilter(chartData);
-      (window as any).familyChartApi = {
-        zoomIn: () => {
-          chartHandlersRef.current?.manualZoom({
-            amount: 1.25,
-            svg: chart.svg,
-            transition_time: 250,
-          });
-        },
-        zoomOut: () => {
-          chartHandlersRef.current?.manualZoom({
-            amount: 0.8,
-            svg: chart.svg,
-            transition_time: 250,
-          });
-        },
-        fit: () => {
-          chart.updateTree({ tree_position: "fit", transition_time: 300 });
-        },
-        centerMain: () => {
-          chart.updateTree({ tree_position: "main_to_middle", transition_time: 300 });
-        },
-        setOrientation: (vertical: boolean) => {
-          if (vertical) chart.setOrientationVertical();
-          else chart.setOrientationHorizontal();
-          centerOnMain(chart, 300);
-        },
-        getSpousesOfMain: () => {
-          return getSpouseOptions(selectedMainIdRef.current);
-        },
-        setShowSpouses: (show: boolean) => {
-          showSpousesRef.current = !!show;
-          const out = applySpouseFilter(baselineRef.current);
-          dataRef.current = out;
-          chart.updateData(out);
-          chart.updateTree({ tree_position: "inherit", transition_time: 250 });
-          const spouseOptions = getSpouseOptions(selectedMainIdRef.current);
-          window.dispatchEvent(new CustomEvent("family:on-spouses", { detail: { options: spouseOptions } }));
-        },
-      };
+      dataRef.current = chartData;
 
       // Match the public /family ("Fable 5") person-card design: circular avatar
       // when a photo exists, rounded rect fallback when it does not, name + birth
@@ -183,13 +100,8 @@ export const FamilyTreeChart = ({
       card.setStyle("imageCircleRect");
       card.setCardImageField("avatar");
       card.setOnHoverPathToMain();
-      if (useLabelOnly) {
-        card.setCardDisplay([cardText("label")]);
-        card.setCardDim({ w: 220, h: 80 });
-      } else {
-        card.setCardDisplay([cardText("first name", "last name"), cardText("birthday")]);
-        card.setCardDim({ w: 220, h: 80 });
-      }
+      card.setCardDisplay([cardText("first name", "last name"), cardText("birthday")]);
+      card.setCardDim({ w: 220, h: 80 });
       chart.setDuplicateBranchToggle(true);
       if (typeof ancestryDepth === "number") {
         chart.setAncestryDepth(ancestryDepth);
@@ -300,17 +212,13 @@ export const FamilyTreeChart = ({
         const id = String(d?.id ?? d?.data?.id ?? "");
         if (!id) return;
         const label = `${d.data["first name"] || ""} ${d.data["last name"] || ""}`.trim() || d.data.name || "";
-        setSelectedMainId(id);
         selectedMainIdRef.current = id;
         chart.updateMainId(id);
         chart.updateTree({
           tree_position: "main_to_middle",
           transition_time: 350,
         });
-        window.dispatchEvent(new CustomEvent("family:on-main-changed", { detail: { id, label } }));
         onSelectPersonRef.current?.(Number(id), label);
-        const spouseOptions = getSpouseOptions(id);
-        window.dispatchEvent(new CustomEvent("family:on-spouses", { detail: { options: spouseOptions } }));
         if (enableInlineAdd && editTreeRef.current) {
           const mainDatum = chart.getMainDatum();
           if (mainDatum) {
@@ -325,7 +233,6 @@ export const FamilyTreeChart = ({
         const defNode = chartData.find((n) => n.id === String(defaultId));
         if (defNode) initialMainId = defNode.id;
       }
-      setSelectedMainId(initialMainId);
       selectedMainIdRef.current = initialMainId;
       chart.updateMainId(initialMainId);
       // Render once and fit the whole family into view so the full tree is visible
@@ -370,12 +277,9 @@ export const FamilyTreeChart = ({
       }
       const initNode = chartData.find((n) => n.id === initialMainId);
       const initLabel = initNode ? ((initNode.data as any).label || (initNode.data as any).name || "") : "";
-      window.dispatchEvent(new CustomEvent("family:on-main-changed", { detail: { id: initialMainId, label: initLabel } }));
       if (initialMainId) {
         onSelectPersonRef.current?.(Number(initialMainId), initLabel);
       }
-      const spouseOptions0 = getSpouseOptions(initialMainId);
-      window.dispatchEvent(new CustomEvent("family:on-spouses", { detail: { options: spouseOptions0 } }));
       if (enableInlineAdd && editTreeRef.current) {
         const initialDatum = chart.getMainDatum();
         if (initialDatum) {
@@ -393,30 +297,25 @@ export const FamilyTreeChart = ({
     const chart = chartRef.current;
     if (!chart || chartData.length === 0) return;
 
-    baselineRef.current = chartData;
-    const out = applySpouseFilter(chartData);
-    dataRef.current = out;
-    chart.updateData(out);
+    dataRef.current = chartData;
+    chart.updateData(chartData);
 
     const currentMainId = selectedMainIdRef.current;
     const hasCurrentMain = currentMainId
-      ? out.some((node) => node.id === currentMainId)
+      ? chartData.some((node) => node.id === currentMainId)
       : false;
     const defaultId = detail.tree.defaultMainPersonId ?? null;
     const defaultMainId =
-      defaultId && out.some((node) => node.id === String(defaultId))
+      defaultId && chartData.some((node) => node.id === String(defaultId))
         ? String(defaultId)
         : "";
     const nextMainId = currentMainId && hasCurrentMain
       ? currentMainId
-      : defaultMainId || out[0]?.id || "";
+      : defaultMainId || chartData[0]?.id || "";
 
     if (!nextMainId) return;
 
-    if (nextMainId !== selectedMainIdRef.current) {
-      setSelectedMainId(nextMainId);
-      selectedMainIdRef.current = nextMainId;
-    }
+    selectedMainIdRef.current = nextMainId;
 
     chart.updateMainId(nextMainId);
     chart.updateTree({
@@ -430,23 +329,14 @@ export const FamilyTreeChart = ({
       }
     }
 
-    const selectedNode = out.find((node) => node.id === nextMainId);
+    const selectedNode = chartData.find((node) => node.id === nextMainId);
     const nextLabel =
       (selectedNode?.data as any)?.label ||
       (selectedNode?.data as any)?.name ||
       "";
 
     onSelectPersonRef.current?.(Number(nextMainId), String(nextLabel));
-    window.dispatchEvent(
-      new CustomEvent("family:on-main-changed", {
-        detail: { id: nextMainId, label: nextLabel },
-      }),
-    );
-    const spouseOptions = getSpouseOptions(nextMainId);
-    window.dispatchEvent(
-      new CustomEvent("family:on-spouses", { detail: { options: spouseOptions } }),
-    );
-  }, [chartData, currentSlug, detail]);
+  }, [chartData, detail]);
 
   useEffect(() => {
     return () => {
@@ -457,7 +347,6 @@ export const FamilyTreeChart = ({
       }
       editTreeRef.current = null;
       chartRef.current = null;
-      chartHandlersRef.current = null;
       if (containerRef.current) {
         containerRef.current.innerHTML = "";
       }
@@ -471,7 +360,6 @@ export const FamilyTreeChart = ({
       if (!id) return;
       const chart = chartRef.current;
       if (!chart) return;
-      setSelectedMainId(id);
       selectedMainIdRef.current = id;
       chart.updateMainId(id);
       chart.updateTree({
@@ -483,11 +371,6 @@ export const FamilyTreeChart = ({
         dataRef.current.find((node) => node.id === id)?.data?.name ||
         "";
       onSelectPersonRef.current?.(Number(id), String(label));
-      window.dispatchEvent(
-        new CustomEvent("family:on-main-changed", { detail: { id, label } }),
-      );
-      const spouseOptions = getSpouseOptions(id);
-      window.dispatchEvent(new CustomEvent("family:on-spouses", { detail: { options: spouseOptions } }));
       if (enableInlineAdd && editTreeRef.current) {
         const mainDatum = chart.getMainDatum();
         if (mainDatum) {
@@ -501,24 +384,6 @@ export const FamilyTreeChart = ({
     };
   }, []);
   useEffect(() => {
-    const onZoomIn = () => {
-      const chart = chartRef.current;
-      if (!chart) return;
-      chartHandlersRef.current?.manualZoom({
-        amount: 1.25,
-        svg: chart.svg,
-        transition_time: 250,
-      });
-    };
-    const onZoomOut = () => {
-      const chart = chartRef.current;
-      if (!chart) return;
-      chartHandlersRef.current?.manualZoom({
-        amount: 0.8,
-        svg: chart.svg,
-        transition_time: 250,
-      });
-    };
     const onFit = () => {
       const chart = chartRef.current;
       if (!chart) return;
@@ -540,14 +405,10 @@ export const FamilyTreeChart = ({
       }
       centerOnMain(chart, 300);
     };
-    window.addEventListener("family:zoom-in", onZoomIn as EventListener);
-    window.addEventListener("family:zoom-out", onZoomOut as EventListener);
     window.addEventListener("family:fit", onFit as EventListener);
     window.addEventListener("family:center-main", onCenterMain as EventListener);
     window.addEventListener("family:set-orientation", onOrientation as EventListener);
     return () => {
-      window.removeEventListener("family:zoom-in", onZoomIn as EventListener);
-      window.removeEventListener("family:zoom-out", onZoomOut as EventListener);
       window.removeEventListener("family:fit", onFit as EventListener);
       window.removeEventListener("family:center-main", onCenterMain as EventListener);
       window.removeEventListener("family:set-orientation", onOrientation as EventListener);

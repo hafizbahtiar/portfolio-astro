@@ -93,9 +93,9 @@ Children: `FamilyToolbar`, `FamilyTreeCanvas` (tree only - the public List view 
 
 - Dynamically `import("family-chart")`, `createChart(container, data)`, `setCardHtml()` with `imageCircleRect`, avatar field, `[["label"],["birthday"]]` display.
 - **Real d3 zoom** via `f3.handlers.manualZoom({ amount, svg, transition_time })` and `f3.handlers.zoomTo(svg, 1)` - **not** fake card-spacing. (✅ both handlers confirmed to exist in the installed package types.)
-- Exposed `FamilyChartApi`: `setMain`, `zoomIn` (×1.25), `zoomOut` (×0.8), `fit`, `resetView` (zoomTo 1 + fit), `centerMain` (`main_to_middle`), `setOrientation`.
+- Exposed `FamilyChartApi`: `zoomIn` (×1.25), `zoomOut` (×0.8), `fit`, `resetView` (zoomTo 1 + fit), `centerMain` (`main_to_middle`), `setOrientation`. Selecting a card only reports the id via `onSelect`; the `mainId` effect is the single place that re-centers.
 - **Reduced motion**: `prefersReducedMotion()` → `transitionTime = 0` (✅ respected).
-- Init effect deps: `[ancestryDepth, data, progenyDepth, showSiblings]` (callbacks held in refs so they don't re-init). A separate effect re-centers when `mainId` changes.
+- Init effect deps: `[ancestryDepth, data, progenyDepth]` (callbacks held in refs so they don't re-init). A separate effect re-centers when `mainId` changes.
 - **Cleanup**: sets `destroyed`, nulls refs, `onApiReady(null)`, `container.innerHTML = ""`. No `chart.destroy()` exists in the lib; clearing the container removes the SVG and its listeners.
 
 `FamilyTreeCanvas.tsx` is the thin wrapper: `role="application"` with an aria-label telling
@@ -176,13 +176,14 @@ cross-tree person *missing* a `globalKey` appears twice until the key is backfil
 | Island root | `FamilyExplorer.tsx` | `FamilyTreeBuilder.tsx` (new/edit) / `FamilyTreesTable.tsx` (index) |
 | Chart | `useFamilyChart.ts` + `FamilyTreeCanvas.tsx` | `FamilyTreeChart.tsx` (legacy) |
 | Data | sanitized `PublicFamilyTreeDetail` | full `FamilyTreeDetail` (auth) |
-| Controls | props/state (`apiRef`) | **window events** (`family:set-main`, `family:on-main-changed`, `family:on-spouses`, `family:zoom-in/out`, `family:fit`, `family:center-main`, `family:set-orientation`) |
+| Controls | props/state (`apiRef`) | **window events** (`family:set-main`, `family:fit`, `family:center-main`, `family:set-orientation`) |
 | Editing | none (read-only) | inline add/edit relatives via `chart.editTree()` |
 
-`FamilyTreeChart.tsx` is **shared/legacy** and still used by admin. It now uses the shared
-`buildChartData` and **real `manualZoom`**. `enableCrossTreeNavigation` is a **deprecated no-op**
-kept for prop compatibility (the old public cross-tree N+1 fetch storm was removed). The admin chart
-was deliberately **not** migrated onto the public hook to avoid regressing the inline builder.
+`FamilyTreeChart.tsx` is **admin-only/legacy**. It uses the shared `buildChartData`. The old
+`enableCrossTreeNavigation` no-op prop, the unread `window.familyChartApi` global, the event-only
+spouse toggle (`family:on-spouses`), and programmatic zoom were removed (2026-10-29) - nothing in
+the app ever consumed them. The admin chart was deliberately **not** migrated onto the public hook
+to avoid regressing the inline builder.
 
 ## 11. Backend shape (hono-workers)
 
