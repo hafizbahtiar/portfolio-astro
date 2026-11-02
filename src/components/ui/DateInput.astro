@@ -22,7 +22,10 @@ const {
 ---
 
 <div class={`space-y-2 ${className}`}>
-  <label class="admin-label" for={`${inputId}-text`}>
+  <label
+    class:list={["admin-label", required && "admin-required"]}
+    for={`${inputId}-text`}
+  >
     {label}
   </label>
   <DatePicker id={inputId} name={name} value={value} required={required} />

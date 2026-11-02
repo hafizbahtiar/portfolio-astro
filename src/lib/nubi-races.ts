@@ -29,9 +29,9 @@ export class NubiRacesService extends ApiClient {
     await this.delete(`${OWNER}/${id}`);
   }
 
-  /** New event pages on the default listing sites (not saved yet). No AI. */
-  async discover(): Promise<RaceDiscovery> {
-    return (await this.post<RaceDiscovery>(`${OWNER}/discover`, {})) ?? { sources: [], candidates: [] };
+  /** New event pages on the default listing sites + the owner's extra listing pages (not saved yet). No AI. */
+  async discover(urls: string[] = []): Promise<RaceDiscovery> {
+    return (await this.post<RaceDiscovery>(`${OWNER}/discover`, { urls })) ?? { sources: [], candidates: [] };
   }
 
   /** AI draft from the organiser's page + Clef duplicate check. excludeId = the race being edited. */

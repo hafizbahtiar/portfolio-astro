@@ -1,17 +1,38 @@
 ---
-// New (no ?id) and edit (?id=) in one page, like Subscriptions. AI draft: the organiser's page -> quoted values
-// (checked by the API) with a Clef score each, plus saved races Clef thinks are the same event.
-import { ArrowLeft, Check, LoaderCircle, Sparkles } from "lucide-react";
+// New (no ?id) and edit (?id=) in one page, like Subscriptions. AI draft: the race page -> quoted values (checked by
+// the API) with a Clef score each, plus saved races Clef thinks are the same event. ?url= (from "Check for new
+// races") starts the draft on open.
+import { ArrowLeft, Check, LoaderCircle, Plus, Sparkles } from "lucide-react";
 import PrivateLayout from "../../../../layouts/PrivateLayout.astro";
 import AdminPageHeader from "../../../../components/admin/AdminPageHeader.astro";
 import DateInput from "../../../../components/ui/DateInput.astro";
+import Dropdown from "../../../../components/ui/Dropdown.astro";
+
+const STATES = [
+  "Johor",
+  "Kedah",
+  "Kelantan",
+  "Kuala Lumpur",
+  "Labuan",
+  "Melaka",
+  "Negeri Sembilan",
+  "Pahang",
+  "Perak",
+  "Perlis",
+  "Pulau Pinang",
+  "Putrajaya",
+  "Sabah",
+  "Sarawak",
+  "Selangor",
+  "Terengganu",
+];
 ---
 
 <PrivateLayout title="Nubi Race">
   <div class="space-y-6">
     <AdminPageHeader
       title="Nubi Race"
-      description="One race on Nubi /races. Copy only from the organiser's official page or its official registration page - not a blog or a listing site."
+      description="One race on Nubi /races. Copy from the organiser's page or its registration platform (RaceXAsia ...) - not a blog or news."
     >
       <a
         slot="actions"
@@ -25,7 +46,7 @@ import DateInput from "../../../../components/ui/DateInput.astro";
 
     <form id="race-form" class="space-y-6" novalidate>
       <section class="admin-card">
-        <h3 class="admin-card-title">Official page</h3>
+        <h3 class="admin-card-title">Race page</h3>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div class="min-w-0 flex-1 space-y-2">
             <label class="admin-label" for="race-url">Link</label>
@@ -49,8 +70,9 @@ import DateInput from "../../../../components/ui/DateInput.astro";
           </button>
         </div>
         <p class="admin-help mt-2">
-          The AI reads this page and fills only what it can quote from it. Clef
-          scores each value and checks the saved races for the same event.
+          The AI reads the whole page and fills only what it can quote from it -
+          categories with every fee tier too. Clef scores each value and checks
+          the saved races for the same event.
         </p>
 
         <div
@@ -110,6 +132,7 @@ import DateInput from "../../../../components/ui/DateInput.astro";
             />
           </div>
           <DateInput label="Race day" name="raceDate" required />
+          <DateInput label="Last day (multi-day race)" name="endDate" />
           <div class="space-y-2">
             <label class="admin-label" for="race-start">First flag-off</label>
             <input
@@ -117,6 +140,15 @@ import DateInput from "../../../../components/ui/DateInput.astro";
               name="startTime"
               type="time"
               required
+              class="admin-input"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="admin-label" for="race-organiser">Organiser</label>
+            <input
+              id="race-organiser"
+              name="organiser"
+              maxlength="120"
               class="admin-input"
             />
           </div>
@@ -130,69 +162,39 @@ import DateInput from "../../../../components/ui/DateInput.astro";
               class="admin-input"
             />
           </div>
-          <div class="space-y-2">
-            <label class="admin-label" for="race-state">State</label>
-            <input
-              id="race-state"
-              name="state"
-              required
-              maxlength="60"
-              list="race-states"
-              class="admin-input"
-            />
-            <datalist id="race-states">
-              {
-                [
-                  "Johor",
-                  "Kedah",
-                  "Kelantan",
-                  "Kuala Lumpur",
-                  "Labuan",
-                  "Melaka",
-                  "Negeri Sembilan",
-                  "Pahang",
-                  "Perak",
-                  "Perlis",
-                  "Pulau Pinang",
-                  "Putrajaya",
-                  "Sabah",
-                  "Sarawak",
-                  "Selangor",
-                  "Terengganu",
-                ].map((s) => <option value={s} />)
-              }
-            </datalist>
-          </div>
-          <div class="space-y-2">
-            <label class="admin-label" for="race-distances">Distances</label>
-            <input
-              id="race-distances"
-              name="distances"
-              required
-              maxlength="200"
-              placeholder="21K, 10K, 5K"
-              class="admin-input"
-            />
-            <p class="admin-help">
-              Comma-separated. The plan forms match 5K, 10K, 21K and 42K.
-            </p>
-          </div>
-          <div class="space-y-2">
-            <label class="admin-label" for="race-fee">Fee</label>
-            <input
-              id="race-fee"
-              name="fee"
-              maxlength="200"
-              placeholder="RM89 (21K), RM69 (10K)"
-              class="admin-input"
-            />
-            <p class="admin-help">
-              Only when the page states it (Malaysian price).
-            </p>
-          </div>
+          <Dropdown
+            label="State"
+            name="state"
+            options={STATES.map((v) => ({ value: v, label: v }))}
+            placeholder="Choose a state"
+            required
+            class="w-full"
+          />
+          <DateInput label="Registration opens" name="registrationOpens" />
           <DateInput label="Registration closes" name="registrationCloses" />
           <DateInput label="Last checked" name="checkedOn" required />
         </div>
+      </section>
+
+      <section class="admin-card">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="admin-card-title mb-0">Categories</h3>
+            <p class="admin-help">
+              At least one. Age groups of the same distance are one category.
+              Fees in RM (Malaysian price).
+            </p>
+          </div>
+          <button
+            type="button"
+            id="cat-add"
+            class="admin-btn admin-btn-secondary"
+          >
+            <Plus className="h-4 w-4" />
+            Add category
+          </button>
+        </div>
+        <ul id="cats" class="space-y-4"></ul>
       </section>
 
       <div class="admin-form-actions">
@@ -207,6 +209,86 @@ import DateInput from "../../../../components/ui/DateInput.astro";
       </div>
     </form>
   </div>
+
+  <template id="cat-tpl">
+    <li class="admin-subcard space-y-4" data-cat>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="space-y-2">
+          <label class="admin-label">Name</label>
+          <input
+            data-k="name"
+            required
+            maxlength="60"
+            placeholder="21KM"
+            aria-label="Category name"
+            class="admin-input"
+          />
+        </div>
+        <label class="space-y-2"
+          ><span class="admin-label">Distance (km)</span>
+          <input
+            data-k="distanceKm"
+            type="number"
+            min="0"
+            max="500"
+            step="0.001"
+            class="admin-input"
+          /></label
+        >
+        <label class="space-y-2"
+          ><span class="admin-label">Flag-off</span>
+          <input data-k="startTime" type="time" class="admin-input" /></label
+        >
+      </div>
+      <div class="space-y-2">
+        <p class="admin-label">Fees</p>
+        <ul data-fees class="space-y-2"></ul>
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            data-fee-add
+            class="admin-btn admin-btn-secondary">Add fee</button
+          >
+          <button
+            type="button"
+            data-cat-remove
+            class="admin-btn admin-btn-danger">Remove category</button
+          >
+        </div>
+      </div>
+    </li>
+  </template>
+  <template id="fee-tpl">
+    <li
+      class="grid grid-cols-[minmax(0,1fr)_8rem_auto] items-center gap-2"
+      data-fee
+    >
+      <input
+        data-k="tier"
+        required
+        maxlength="40"
+        placeholder="Early Bird"
+        aria-label="Tier"
+        class="admin-input"
+      />
+      <input
+        data-k="amountRm"
+        type="number"
+        required
+        min="0"
+        step="0.01"
+        placeholder="RM"
+        aria-label="Amount (RM)"
+        class="admin-input"
+      />
+      <button
+        type="button"
+        data-fee-remove
+        class="admin-btn admin-btn-secondary"
+        aria-label="Remove fee">×</button
+      >
+    </li>
+  </template>
 </PrivateLayout>
 
 <script>
@@ -220,6 +302,7 @@ import DateInput from "../../../../components/ui/DateInput.astro";
   import { nubiRacesService } from "../../../../lib/nubi-races";
   import type {
     NubiRacePayload,
+    RaceCategory,
     RaceDraft,
     RaceField,
   } from "../../../../types/nubi-races";
@@ -228,15 +311,25 @@ import DateInput from "../../../../components/ui/DateInput.astro";
     url: "Link",
     name: "Name",
     raceDate: "Race day",
+    endDate: "Last day",
     startTime: "First flag-off",
     venue: "Venue",
     state: "State",
-    distances: "Distances",
-    fee: "Fee",
+    organiser: "Organiser",
+    categories: "Categories",
+    registrationOpens: "Registration opens",
     registrationCloses: "Registration closes",
     checkedOn: "Last checked",
   };
-  const DATES = ["raceDate", "registrationCloses", "checkedOn"];
+  // DatePicker / Dropdown show a value set from script only on `change`.
+  const CUSTOM = [
+    "raceDate",
+    "endDate",
+    "registrationOpens",
+    "registrationCloses",
+    "checkedOn",
+    "state",
+  ];
   const CHECKBOX =
     "mt-0.5 h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20";
   const SUPPORT_MIN = 0.7; // same cut as the crime draft: weaker matches start unticked
@@ -252,6 +345,15 @@ import DateInput from "../../../../components/ui/DateInput.astro";
     if (text) n.textContent = text;
     return n;
   };
+  const rm = (n: number) => `RM${n % 1 ? n.toFixed(2) : n}`;
+  const catText = (c: RaceCategory) =>
+    [
+      c.distanceKm != null ? `${c.distanceKm} km` : null,
+      c.startTime,
+      c.fees.map((f) => `${f.tier} ${rm(f.amountRm)}`).join(", ") || "no fee",
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
   const init = async () => {
     const form = document.getElementById("race-form") as HTMLFormElement | null;
@@ -262,10 +364,87 @@ import DateInput from "../../../../components/ui/DateInput.astro";
       form.elements.namedItem(name) as HTMLInputElement;
     const set = (name: string, value: string) => {
       field(name).value = value;
-      if (DATES.includes(name)) field(name).dispatchEvent(new Event("change")); // DatePicker shows script values on change
+      if (CUSTOM.includes(name)) field(name).dispatchEvent(new Event("change"));
     };
-    const errors = formErrors(form, { labels: LABELS });
+    const errors = formErrors(form, {
+      labels: LABELS,
+      targets: { categories: "cats" },
+    });
     let id = Number(new URLSearchParams(location.search).get("id")) || null;
+
+    // ---- Categories editor ----
+    const cats = document.getElementById("cats")!;
+    const catTpl = document.getElementById("cat-tpl") as HTMLTemplateElement;
+    const feeTpl = document.getElementById("fee-tpl") as HTMLTemplateElement;
+    const changed = () =>
+      form.dispatchEvent(new Event("input", { bubbles: true })); // the unsaved-changes guard
+    const addFee = (list: HTMLElement, f?: RaceCategory["fees"][number]) => {
+      const li = feeTpl.content.firstElementChild!.cloneNode(
+        true,
+      ) as HTMLElement;
+      if (f) {
+        li.querySelector<HTMLInputElement>('[data-k="tier"]')!.value = f.tier;
+        li.querySelector<HTMLInputElement>('[data-k="amountRm"]')!.value =
+          String(f.amountRm);
+      }
+      li.querySelector("[data-fee-remove]")!.addEventListener(
+        "click",
+        () => (li.remove(), changed()),
+      );
+      list.append(li);
+    };
+    const addCat = (c?: RaceCategory) => {
+      const li = catTpl.content.firstElementChild!.cloneNode(
+        true,
+      ) as HTMLElement;
+      const input = (k: string) =>
+        li.querySelector<HTMLInputElement>(`[data-k="${k}"]`)!;
+      const fees = li.querySelector<HTMLElement>("[data-fees]")!;
+      if (c) {
+        input("name").value = c.name;
+        input("distanceKm").value =
+          c.distanceKm == null ? "" : String(c.distanceKm);
+        input("startTime").value = c.startTime ?? "";
+        c.fees.forEach((f) => addFee(fees, f));
+      }
+      li.querySelector("[data-fee-add]")!.addEventListener(
+        "click",
+        () => (addFee(fees), changed()),
+      );
+      li.querySelector("[data-cat-remove]")!.addEventListener(
+        "click",
+        () => (li.remove(), changed()),
+      );
+      cats.append(li);
+    };
+    const setCats = (list: RaceCategory[]) => {
+      cats.replaceChildren();
+      list.forEach(addCat);
+      if (!list.length) addCat();
+    };
+    const readCats = (): RaceCategory[] =>
+      [...cats.querySelectorAll<HTMLElement>("[data-cat]")].map((li) => {
+        const v = (k: string) =>
+          li.querySelector<HTMLInputElement>(`[data-k="${k}"]`)!.value.trim();
+        return {
+          name: v("name"),
+          distanceKm: v("distanceKm") ? Number(v("distanceKm")) : null,
+          startTime: v("startTime") || null,
+          fees: [...li.querySelectorAll<HTMLElement>("[data-fee]")].map(
+            (f) => ({
+              tier: f
+                .querySelector<HTMLInputElement>('[data-k="tier"]')!
+                .value.trim(),
+              amountRm: Number(
+                f.querySelector<HTMLInputElement>('[data-k="amountRm"]')!.value,
+              ),
+            }),
+          ),
+        };
+      });
+    document
+      .getElementById("cat-add")!
+      .addEventListener("click", () => (addCat(), changed()));
 
     if (id) {
       const r = await nubiRacesService.getById(id).catch(() => null);
@@ -281,17 +460,20 @@ import DateInput from "../../../../components/ui/DateInput.astro";
         "url",
         "name",
         "raceDate",
+        "endDate",
         "startTime",
         "venue",
         "state",
-        "fee",
+        "organiser",
+        "registrationOpens",
         "registrationCloses",
         "checkedOn",
       ] as const)
         set(name, r[name] ?? "");
-      set("distances", r.distances.join(", "));
+      setCats(r.categories);
     } else {
       set("checkedOn", todayMY());
+      setCats([]);
       // From "Check for new races": ?url=<event page> - its draft starts below.
       const fromList = new URLSearchParams(location.search).get("url");
       if (fromList) set("url", fromList);
@@ -314,7 +496,7 @@ import DateInput from "../../../../components/ui/DateInput.astro";
         showToast({
           type: "error",
           title: "Link needed",
-          message: "Paste the organiser's https page first.",
+          message: "Paste the race's https page first.",
         });
         return;
       }
@@ -340,6 +522,52 @@ import DateInput from "../../../../components/ui/DateInput.astro";
       }
     });
 
+    /** One tickable draft row: label, value, Clef badge, quote. */
+    const item = (
+      key: string,
+      label: string,
+      value: string,
+      quote: string,
+      support: number | null | undefined,
+    ) => {
+      const li = el(
+        "li",
+        "rounded-lg p-3 ring-1 ring-gray-950/10 dark:ring-white/10",
+      );
+      const head = el("label", "flex items-start gap-3");
+      const tick = el<HTMLInputElement>("input", CHECKBOX);
+      tick.type = "checkbox";
+      tick.dataset.item = key;
+      tick.checked = support == null || support >= SUPPORT_MIN;
+      const body = el("div", "min-w-0 flex-1 space-y-1");
+      const top = el("p", "flex flex-wrap items-center gap-2 text-sm");
+      top.append(
+        el("span", "text-xs text-gray-500 dark:text-gray-400", label),
+        el("span", "font-medium text-gray-950 dark:text-white", value),
+      );
+      if (support !== undefined) {
+        const weak = support == null || support < SUPPORT_MIN;
+        top.append(
+          el(
+            "span",
+            `admin-pill ${weak ? "bg-amber-500/10 text-amber-700 dark:text-amber-300" : "admin-pill-ok"}`,
+            support == null ? "Clef -" : `Clef ${Math.round(support * 100)}%`,
+          ),
+        );
+      }
+      body.append(
+        top,
+        el(
+          "p",
+          "text-xs text-gray-500 italic wrap-anywhere dark:text-gray-400",
+          `"${quote}"`,
+        ),
+      );
+      head.append(tick, body);
+      li.append(head);
+      return li;
+    };
+
     const render = (d: RaceDraft) => {
       dupList.replaceChildren(
         ...d.duplicates.map((x) => {
@@ -348,7 +576,7 @@ import DateInput from "../../../../components/ui/DateInput.astro";
           a.href = `/admin/nubi/races/edit?id=${x.id}`;
           const why =
             x.sameEvent === 1
-              ? "same official page"
+              ? "same page"
               : x.sameEvent == null
                 ? "same date (Clef off)"
                 : `Clef ${Math.round(x.sameEvent * 100)}% same`;
@@ -357,59 +585,18 @@ import DateInput from "../../../../components/ui/DateInput.astro";
         }),
       );
       dups.hidden = d.duplicates.length === 0;
-
       items.replaceChildren(
         ...(
           Object.entries(d.fields) as [
             RaceField,
             NonNullable<RaceDraft["fields"][RaceField]>,
           ][]
-        ).map(([k, f]) => {
-          const li = el(
-            "li",
-            "rounded-lg p-3 ring-1 ring-gray-950/10 dark:ring-white/10",
-          );
-          const head = el("label", "flex items-start gap-3");
-          const tick = el<HTMLInputElement>("input", CHECKBOX);
-          tick.type = "checkbox";
-          tick.dataset.field = k;
-          tick.checked = f.support == null || f.support >= SUPPORT_MIN;
-          const body = el("div", "min-w-0 flex-1 space-y-1");
-          const top = el("p", "flex flex-wrap items-center gap-2 text-sm");
-          top.append(
-            el("span", "text-xs text-gray-500 dark:text-gray-400", LABELS[k]),
-          );
-          top.append(
-            el(
-              "span",
-              "font-medium text-gray-950 dark:text-white",
-              Array.isArray(f.value) ? f.value.join(", ") : f.value,
-            ),
-          );
-          if (f.support !== undefined) {
-            const weak = f.support == null || f.support < SUPPORT_MIN;
-            top.append(
-              el(
-                "span",
-                `admin-pill ${weak ? "bg-amber-500/10 text-amber-700 dark:text-amber-300" : "admin-pill-ok"}`,
-                f.support == null
-                  ? "Clef -"
-                  : `Clef ${Math.round(f.support * 100)}%`,
-              ),
-            );
-          }
-          body.append(
-            top,
-            el(
-              "p",
-              "text-xs text-gray-500 italic wrap-anywhere dark:text-gray-400",
-              `"${f.quote}"`,
-            ),
-          );
-          head.append(tick, body);
-          li.append(head);
-          return li;
-        }),
+        ).map(([k, f]) =>
+          item(`f:${k}`, LABELS[k], f.value, f.quote, f.support),
+        ),
+        ...d.categories.map((c, i) =>
+          item(`c:${i}`, `Category ${c.name}`, catText(c), c.quote, c.support),
+        ),
       );
       notes.replaceChildren(
         ...d.rejected.map((r) =>
@@ -419,7 +606,7 @@ import DateInput from "../../../../components/ui/DateInput.astro";
           .filter((s) => !s.ok)
           .map((s) => el("li", "", `${s.url}: ${s.error}`)),
       );
-      if (!Object.keys(d.fields).length)
+      if (!Object.keys(d.fields).length && !d.categories.length)
         notes.prepend(
           el(
             "li",
@@ -433,23 +620,32 @@ import DateInput from "../../../../components/ui/DateInput.astro";
     document.getElementById("draft-fill")!.addEventListener("click", () => {
       if (!draft) return;
       let n = 0;
+      const picked: RaceCategory[] = [];
       for (const cb of items.querySelectorAll<HTMLInputElement>(
-        "input[data-field]",
+        "input[data-item]",
       )) {
         if (!cb.checked) continue;
-        const f = draft.fields[cb.dataset.field as RaceField]!;
-        set(
-          cb.dataset.field!,
-          Array.isArray(f.value) ? f.value.join(", ") : f.value,
-        );
+        const [kind, key] = cb.dataset.item!.split(":");
+        if (kind === "f") set(key, draft.fields[key as RaceField]!.value);
+        else {
+          const {
+            source: _s,
+            quote: _q,
+            support: _p,
+            ...c
+          } = draft.categories[Number(key)];
+          picked.push(c);
+        }
         n++;
       }
+      if (picked.length) setCats(picked); // ticked categories replace the list
       set("url", draft.url);
       set("checkedOn", todayMY()); // the page was just read
+      changed();
       showToast({
         type: "success",
         title: "Form filled",
-        message: `${n} field(s) from the page. Check them, then Save.`,
+        message: `${n} value(s) from the page. Check them, then Save.`,
       });
     });
 
@@ -458,8 +654,12 @@ import DateInput from "../../../../components/ui/DateInput.astro";
     // ---- Save ----
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const invalid = errors.check();
-      if (invalid) {
+      const categories = readCats();
+      const invalid = [
+        ...(errors.check() ?? []),
+        ...(categories.length ? [] : ["Categories: add at least one"]),
+      ];
+      if (invalid.length) {
         showToast({
           type: "error",
           title: `Check ${invalid.length} field(s)`,
@@ -467,21 +667,19 @@ import DateInput from "../../../../components/ui/DateInput.astro";
         });
         return;
       }
+      const text = (name: string) => normalizeOptionalText(field(name).value);
       const payload: NubiRacePayload = {
         url: field("url").value.trim(),
         name: field("name").value.trim(),
         raceDate: field("raceDate").value,
+        endDate: text("endDate"),
         startTime: field("startTime").value,
         venue: field("venue").value.trim(),
         state: field("state").value.trim(),
-        distances: field("distances")
-          .value.split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
-        fee: normalizeOptionalText(field("fee").value),
-        registrationCloses: normalizeOptionalText(
-          field("registrationCloses").value,
-        ),
+        organiser: text("organiser"),
+        categories,
+        registrationOpens: text("registrationOpens"),
+        registrationCloses: text("registrationCloses"),
         checkedOn: field("checkedOn").value,
       };
       submit.disabled = true;
@@ -490,14 +688,8 @@ import DateInput from "../../../../components/ui/DateInput.astro";
           ? await nubiRacesService.update(id, payload)
           : await nubiRacesService.create(payload);
         if (!saved) throw new Error("Save failed");
-        guard.updateInitialState();
-        if (!id) history.replaceState(history.state, "", `?id=${saved.id}`);
-        id = saved.id;
-        showToast({
-          type: "success",
-          title: "Saved",
-          message: `${saved.name} is on Nubi /races.`,
-        });
+        guard.updateInitialState(); // no "unsaved changes" prompt on the way out
+        window.location.href = "/admin/nubi/races"; // back to the list, like Quotes
       } catch (error) {
         const lines = errors.fromApi(error);
         showToast({

@@ -3,21 +3,25 @@
 import { nubiRacesService } from "../nubi-races";
 import { isSafeSourceUrl } from "../crime";
 import type { ChatModuleClient, PreviewRow, WritePreview } from "../ai-chat";
-import type { NubiRace, NubiRacePayload } from "../../types/nubi-races";
+import type { NubiRace, NubiRacePayload, RaceCategory } from "../../types/nubi-races";
 
-const FIELDS = ["name", "raceDate", "startTime", "venue", "state", "distances", "fee", "registrationCloses", "url"] as const;
+const FIELDS = [
+  "name", "raceDate", "endDate", "startTime", "venue", "state", "categories", "registrationOpens", "registrationCloses", "organiser", "url",
+] as const;
 type Field = (typeof FIELDS)[number];
 
 const LABELS: Record<Field, string> = {
-  name: "Name", raceDate: "Race day", startTime: "First flag-off", venue: "Venue", state: "State",
-  distances: "Distances", fee: "Fee", registrationCloses: "Registration closes", url: "Official page",
+  name: "Name", raceDate: "Race day", endDate: "Last day", startTime: "First flag-off", venue: "Venue", state: "State",
+  categories: "Categories", registrationOpens: "Registration opens", registrationCloses: "Registration closes",
+  organiser: "Organiser", url: "Race page",
 };
 
 const todayMY = () => new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10);
 
 const payloadOf = (r: NubiRace): NubiRacePayload => ({
-  name: r.name, raceDate: r.raceDate, startTime: r.startTime, venue: r.venue, state: r.state, distances: r.distances,
-  fee: r.fee, registrationCloses: r.registrationCloses, url: r.url, checkedOn: r.checkedOn,
+  name: r.name, raceDate: r.raceDate, endDate: r.endDate, startTime: r.startTime, venue: r.venue, state: r.state,
+  categories: r.categories, registrationOpens: r.registrationOpens, registrationCloses: r.registrationCloses,
+  organiser: r.organiser, url: r.url, checkedOn: r.checkedOn,
 });
 
 /** Only the known fields; anything else the model sends is dropped. */
@@ -41,8 +45,22 @@ const load = async (id: number) => {
   return r;
 };
 
-const show = (v: unknown): string =>
-  v == null || v === "" ? "-" : Array.isArray(v) ? v.join(", ") || "(none)" : String(v);
+const rm = (n: number) => `RM${n % 1 ? n.toFixed(2) : n}`;
+/** One readable line per value; a category = "21KM · 21 km · 05:30 · Early Bird RM120, Normal RM160". */
+const show = (v: unknown): string => {
+  if (v == null || v === "") return "-";
+  if (!Array.isArray(v)) return String(v);
+  if (!v.length) return "(none)";
+  return v
+    .map((c: RaceCategory | string) =>
+      typeof c === "string"
+        ? c
+        : [c.name, c.distanceKm != null ? `${c.distanceKm} km` : null, c.startTime, (c.fees ?? []).map((f) => `${f.tier} ${rm(f.amountRm)}`).join(", ")]
+          .filter(Boolean)
+          .join(" · "),
+    )
+    .join("\n");
+};
 const editHref = (id: number) => `/admin/nubi/races/edit?id=${id}`;
 
 export const nubiRacesChat: ChatModuleClient = {
@@ -64,7 +82,7 @@ export const nubiRacesChat: ChatModuleClient = {
         const rows = (await nubiRacesService.list())
           .filter((r) => !q || [r.name, r.venue, r.state, r.url].some((v) => v.toLowerCase().includes(q)))
           .slice(0, 30)
-          .map((r) => ({ id: r.id, name: r.name, raceDate: r.raceDate, state: r.state, distances: r.distances, url: r.url, checkedOn: r.checkedOn }));
+          .map((r) => ({ id: r.id, name: r.name, raceDate: r.raceDate, state: r.state, categories: r.categories.map((c) => c.name), url: r.url, checkedOn: r.checkedOn }));
         return { content: JSON.stringify(rows) };
       },
     },
@@ -83,8 +101,11 @@ export const nubiRacesChat: ChatModuleClient = {
     },
     find_new_races: {
       kind: "read",
-      label: () => "Checked the race listing sites",
-      run: async () => ({ content: JSON.stringify(await nubiRacesService.discover()) }),
+      label: (a) => (Array.isArray(a.urls) && a.urls.length ? `Checked the race listing sites + ${a.urls.length} page(s)` : "Checked the race listing sites"),
+      run: async (a) => {
+        const urls = (Array.isArray(a.urls) ? a.urls : []).map(String).filter(isSafeSourceUrl).slice(0, 3);
+        return { content: JSON.stringify(await nubiRacesService.discover(urls)) };
+      },
     },
     draft_from_link: {
       kind: "read",
@@ -98,6 +119,7 @@ export const nubiRacesChat: ChatModuleClient = {
           content: JSON.stringify({
             url: d.url,
             fields: Object.fromEntries(Object.entries(d.fields).map(([k, f]) => [k, { value: f.value, quote: f.quote, clef: f.support ?? null }])),
+            categories: d.categories.map(({ source: _s, support, ...c }) => ({ ...c, clef: support ?? null })),
             rejected: d.rejected,
             duplicates: d.duplicates,
             pageRead: d.sources.some((s) => s.ok),
@@ -117,7 +139,7 @@ export const nubiRacesChat: ChatModuleClient = {
       },
       run: async (a) => {
         const race = pick(a.race);
-        const saved = await nubiRacesService.create({ fee: null, registrationCloses: null, ...race, checkedOn: todayMY() } as NubiRacePayload);
+        const saved = await nubiRacesService.create({ endDate: null, registrationOpens: null, registrationCloses: null, organiser: null, ...race, checkedOn: todayMY() } as NubiRacePayload);
         if (!saved) throw new Error("Not saved");
         return { content: `applied: saved as race ${saved.id}.`, target: `nubi_race:${saved.id}`, link: { label: `Open ${saved.name} in the form`, href: editHref(saved.id) } };
       },
