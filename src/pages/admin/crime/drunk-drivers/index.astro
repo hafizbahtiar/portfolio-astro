@@ -1,5 +1,5 @@
 ---
-import { Plus } from "lucide-react";
+import { MessageSquare, Plus } from "lucide-react";
 import PrivateLayout from "../../../../layouts/PrivateLayout.astro";
 import AdminPageHeader from "../../../../components/admin/AdminPageHeader.astro";
 import { DrunkDriversTable } from "../../../../components/admin/crime/DrunkDriversTable";
@@ -11,14 +11,22 @@ import { DrunkDriversTable } from "../../../../components/admin/crime/DrunkDrive
       title="Drunk Drivers"
       description="Court-convicted cases for the public list (/pemandu-mabuk). The public sees only the name, an IC mask, the conviction date and the source. Turn the page on or off under System -> Showcase Modules."
     >
-      <a
-        slot="actions"
-        href="/admin/crime/drunk-drivers/edit"
-        class="admin-btn admin-btn-primary"
-      >
-        <Plus className="w-4 h-4" />
-        New record
-      </a>
+      <div slot="actions" class="flex flex-wrap gap-2">
+        <a
+          href="/admin/ai/chat/drunk-drivers"
+          class="admin-btn admin-btn-secondary"
+        >
+          <MessageSquare className="w-4 h-4" />
+          Chat (AI)
+        </a>
+        <a
+          href="/admin/crime/drunk-drivers/edit"
+          class="admin-btn admin-btn-primary"
+        >
+          <Plus className="w-4 h-4" />
+          New record
+        </a>
+      </div>
     </AdminPageHeader>
 
     <DrunkDriversTable client:load />

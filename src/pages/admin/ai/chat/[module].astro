@@ -1,0 +1,19 @@
+---
+import PrivateLayout from "../../../../layouts/PrivateLayout.astro";
+import { AiChat } from "../../../../components/admin/ai-chat/AiChat";
+import { chatModuleBySlug } from "../../../../lib/ai-chat-modules";
+
+export const prerender = false;
+
+// One page for every module's chat (src/lib/ai-chat-modules/). Unknown slug = 404. No page header: the chat fills
+// the screen like any AI chat app; its sidebar links back to the module's records.
+const slug = Astro.params.module ?? "";
+const module = chatModuleBySlug(slug);
+if (!module) return new Response(null, { status: 404 });
+---
+
+<PrivateLayout title={`AI Chat · ${module.label}`}>
+  <h1 class="sr-only">AI Chat · {module.label}</h1>
+  <!-- client:only: reads the URL (?chat=) and runs the tools with the owner's session. -->
+  <AiChat client:only="react" slug={slug} />
+</PrivateLayout>

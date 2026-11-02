@@ -3,6 +3,7 @@ import { FlaskConical, RefreshCw, RotateCcw, Save } from "lucide-react";
 import { Select } from "../../ui/Select";
 import {
   REASONING,
+  REASONING_LABEL,
   aiSettingsError,
   aiSettingsService,
   type AiModel,
@@ -27,15 +28,6 @@ const endpointsHint = (m: AiModel) => {
   const endpoints = endpointsOf(m);
   return endpoints.length ? endpoints.map(endpointLabel).join(" + ") : "no endpoint info";
 };
-const REASONING_LABEL: Record<Reasoning, string> = {
-  none: "None",
-  minimal: "Minimal",
-  low: "Low",
-  medium: "Medium",
-  high: "High",
-  xhigh: "Extra high (xhigh)",
-  max: "Max",
-};
 const USE_CASE_META: Record<string, { app: string; label: string; description: string }> = {
   default: {
     app: "Portfolio",
@@ -56,6 +48,11 @@ const USE_CASE_META: Record<string, { app: string; label: string; description: s
     app: "Portfolio",
     label: "Drunk-driver draft",
     description: "Reads the source links of a drunk-driver record and drafts its fields with quotes (verified by the API).",
+  },
+  admin_chat: {
+    app: "Portfolio",
+    label: "Admin AI chat",
+    description: "The owner's chat for the showcase modules (/admin/ai/chat/...): finds, creates and updates records with tools; every change waits for Apply.",
   },
 };
 const DEFAULT = "default"; // Select value for "no reasoning_effort sent"

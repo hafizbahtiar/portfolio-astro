@@ -8,6 +8,16 @@ import { ApiClient, ApiError } from './api-client';
 export const REASONING = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'] as const;
 export type Reasoning = (typeof REASONING)[number];
 
+export const REASONING_LABEL: Record<Reasoning, string> = {
+  none: "None",
+  minimal: "Minimal",
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  xhigh: "Extra high (xhigh)",
+  max: "Max",
+};
+
 export interface AiModel {
   id: string;
   name: string;
