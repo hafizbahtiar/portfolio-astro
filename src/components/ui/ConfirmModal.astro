@@ -2,8 +2,11 @@
 import { TriangleAlert } from "lucide-react";
 ---
 
+<!-- transition:persist - its script runs once and holds these elements; a <ClientRouter> swap would replace them
+     (delete buttons then opened a detached modal and hung until a refresh). -->
 <div
   id="confirm-modal"
+  transition:persist="confirm-modal"
   class="fixed inset-0 z-50 hidden"
   aria-labelledby="confirm-modal-title"
   role="dialog"
@@ -27,7 +30,11 @@ import { TriangleAlert } from "lucide-react";
               id="confirm-modal-icon"
               class="flex size-10 shrink-0 items-center justify-center rounded-full"
             >
-              <TriangleAlert className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
+              <TriangleAlert
+                className="h-5 w-5"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
             </div>
             <div class="text-left">
               <h3

@@ -8,6 +8,7 @@ import {
   LoaderCircle,
   Plus,
   Sparkles,
+  Trash2,
   X,
 } from "lucide-react";
 import PrivateLayout from "../../../../layouts/PrivateLayout.astro";
@@ -278,10 +279,10 @@ const OUTCOMES = [
           </div>
           <p class="admin-help mb-4">
             Owner-only. "Check for updates" re-reads your source links and
-            searches the web for newer news on the accused (or a victim) -
-            a new hearing, DNAA, conviction, sentence, appeal, a changed charge,
-            a victim who later died, new lawyers. What the form already has is
-            not shown again. The appeal is about the convicted charge; one that
+            searches the web for newer news on the accused (or a victim) - a new
+            hearing, DNAA, conviction, sentence, appeal, a changed charge, a
+            victim who later died, new lawyers. What the form already has is not
+            shown again. The appeal is about the convicted charge; one that
             quashed the conviction blocks publishing.
           </p>
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -442,6 +443,15 @@ const OUTCOMES = [
             >Published (needs conviction date, case reference and a source)</span
           >
         </label>
+        <button
+          type="button"
+          id="dd-delete"
+          hidden
+          class="admin-btn admin-btn-danger"
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete
+        </button>
         <button
           type="submit"
           id="dd-submit"
@@ -713,6 +723,7 @@ const OUTCOMES = [
 <script>
   import {
     showToast,
+    confirmDialog,
     formatErrorMessage,
     normalizeOptionalText,
   } from "../../../../lib/admin-ui";
@@ -1260,7 +1271,8 @@ const OUTCOMES = [
     const summary = document.getElementById("dd-draft-summary")!;
     const notesTitle = document.getElementById("dd-draft-notes-title")!;
     // Group heading tick-boxes (Accused, Charges, ...): each ticks its own rows.
-    let groupBoxes: { box: HTMLInputElement; members: HTMLInputElement[] }[] = [];
+    let groupBoxes: { box: HTMLInputElement; members: HTMLInputElement[] }[] =
+      [];
     const fillBtn = document.getElementById(
       "dd-draft-fill",
     ) as HTMLButtonElement;
@@ -1438,7 +1450,8 @@ const OUTCOMES = [
         "flex flex-wrap items-center gap-x-2 text-xs text-gray-500 dark:text-gray-400";
       head.append(title);
       const val = document.createElement("p");
-      val.className = "mt-0.5 text-sm font-medium text-gray-950 dark:text-white";
+      val.className =
+        "mt-0.5 text-sm font-medium text-gray-950 dark:text-white";
       val.textContent = value;
       if (support !== undefined) {
         const pct = Math.round((support ?? 0) * 100);
@@ -1991,7 +2004,9 @@ const OUTCOMES = [
         summary.textContent = rows.length
           ? [
               `${rows.length} item(s) found`,
-              look ? `${look} to check first (amber, unticked or with a note)` : "",
+              look
+                ? `${look} to check first (amber, unticked or with a note)`
+                : "",
               same ? `${same} already in the form` : "",
             ]
               .filter(Boolean)
@@ -2127,6 +2142,34 @@ const OUTCOMES = [
     syncName(); // after the record is loaded (label, required, publish lock)
     const guard = setupFormGuard(form);
 
+    // Delete (saved records only) - same call as the list's delete; photos go with the record.
+    const deleteBtn = document.getElementById("dd-delete") as HTMLButtonElement;
+    deleteBtn.hidden = !id;
+    deleteBtn.addEventListener("click", async () => {
+      if (!id) return;
+      const ok = await confirmDialog({
+        title: "Delete record",
+        message: `Delete ${record?.fullName ?? "this record"} and ${record?.photos.length ?? 0} photo(s)? This cannot be undone.`,
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        variant: "danger",
+      });
+      if (!ok) return;
+      deleteBtn.disabled = true;
+      try {
+        await drunkDriversService.remove(id);
+        guard.updateInitialState(); // no "unsaved changes" prompt on the way out
+        window.location.href = "/admin/crime/drunk-drivers";
+      } catch {
+        deleteBtn.disabled = false;
+        toast({
+          type: "error",
+          title: "Delete failed",
+          message: "Failed to delete the record.",
+        });
+      }
+    });
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const lines = errors.check();
@@ -2180,6 +2223,7 @@ const OUTCOMES = [
         id = saved.id;
         record = saved;
         if (created) history.replaceState(history.state, "", `?id=${id}`);
+        deleteBtn.hidden = false;
         // <EvidencePhotos> uploads any photos picked before the first save.
         window.dispatchEvent(new CustomEvent("dd:saved", { detail: { id } }));
         toast({

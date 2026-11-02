@@ -23,16 +23,16 @@ export const RacesTable = () => {
   const [extra, setExtra] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
 
-  /** Default sites + the optional listing page typed in the dialog. */
+  /** The listing pages typed in the dialog (one per line, max 3), else the default sites. */
   const checkNew = async () => {
-    const url = extra.trim();
-    if (url && !/^https:\/\//i.test(url)) {
-      showToast({ type: "error", title: "Link needed", message: "The listing page must be an https link." });
+    const urls = [...new Set(extra.split(/\s+/).filter(Boolean))];
+    if (urls.length > 3 || urls.some((u) => !/^https:\/\/[^/]+\.[^/]+/i.test(u))) {
+      showToast({ type: "error", title: "Check the links", message: "Up to 3 https links, one per line." });
       return;
     }
     setChecking(true);
     try {
-      setFound(await nubiRacesService.discover(url ? [url] : []));
+      setFound(await nubiRacesService.discover(urls));
     } catch {
       showToast({ type: "error", title: "Check failed", message: "Could not read the race listing sites." });
     } finally {
@@ -148,8 +148,8 @@ export const RacesTable = () => {
           </header>
           <div className="space-y-4 overflow-y-auto px-5 py-4">
             <p className="admin-help">
-              Reads the default listing sites (RaceXAsia ...) and any listing page you add, and shows the races not saved yet. No AI here -
-              drafting one race is a single AI call.
+              Reads the listing pages you add here - or, with none, the default sites (RaceXAsia ...) - and shows the races not saved yet.
+              No AI here - drafting one race is a single AI call.
             </p>
             <form
               className="flex flex-col gap-3 sm:flex-row sm:items-end"
@@ -159,13 +159,13 @@ export const RacesTable = () => {
               }}
             >
               <div className="min-w-0 flex-1 space-y-2">
-                <label className="admin-label" htmlFor="races-extra">Other listing page (optional)</label>
-                <input
+                <label className="admin-label" htmlFor="races-extra">Listing pages (optional)</label>
+                <textarea
                   id="races-extra"
-                  type="url"
+                  rows={3}
                   value={extra}
                   onChange={(e) => setExtra(e.target.value)}
-                  placeholder="https://... a page that lists many races"
+                  placeholder={"https://... a page that lists many races\nOne per line, up to 3. Empty = default sites."}
                   className="admin-input"
                 />
               </div>
@@ -176,9 +176,13 @@ export const RacesTable = () => {
             </form>
             {found && (
               <>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {found.sources.map((s) => (s.ok ? `${s.name}: ${s.found} listed` : `${s.name}: ${s.error}`)).join(" · ")}
-                </p>
+                <ul className="space-y-1 text-xs">
+                  {found.sources.map((s) => (
+                    <li key={s.url} className={s.ok ? "text-gray-500 dark:text-gray-400" : "text-amber-700 dark:text-amber-300"}>
+                      {s.ok ? `${s.name}: ${s.found} listed` : `${s.name}: ${s.error}`}
+                    </li>
+                  ))}
+                </ul>
                 {found.candidates.length ? (
                   <ul className="divide-y divide-gray-950/5 dark:divide-white/10">
                     {found.candidates.map((c) => (

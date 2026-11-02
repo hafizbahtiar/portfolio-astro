@@ -43,7 +43,10 @@ export interface RaceDraft {
   url: string;
   /** Saved races that look like this one (sameEvent 1 = same official page; null = Clef off, same date). */
   duplicates: { id: number; name: string; raceDate: string; url: string; sameEvent: number | null }[];
-  sources: { url: string; ok: boolean; title: string | null; error: string | null }[];
+  /** found = from the web search; dropped: other_race = does not name this race + year, extra = over the 3 kept. */
+  sources: { url: string; ok: boolean; title: string | null; error: string | null; found: boolean; dropped?: "other_race" | "extra" }[];
+  /** The search run for this draft (query = the race name), or null when not asked. */
+  search: { query: string; error: string | null } | null;
   model: string;
 }
 

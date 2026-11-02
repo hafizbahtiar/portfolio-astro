@@ -61,6 +61,7 @@ import { TURNSTILE_SITE_KEY as turnstileSiteKey } from "../../lib/constants";
           <form
             class="container-main max-w-md space-y-5 py-10 sm:py-14"
             id="login-form"
+            method="post"
             novalidate
             data-turnstile-site-key={turnstileSiteKey || undefined}
           >
@@ -209,216 +210,230 @@ import { TURNSTILE_SITE_KEY as turnstileSiteKey } from "../../lib/constants";
   import { authService, can } from "../../lib/auth";
   import { createTurnstile } from "../../lib/turnstile";
 
-  const form = document.getElementById("login-form") as HTMLFormElement | null;
-  const statusDisplay = document.getElementById("status-display");
-  const statusText = document.getElementById("status-text");
-  const statusPanel = document.getElementById("status-panel");
-  const statusIcon = document.getElementById("status-icon");
-  const submitBtn = document.getElementById(
-    "submit-btn",
-  ) as HTMLButtonElement | null;
-  const turnstileSiteKey = form?.dataset.turnstileSiteKey || "";
-
-  let failedAttempts = 0;
-  let lockUntil = 0;
-  let submitting = false;
-
-  // Shared with the public sign-in (src/lib/turnstile.ts).
-  const turnstile = createTurnstile(
-    "turnstile-login",
-    turnstileSiteKey,
-    "login",
-  );
-
-  // Toggle Password Visibility
-  const togglePasswordBtn = document.getElementById("toggle-password");
-  const passwordInput = document.getElementById("password") as HTMLInputElement;
-
-  togglePasswordBtn?.addEventListener("click", () => {
-    if (passwordInput) {
-      const type =
-        passwordInput.getAttribute("type") === "password" ? "text" : "password";
-      passwordInput.setAttribute("type", type);
-
-      togglePasswordBtn.innerHTML = icon(type === "text" ? "eye-off" : "eye");
-    }
+  // <ClientRouter> runs this module once per session; Back to this page swaps in a new form with no submit handler,
+  // which would then do a native GET with the password in the URL. Wire every page load that has the form.
+  document.addEventListener("astro:page-load", () => {
+    if (document.getElementById("login-form")) initLogin();
   });
 
-  // Redirect only when the API refresh cookie is still valid.
-  if (authService.isAuthenticated()) {
-    authService.tryRefresh().then(async (valid) => {
-      if (valid && can(await authService.me(), "admin.access")) {
-        window.location.href = "/admin";
-      } else {
-        authService.clearAuthState();
+  function initLogin() {
+    const form = document.getElementById(
+      "login-form",
+    ) as HTMLFormElement | null;
+    const statusDisplay = document.getElementById("status-display");
+    const statusText = document.getElementById("status-text");
+    const statusPanel = document.getElementById("status-panel");
+    const statusIcon = document.getElementById("status-icon");
+    const submitBtn = document.getElementById(
+      "submit-btn",
+    ) as HTMLButtonElement | null;
+    const turnstileSiteKey = form?.dataset.turnstileSiteKey || "";
+
+    let failedAttempts = 0;
+    let lockUntil = 0;
+    let submitting = false;
+
+    // Shared with the public sign-in (src/lib/turnstile.ts).
+    const turnstile = createTurnstile(
+      "turnstile-login",
+      turnstileSiteKey,
+      "login",
+    );
+
+    // Toggle Password Visibility
+    const togglePasswordBtn = document.getElementById("toggle-password");
+    const passwordInput = document.getElementById(
+      "password",
+    ) as HTMLInputElement;
+
+    togglePasswordBtn?.addEventListener("click", () => {
+      if (passwordInput) {
+        const type =
+          passwordInput.getAttribute("type") === "password"
+            ? "text"
+            : "password";
+        passwordInput.setAttribute("type", type);
+
+        togglePasswordBtn.innerHTML = icon(type === "text" ? "eye-off" : "eye");
       }
     });
-  }
 
-  const showStatus = (
-    message: string,
-    type: "error" | "success",
-    iconHtml: string,
-  ) => {
-    if (!statusDisplay || !statusText || !statusPanel || !statusIcon) return;
-    statusText.textContent = message;
-    if (type === "success") {
-      statusPanel.classList.add("status-success");
-    } else {
-      statusPanel.classList.remove("status-success");
-    }
-    statusIcon.innerHTML = iconHtml;
-    statusDisplay.classList.remove("hidden");
-    void statusDisplay.offsetWidth;
-  };
-
-  // Icon markup comes from the <template id="icon-*"> lucide icons in the page.
-  const icon = (name: string) =>
-    document.getElementById(`icon-${name}`)?.innerHTML ?? "";
-  const errorIcon = icon("error");
-  const successIcon = icon("success");
-
-  const resetUI = () => {
-    (form as HTMLFormElement)?.reset();
-    submitting = false;
-    if (submitBtn) {
-      submitBtn.textContent = "Sign in";
-      submitBtn.disabled = false;
-    }
-    if (statusDisplay) statusDisplay.classList.add("hidden");
-  };
-
-  // Notices carried over from sign-out / password change (toasts die on the
-  // hard navigation that delivers them). Shown on every pageshow so the
-  // initial load and a bfcache restore behave the same.
-  const showNotice = () => {
-    const notice = new URLSearchParams(window.location.search);
-    if (notice.get("session") === "unrevoked") {
-      showStatus(
-        "Server session may not be revoked. Sign in and out again once you're back online.",
-        "error",
-        errorIcon,
-      );
-    } else if (notice.get("password") === "changed") {
-      showStatus(
-        "Password updated successfully. Sign in with your new password.",
-        "success",
-        successIcon,
-      );
-    }
-    if (notice.has("session") || notice.has("password")) {
-      history.replaceState(history.state, "", window.location.pathname);
-    }
-  };
-  resetUI();
-  window.addEventListener("pageshow", () => {
-    resetUI();
-    showNotice();
-  });
-
-  // Map backend/API errors to clean user-facing copy. Never surface raw
-  // technical messages on the login screen.
-  const friendlyError = (error: unknown): string => {
-    const message = error instanceof Error ? error.message : "";
-    const status = (error as { status?: number })?.status;
-    if (message.toLowerCase().includes("captcha")) {
-      return "Spam check failed. Please reload the page and try again.";
-    }
-    if (message === "no-admin")
-      return "This account has no admin access. Use the public sign-in at /login.";
-    if (status === 401 || status === 400) return "Invalid email or password.";
-    if (status === 429) return "Too many attempts. Please wait a minute.";
-    return "Couldn't sign you in right now. Please try again.";
-  };
-
-  form?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (submitting) return;
-
-    const formData = new FormData(e.target as HTMLFormElement);
-    const email = (formData.get("username") as string)?.trim();
-    const password = ((formData.get("password") as string) || "").trim();
-
-    if (!email || !password) {
-      showStatus("Please enter your email and password.", "error", errorIcon);
-      return;
-    }
-
-    if (Date.now() < lockUntil) {
-      const remaining = Math.ceil((lockUntil - Date.now()) / 1000);
-      showStatus(
-        `Too many attempts. Try again in ${remaining}s.`,
-        "error",
-        errorIcon,
-      );
-      return;
-    }
-
-    submitting = true;
-    if (submitBtn) {
-      submitBtn.innerHTML = `
-        ${icon("spinner")}
-        Signing in...
-      `;
-      submitBtn.disabled = true;
-    }
-
-    if (statusDisplay) statusDisplay.classList.add("hidden");
-
-    try {
-      let captchaToken = "";
-      if (turnstileSiteKey) {
-        captchaToken = await turnstile.execute();
-        if (!captchaToken) {
-          throw Object.assign(new Error("captcha"), { status: 0 });
-        }
-      }
-
-      const result = await authService.login(
-        email,
-        password,
-        captchaToken || undefined,
-      );
-
-      if (result && !can(await authService.me(), "admin.access")) {
-        // A public account signed in on the admin page: end that session here.
-        await authService.logout();
-        throw Object.assign(new Error("no-admin"), { status: 403 });
-      }
-
-      if (result) {
-        failedAttempts = 0;
-        if (submitBtn) {
-          submitBtn.innerHTML = `
-            ${icon("check")}
-            Signed in
-          `;
-        }
-        showStatus("Redirecting to dashboard...", "success", successIcon);
-        setTimeout(() => {
+    // Redirect only when the API refresh cookie is still valid.
+    if (authService.isAuthenticated()) {
+      authService.tryRefresh().then(async (valid) => {
+        if (valid && can(await authService.me(), "admin.access")) {
           window.location.href = "/admin";
-        }, 1000);
-      } else {
-        throw new Error("Invalid email or password.");
-      }
-    } catch (error: unknown) {
-      failedAttempts++;
-      if (failedAttempts >= 5) {
-        lockUntil = Date.now() + 60_000;
-        failedAttempts = 0;
-      }
+        } else {
+          authService.clearAuthState();
+        }
+      });
+    }
 
+    const showStatus = (
+      message: string,
+      type: "error" | "success",
+      iconHtml: string,
+    ) => {
+      if (!statusDisplay || !statusText || !statusPanel || !statusIcon) return;
+      statusText.textContent = message;
+      if (type === "success") {
+        statusPanel.classList.add("status-success");
+      } else {
+        statusPanel.classList.remove("status-success");
+      }
+      statusIcon.innerHTML = iconHtml;
+      statusDisplay.classList.remove("hidden");
+      void statusDisplay.offsetWidth;
+    };
+
+    // Icon markup comes from the <template id="icon-*"> lucide icons in the page.
+    const icon = (name: string) =>
+      document.getElementById(`icon-${name}`)?.innerHTML ?? "";
+    const errorIcon = icon("error");
+    const successIcon = icon("success");
+
+    const resetUI = () => {
+      (form as HTMLFormElement)?.reset();
       submitting = false;
       if (submitBtn) {
         submitBtn.textContent = "Sign in";
         submitBtn.disabled = false;
       }
+      if (statusDisplay) statusDisplay.classList.add("hidden");
+    };
 
-      showStatus(friendlyError(error), "error", errorIcon);
-    } finally {
-      turnstile.reset();
-    }
-  });
+    // Notices carried over from sign-out / password change (toasts die on the
+    // hard navigation that delivers them). Shown on every pageshow so the
+    // initial load and a bfcache restore behave the same.
+    const showNotice = () => {
+      const notice = new URLSearchParams(window.location.search);
+      if (notice.get("session") === "unrevoked") {
+        showStatus(
+          "Server session may not be revoked. Sign in and out again once you're back online.",
+          "error",
+          errorIcon,
+        );
+      } else if (notice.get("password") === "changed") {
+        showStatus(
+          "Password updated successfully. Sign in with your new password.",
+          "success",
+          successIcon,
+        );
+      }
+      if (notice.has("session") || notice.has("password")) {
+        history.replaceState(history.state, "", window.location.pathname);
+      }
+    };
+    resetUI();
+    window.addEventListener("pageshow", () => {
+      resetUI();
+      showNotice();
+    });
+
+    // Map backend/API errors to clean user-facing copy. Never surface raw
+    // technical messages on the login screen.
+    const friendlyError = (error: unknown): string => {
+      const message = error instanceof Error ? error.message : "";
+      const status = (error as { status?: number })?.status;
+      if (message.toLowerCase().includes("captcha")) {
+        return "Spam check failed. Please reload the page and try again.";
+      }
+      if (message === "no-admin")
+        return "This account has no admin access. Use the public sign-in at /login.";
+      if (status === 401 || status === 400) return "Invalid email or password.";
+      if (status === 429) return "Too many attempts. Please wait a minute.";
+      return "Couldn't sign you in right now. Please try again.";
+    };
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (submitting) return;
+
+      const formData = new FormData(e.target as HTMLFormElement);
+      const email = (formData.get("username") as string)?.trim();
+      const password = ((formData.get("password") as string) || "").trim();
+
+      if (!email || !password) {
+        showStatus("Please enter your email and password.", "error", errorIcon);
+        return;
+      }
+
+      if (Date.now() < lockUntil) {
+        const remaining = Math.ceil((lockUntil - Date.now()) / 1000);
+        showStatus(
+          `Too many attempts. Try again in ${remaining}s.`,
+          "error",
+          errorIcon,
+        );
+        return;
+      }
+
+      submitting = true;
+      if (submitBtn) {
+        submitBtn.innerHTML = `
+          ${icon("spinner")}
+          Signing in...
+        `;
+        submitBtn.disabled = true;
+      }
+
+      if (statusDisplay) statusDisplay.classList.add("hidden");
+
+      try {
+        let captchaToken = "";
+        if (turnstileSiteKey) {
+          captchaToken = await turnstile.execute();
+          if (!captchaToken) {
+            throw Object.assign(new Error("captcha"), { status: 0 });
+          }
+        }
+
+        const result = await authService.login(
+          email,
+          password,
+          captchaToken || undefined,
+        );
+
+        if (result && !can(await authService.me(), "admin.access")) {
+          // A public account signed in on the admin page: end that session here.
+          await authService.logout();
+          throw Object.assign(new Error("no-admin"), { status: 403 });
+        }
+
+        if (result) {
+          failedAttempts = 0;
+          if (submitBtn) {
+            submitBtn.innerHTML = `
+              ${icon("check")}
+              Signed in
+            `;
+          }
+          showStatus("Redirecting to dashboard...", "success", successIcon);
+          setTimeout(() => {
+            window.location.href = "/admin";
+          }, 1000);
+        } else {
+          throw new Error("Invalid email or password.");
+        }
+      } catch (error: unknown) {
+        failedAttempts++;
+        if (failedAttempts >= 5) {
+          lockUntil = Date.now() + 60_000;
+          failedAttempts = 0;
+        }
+
+        submitting = false;
+        if (submitBtn) {
+          submitBtn.textContent = "Sign in";
+          submitBtn.disabled = false;
+        }
+
+        showStatus(friendlyError(error), "error", errorIcon);
+      } finally {
+        turnstile.reset();
+      }
+    });
+  }
 </script>
 
 <style>

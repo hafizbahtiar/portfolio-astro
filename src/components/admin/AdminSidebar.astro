@@ -219,7 +219,7 @@ const currentPath = Astro.url.pathname;
     </div>
 
     <!-- Navigation -->
-    <nav class="grow px-3 py-4 overflow-y-auto">
+    <nav id="admin-sidebar-nav" class="grow px-3 py-4 overflow-y-auto">
       {
         groups.map((group) => (
           <div class="nav-group mb-4 last:mb-0">
@@ -615,6 +615,15 @@ const currentPath = Astro.url.pathname;
   void applyPermissions();
   document.addEventListener("astro:page-load", () => void applyPermissions());
   document.addEventListener("astro:after-swap", bindLogoutModal);
+  // <ClientRouter> swaps in a new sidebar on every page change, which starts scrolled to the top - keep the old scroll.
+  let navScroll = 0;
+  document.addEventListener("astro:before-swap", () => {
+    navScroll = document.getElementById("admin-sidebar-nav")?.scrollTop ?? 0;
+  });
+  document.addEventListener("astro:after-swap", () => {
+    const nav = document.getElementById("admin-sidebar-nav");
+    if (nav) nav.scrollTop = navScroll;
+  });
 
   const STORAGE_KEY = "admin-sidebar-state";
 

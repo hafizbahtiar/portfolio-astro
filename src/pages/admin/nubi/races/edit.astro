@@ -69,6 +69,18 @@ const STATES = [
             AI draft
           </button>
         </div>
+        <label
+          class="mt-3 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+        >
+          <input
+            id="race-search"
+            type="checkbox"
+            checked
+            class="h-4 w-4 rounded-lg border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/3 text-sky-600 focus:ring-sky-500/20"
+          />
+          Also search the web for this race (Parallel) - the organiser's own page
+          often has the fees and flag-off times
+        </label>
         <p class="admin-help mt-2">
           The AI reads the whole page and fills only what it can quote from it -
           categories with every fee tier too. Clef scores each value and checks
@@ -489,6 +501,11 @@ const STATES = [
     const dups = document.getElementById("draft-dups")!;
     const dupList = document.getElementById("draft-dups-list")!;
     let draft: RaceDraft | null = null;
+    /** " · web search: lumensports.my" when a value came from a page the search found, not the owner's link. */
+    const from = (source: string) =>
+      draft && source !== draft.url
+        ? ` · web search: ${new URL(source).hostname.replace(/^www\./, "")}`
+        : "";
 
     aiBtn.addEventListener("click", async () => {
       const url = field("url").value.trim();
@@ -504,7 +521,10 @@ const STATES = [
       box.hidden = true;
       loading.hidden = false;
       try {
-        draft = await nubiRacesService.extract([url], id ?? undefined);
+        const search = (
+          document.getElementById("race-search") as HTMLInputElement
+        ).checked;
+        draft = await nubiRacesService.extract([url], id ?? undefined, search);
         render(draft);
       } catch (error) {
         showToast({
@@ -592,13 +612,35 @@ const STATES = [
             NonNullable<RaceDraft["fields"][RaceField]>,
           ][]
         ).map(([k, f]) =>
-          item(`f:${k}`, LABELS[k], f.value, f.quote, f.support),
+          item(
+            `f:${k}`,
+            LABELS[k] + from(f.source),
+            f.value,
+            f.quote,
+            f.support,
+          ),
         ),
         ...d.categories.map((c, i) =>
-          item(`c:${i}`, `Category ${c.name}`, catText(c), c.quote, c.support),
+          item(
+            `c:${i}`,
+            `Category ${c.name}${from(c.source)}`,
+            catText(c),
+            c.quote,
+            c.support,
+          ),
         ),
       );
+      const searched = d.sources.filter((s) => s.found && s.ok && !s.dropped);
       notes.replaceChildren(
+        ...(d.search?.error
+          ? [el("li", "", `Web search: ${d.search.error}`)]
+          : []),
+        ...(d.search && !searched.length && !d.search.error
+          ? [el("li", "", "Web search found no other page about this race.")]
+          : []),
+        ...d.sources
+          .filter((s) => s.dropped === "other_race")
+          .map((s) => el("li", "", `Skipped (not this race / year): ${s.url}`)),
         ...d.rejected.map((r) =>
           el("li", "", `${LABELS[r.field] ?? r.field}: ${r.reason}`),
         ),

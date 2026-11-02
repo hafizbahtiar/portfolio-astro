@@ -35,8 +35,8 @@ export class NubiRacesService extends ApiClient {
   }
 
   /** AI draft from the organiser's page + Clef duplicate check. excludeId = the race being edited. */
-  async extract(urls: string[], excludeId?: number): Promise<RaceDraft> {
-    const draft = await this.post<RaceDraft>(`${OWNER}/extract`, excludeId ? { urls, excludeId } : { urls });
+  async extract(urls: string[], excludeId?: number, search = false): Promise<RaceDraft> {
+    const draft = await this.post<RaceDraft>(`${OWNER}/extract`, { urls, ...(excludeId ? { excludeId } : {}), ...(search ? { search } : {}) });
     if (!draft) throw new Error("Empty AI draft");
     return draft;
   }
