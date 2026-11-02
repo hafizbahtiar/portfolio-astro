@@ -259,7 +259,7 @@ export function AiChat({ slug }: { slug: string }) {
   );
 
   return (
-    <div className="relative flex h-[calc(100dvh-11rem)] min-h-[30rem] overflow-hidden rounded-xl bg-white ring-1 ring-gray-950/5 dark:bg-white/3 dark:ring-white/10">
+    <div className="relative flex h-[calc(100dvh-11rem)] min-h-120 overflow-hidden rounded-xl bg-white ring-1 ring-gray-950/5 dark:bg-white/3 dark:ring-white/10">
       {/* Sidebar: always on md+, a drawer over the chat on phones. */}
       {showList && <button type="button" aria-label="Close chats" onClick={() => setShowList(false)} className="absolute inset-0 z-20 bg-gray-950/20 md:hidden" />}
       <aside className={`${showList ? "flex" : "hidden"} absolute inset-y-0 left-0 z-30 w-72 max-w-[85%] flex-col border-r border-gray-950/5 bg-white md:static md:flex md:w-64 dark:border-white/10 dark:bg-gray-950 md:dark:bg-transparent`}>
@@ -340,7 +340,7 @@ export function AiChat({ slug }: { slug: string }) {
                   <div role="alert" className="ml-10 flex flex-wrap items-center gap-3 rounded-xl bg-red-500/5 px-4 py-3 text-sm text-red-700 ring-1 ring-red-500/20 dark:text-red-300">
                     <span className="flex-1">{problem.text}</span>
                     {problem.resume && chat && (
-                      <button type="button" onClick={() => void send(chat.id, { resume: true })} className="admin-btn admin-btn-secondary min-h-8 px-3 py-1 text-xs">
+                      <button type="button" onClick={() => void send(chat.id, { resume: true })} className="admin-btn admin-btn-secondary">
                         <RotateCcw className="h-3.5 w-3.5" /> Try again
                       </button>
                     )}

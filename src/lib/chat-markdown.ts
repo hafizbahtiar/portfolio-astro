@@ -32,7 +32,40 @@ function inline(el: HTMLElement, text: string) {
     if (last < text.length) el.append(document.createTextNode(text.slice(last)));
 }
 
-/** Render one AI bubble. Blocks: paragraphs, short headings, lists, code fences. */
+// A GFM table's header separator: `| --- | :--: |` (needs a pipe, so a bare `---` stays text).
+const TABLE_SEP = /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?$/;
+const cells = (line: string) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+
+function paragraph(el: HTMLElement, lines: string[]) {
+    const p = document.createElement("p");
+    lines.forEach((line, i) => {
+        if (i) p.append(document.createElement("br"));
+        inline(p, line);
+    });
+    el.append(p);
+}
+
+function table(head: string, rows: string[]) {
+    const wrap = document.createElement("div");
+    const t = document.createElement("table");
+    const tr = t.createTHead().insertRow();
+    const names = cells(head);
+    for (const name of names) {
+        const th = document.createElement("th");
+        inline(th, name);
+        tr.append(th);
+    }
+    const body = t.createTBody();
+    for (const row of rows) {
+        const r = body.insertRow();
+        const values = cells(row);
+        names.forEach((_, i) => inline(r.insertCell(), values[i] ?? ""));
+    }
+    wrap.append(t);
+    return wrap;
+}
+
+/** Render one AI bubble. Blocks: paragraphs, short headings, lists, tables, code fences. */
 export function renderMarkdown(el: HTMLElement, text: string) {
     el.replaceChildren();
     const blocks = text.replace(/\r\n/g, "\n").split(/\n{2,}/);
@@ -61,6 +94,16 @@ export function renderMarkdown(el: HTMLElement, text: string) {
             continue;
         }
         const lines = block.split("\n");
+        // A table may follow its intro line without a blank line between them.
+        const t = lines.findIndex((line, i) => line.includes("|") && (lines[i + 1] ?? "").includes("|") && TABLE_SEP.test((lines[i + 1] ?? "").trim()));
+        if (t >= 0) {
+            let end = t + 2;
+            while (end < lines.length && lines[end].includes("|")) end++;
+            if (t) paragraph(el, lines.slice(0, t));
+            el.append(table(lines[t], lines.slice(t + 2, end)));
+            if (end < lines.length) paragraph(el, lines.slice(end));
+            continue;
+        }
         if (lines.every((line) => /^[-*]\s+/.test(line))) {
             const ul = document.createElement("ul");
             for (const line of lines) {
@@ -81,11 +124,6 @@ export function renderMarkdown(el: HTMLElement, text: string) {
             el.append(ol);
             continue;
         }
-        const p = document.createElement("p");
-        lines.forEach((line, i) => {
-            if (i) p.append(document.createElement("br"));
-            inline(p, line);
-        });
-        el.append(p);
+        paragraph(el, lines);
     }
 }

@@ -14,8 +14,8 @@ const STATUS: Record<string, { text: string; className: string }> = {
 };
 
 const LinkButton = ({ link }: { link: { label: string; href: string } }) => (
-  <a href={link.href} className="admin-btn admin-btn-secondary min-h-8 px-3 py-1 text-xs">
-    <ExternalLink className="h-3.5 w-3.5" /> {link.label}
+  <a href={link.href} className="admin-btn admin-btn-secondary">
+    <ExternalLink className="h-4 w-4" /> {link.label}
   </a>
 );
 
@@ -84,11 +84,11 @@ export function ToolCallCard(p: {
             {link && <LinkButton link={link} />}
             {open && card && (
               <>
-                <button type="button" onClick={p.onReject} disabled={p.applying} className="admin-btn admin-btn-secondary min-h-8 px-3 py-1 text-xs">
+                <button type="button" onClick={p.onReject} disabled={p.applying} className="admin-btn admin-btn-secondary">
                   Reject
                 </button>
-                <button type="button" onClick={p.onApply} disabled={p.applying} className="admin-btn admin-btn-primary min-h-8 px-3 py-1 text-xs">
-                  {p.applying ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Apply
+                <button type="button" onClick={p.onApply} disabled={p.applying} className="admin-btn admin-btn-primary">
+                  {p.applying ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Apply
                 </button>
               </>
             )}
