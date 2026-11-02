@@ -201,3 +201,53 @@ bukan pemastautin 30% (semuanya hanya menambah D atau satu baris).
    bukan pemastautin juga dibundarkan ke 5 sen; X = PCB bersih yang dipotong. **Tambah PCB ke halaman
    hanya selepas kes LHDN lulus dalam check.**
 5. Spesifikasi PCB 2027 (Dis-Jan): tambah `src/data/pcb/2027.ts`, jalankan semula check.
+
+## 8. PCB dipaparkan (2026-11-02) - rujukan payroll.my
+
+**Keputusan pemilik:** kes daripada payroll.my (kalkulator HR.my, bukan LHDN) cukup sebagai semakan silang untuk
+memaparkan PCB (menggantikan syarat kes LHDN dalam §6.2 dan §7.4).
+
+- `scripts/check-pcb.ts`: 43 kes payroll.my (8 gaji RM3,000-RM25,000 × kategori 1/2/3 × anak 0/2/3, zakat,
+  bukan pemastautin), diambil 2026-11-02 daripada `https://payroll.my/cs/payroll.php` ("2026 Jun"). KWSP pekerja dan
+  PCB sama hingga ke sen. payroll.my tiada input bulan - jawapannya sama dengan Januari kita.
+- **1 beza (2 baris, kes sama):** RM4,000 kategori 1 / kategori 3 tanpa anak - payroll.my RM16.70, kita RM50.00.
+  Spesifikasi memotong K2 ke sen (Exhibit 5: RM308.63) → P = RM35,000.07, melepasi had rebat RM400 pada RM35,000.
+  payroll.my dapat P = RM35,000.00. Kita ikut spesifikasi; check merekod nilai ini.
+- Halaman: bulan (lalai bulan semasa), pemastautin, kategori, anak ikut jenis, OKU diri/pasangan (pasangan: kategori 2
+  sahaja), zakat; output PCB, zakat, gaji bersih (sebelum PERKESO/SIP) dan "Cara PCB dikira".
+
+**Langkah seterusnya (pilihan pemilik "langkah demi langkah"):**
+2. PERKESO (Akta 4, termasuk Lindung 24 mulai Jun 2026) + SIP (Akta 800) daripada jadual rasmi PERKESO;
+   semak silang dengan payroll.my (output SOCSO/EIS sudah ada dalam jawapannya).
+3. Bonus (formula 5 langkah) dan potongan dibenarkan (TP1/LP).
+
+## 9. PERKESO + SIP (2026-11-02)
+
+- **Sumber rasmi:** Akta 4 dengan LINDUNG 24 Jam = Lampiran 1 dalam *Soalan Lazim Skim LINDUNG 24 Jam* PERKESO
+  (`docs/sources/perkeso/lindung24-faq-2026.pdf`, 65 julat, siling RM6,000, syer pekerja SKBBK 0.75% fasa pertama,
+  mulai gaji Jun 2026, tiada had umur, pekerja asing termasuk). Akta 800 = `kadar-caruman-akta-800-2024-10-10.pdf`
+  (imej imbasan, 65 julat sama).
+- `scripts/perkeso/caruman.py` → `src/data/perkeso/2026-06.ts`: Akta 4 dihurai daripada teks PDF (tolak jika syer ≠
+  jumlah); SIP dibaca dengan mata daripada imej (semua 65 baris) dan disemak sama dengan 0.2% titik tengah julat
+  dibundarkan naik ke 5 sen.
+- `src/lib/perkeso.ts`: Jenis Kedua untuk umur 60+ dan pekerja asing; SIP warganegara/PR bawah 60 sahaja; SKBBK
+  hanya bulan Jun ke atas (input bulan yang sama dengan PCB).
+- `scripts/check-perkeso.ts`: baris rasmi di sempadan + 27 kes payroll.my ("2026 Jun") - semua sama; Mei (tanpa
+  SKBBK) juga sama dengan payroll.my "2026".
+- **Belum:** pengecualian SIP umur 57+ yang tiada caruman sebelum 57 (kes jarang); fasa 2/3 LINDUNG 24 (1.0%/1.25%)
+  bila PERKESO umumkan tarikh - jadual baharu = jalankan semula skrip dengan PDF baharu.
+
+## 10. Bonus + potongan TP1 (2026-11-02)
+
+- `src/lib/pcb.ts`: `lpSen` (TP1 ikut bulan, ΣLP terkumpul) dan `bonus` (Yt, Kt) bulan semasa - formula saraan
+  tambahan 5 langkah (spesifikasi p.12-13). **Exhibit 5 Mac (RM108.20) dan April (langkah 1 RM106.20, [E] RM1,284,
+  langkah 2 P RM54,650, langkah 3 RM2,011.50, langkah 4 RM727.50, jumlah RM833.70) kini lulus dalam check-pcb** - ujian
+  rasmi, bukan payroll.my.
+- `src/lib/kwsp.ts`: nota Bahagian A - bonus yang menjadikan gaji ≤ RM5,000 melebihi RM5,000 → majikan 13% gaji bulan
+  itu dibundarkan naik ke ringgit; pekerja ikut jadual. KWSP bonus (Kt) = caruman(gaji + bonus) − caruman(gaji).
+- PERKESO/SIP: bonus tahunan bukan gaji (FAQ LINDUNG 24 soalan 12) - tidak berubah.
+- payroll.my: 37 kes (bonus × gaji × kategori, TP1) - KWSP 37/37, PCB 25/37. 12 beza semuanya punca K2 dipotong ke sen
+  (9 kes 5 sen, 3 kes RM4,000 bujang) - lihat komen dalam check-pcb.
+- Halaman: "Bonus / saraan tambahan bulan ini", "Potongan dibenarkan (TP1) bulan ini" (anggapan: tiada bonus/TP1 dalam
+  bulan sebelum ini). Gaji bersih = gaji + bonus − semua potongan pekerja.
+- **Belum:** bonus/TP1 dalam bulan-bulan lepas (perlu input sejarah), TP3 (mula kerja pertengahan tahun), BIK.

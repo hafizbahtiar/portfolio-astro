@@ -15,8 +15,18 @@ export function bahagian(status: StatusKwsp, umur60: boolean): Bahagian {
   return status === "warganegara" ? "E" : "C";
 }
 
-export function caruman(gajiSen: number, status: StatusKwsp, umur60: boolean) {
+/** gajiBiasaSen: the normal monthly wage when `gajiSen` includes a bonus (Part A note below). */
+export interface Caruman { bahagian: Bahagian; majikan: number; pekerja: number; jumlah: number }
+
+export function caruman(gajiSen: number, status: StatusKwsp, umur60: boolean, gajiBiasaSen = gajiSen): Caruman {
   const b = bahagian(status, umur60);
+  // Part A note (Third Schedule p.12): a bonus that takes a RM5,000-and-below wage over RM5,000 that month -
+  // employer pays 13% of the month's wages, rounded up to the next ringgit; the employee share follows the table.
+  if (b === "A" && gajiBiasaSen <= 500_000 && gajiSen > 500_000) {
+    const pekerja = caruman(gajiSen, status, umur60).pekerja;
+    const majikan = Math.ceil((gajiSen * 13) / 10_000) * 100;
+    return { bahagian: b, majikan, pekerja, jumlah: majikan + pekerja };
+  }
   // Up to RM20,000 the Act requires the band amounts, not an exact percentage.
   if (b !== "F" && gajiSen <= 2_000_000) {
     const [, majikan, pekerja] = THIRD_SCHEDULE[b].find(([hulu]) => gajiSen <= hulu)!;

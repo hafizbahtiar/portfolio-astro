@@ -38,4 +38,9 @@ for (const [part, rows] of Object.entries(THIRD_SCHEDULE)) {
     prev = hulu;
   }
 }
+// Part A note (p.12): RM4,000 wage + RM3,000 bonus -> employer 13% x RM7,000 = RM910 (table would give 12% = RM840);
+// employee from the table (RM6,900.01-RM7,000 band = RM770). Without a bonus the table applies as usual.
+expect(caruman(700_000, "warganegara", false, 400_000), "bonus 13% note").toEqual({ bahagian: "A", majikan: 91_000, pekerja: 77_000, jumlah: 168_000 });
+expect(caruman(700_000, "warganegara", false).majikan, "no bonus: 12% table").toBe(84_000);
+expect(caruman(700_000, "warganegara", false, 600_000).majikan, "wage already over RM5,000: table").toBe(84_000);
 console.log("check-kwsp: ok", Object.entries(THIRD_SCHEDULE).map(([p, r]) => `${p}:${r.length}`).join(" "));

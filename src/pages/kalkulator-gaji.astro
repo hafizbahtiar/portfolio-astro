@@ -7,14 +7,38 @@ import TechHeading from "../components/layout/TechHeading.astro";
 import Combobox from "../components/ui/Combobox.astro";
 import PublicLayout from "../layouts/PublicLayout.astro";
 
+import { PCB_2026 } from "../data/pcb/2026";
+
 const KWSP_URL =
   "https://www.kwsp.gov.my/en/employer/responsibilities/mandatory-contribution";
+const LHDN_CALC_URL = "https://calcpcbplus.hasil.gov.my/HITS_CE/MainScreen";
+const PERKESO_URL = "https://www.perkeso.gov.my/kadar-caruman";
+const BULAN = [
+  "Januari",
+  "Februari",
+  "Mac",
+  "April",
+  "Mei",
+  "Jun",
+  "Julai",
+  "Ogos",
+  "September",
+  "Oktober",
+  "November",
+  "Disember",
+];
+const ANAK = [
+  ["anak-biasa", "Anak bawah 18 / belum belajar IPT"],
+  ["anak-ipt", "Anak 18+ belajar diploma ke atas"],
+  ["anak-oku", "Anak OKU"],
+  ["anak-okuipt", "Anak OKU belajar diploma ke atas"],
+] as const;
 const row = "flex items-baseline justify-between gap-4 px-2 py-3";
 ---
 
 <PublicLayout
-  title="Kalkulator Gaji (KWSP) | Hafiz Bahtiar"
-  description="Kira caruman KWSP majikan dan pekerja mengikut Jadual Ketiga (gaji Oktober 2025 dan seterusnya)."
+  title="Kalkulator Gaji (KWSP, PCB, PERKESO, SIP) | Hafiz Bahtiar"
+  description="Kira caruman KWSP, PCB (potongan cukai bulanan), PERKESO termasuk LINDUNG 24 Jam, SIP dan gaji bersih mengikut jadual rasmi KWSP, LHDN dan PERKESO."
 >
   <div class="relative mx-auto mt-8 max-lg:max-w-2xl sm:mt-24">
     <BackLink />
@@ -32,9 +56,9 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
     </div>
     <div class="line-y mt-10">
       <p class="mx-2 text-lg">
-        Caruman KWSP majikan dan pekerja bagi gaji sebulan. Dikira dalam pelayar
-        anda - tiada data gaji dihantar ke mana-mana. PCB akan ditambah
-        kemudian.
+        Caruman KWSP, PCB, PERKESO dan SIP majikan dan pekerja, serta gaji
+        bersih bagi gaji sebulan. Dikira dalam pelayar anda - tiada data gaji
+        dihantar ke mana-mana.
       </p>
     </div>
 
@@ -50,6 +74,19 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
             max="1000000"
             step="0.01"
             value="3000"
+            class="field h-10"
+          />
+        </label>
+        <label class="grid gap-1.5 text-sm/6 font-medium">
+          Bonus / saraan tambahan bulan ini (RM)
+          <input
+            id="kwsp-bonus"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            max="10000000"
+            step="0.01"
+            value="0"
             class="field h-10"
           />
         </label>
@@ -80,6 +117,124 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
             class="size-4 accent-sky-500"
           />
           Umur 60 tahun ke atas
+        </label>
+
+        <h2 class="mt-4 text-base/7 font-semibold sm:col-span-2">
+          PCB (potongan cukai bulanan)
+        </h2>
+        <div class="grid gap-1.5">
+          <label for="pcb-bulan" class="text-sm/6 font-medium">Bulan gaji</label
+          >
+          <Combobox
+            id="pcb-bulan"
+            listLabel="Bulan gaji"
+            searchPlaceholder="Cari bulan…"
+            value="1"
+            options={BULAN.map((label, i) => ({ value: String(i + 1), label }))}
+          />
+        </div>
+        <label class="flex items-center gap-2 text-sm/6 font-medium">
+          <input
+            id="pcb-pemastautin"
+            type="checkbox"
+            checked
+            class="size-4 accent-sky-500"
+          />
+          Pemastautin cukai Malaysia
+        </label>
+        <div class="grid gap-1.5 sm:col-span-2" data-resident>
+          <label for="pcb-kategori" class="text-sm/6 font-medium"
+            >Taraf (kategori PCB)</label
+          >
+          <Combobox
+            id="pcb-kategori"
+            listLabel="Taraf"
+            searchPlaceholder="Cari taraf…"
+            value="1"
+            options={[
+              { value: "1", label: "Bujang" },
+              { value: "2", label: "Berkahwin, pasangan tidak bekerja" },
+              {
+                value: "3",
+                label:
+                  "Berkahwin dan pasangan bekerja, bercerai, balu/duda, atau bujang dengan anak angkat",
+              },
+            ]}
+          />
+        </div>
+        {
+          ANAK.map(([id, label]) => (
+            <label
+              class="grid gap-1.5 text-sm/6 font-medium"
+              data-resident
+              data-anak
+            >
+              {label}
+              <input
+                id={`pcb-${id}`}
+                type="number"
+                inputmode="numeric"
+                min="0"
+                max="20"
+                step="1"
+                value="0"
+                class="field h-10"
+              />
+            </label>
+          ))
+        }
+        <label
+          class="flex items-center gap-2 text-sm/6 font-medium"
+          data-resident
+        >
+          <input id="pcb-oku" type="checkbox" class="size-4 accent-sky-500" />
+          Saya OKU
+        </label>
+        <label
+          class="flex items-center gap-2 text-sm/6 font-medium"
+          data-resident
+          data-pasangan
+        >
+          <input
+            id="pcb-pasanganoku"
+            type="checkbox"
+            class="size-4 accent-sky-500"
+          />
+          Pasangan OKU
+        </label>
+        <label
+          class="grid gap-1.5 text-sm/6 font-medium sm:col-span-2"
+          data-resident
+        >
+          Potongan dibenarkan (TP1) bulan ini (RM)
+          <span class="text-xs/5 font-normal text-gray-500"
+            >Contoh: insurans hayat/takaful, SSPN, yuran pengajian sendiri,
+            perubatan ibu bapa - dalam had pelepasan LHDN. Bulan-bulan sebelum
+            ini dianggap tiada.</span
+          >
+          <input
+            id="pcb-tp1"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            max="1000000"
+            step="0.01"
+            value="0"
+            class="field h-10"
+          />
+        </label>
+        <label class="grid gap-1.5 text-sm/6 font-medium sm:col-span-2">
+          Zakat dipotong setiap bulan (RM)
+          <input
+            id="pcb-zakat"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            max="100000"
+            step="0.01"
+            value="0"
+            class="field h-10"
+          />
         </label>
         <p
           id="kwsp-error"
@@ -112,11 +267,52 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
           <dt class="text-gray-600 dark:text-gray-400">Jumlah caruman</dt>
           <dd id="kwsp-jumlah" class="font-medium">-</dd>
         </div>
+        <div class={row}>
+          <dt class="text-gray-600 dark:text-gray-400">PCB</dt>
+          <dd id="kwsp-pcb" class="font-medium">-</dd>
+        </div>
+        <div class={row} id="baris-pcbbonus" hidden>
+          <dt class="text-gray-600 dark:text-gray-400">
+            PCB atas bonus
+            <span class="block text-xs/5 text-gray-500"
+              >sebahagian daripada PCB di atas; baki bonus = bonus − KWSP bonus
+              − PCB bonus</span
+            >
+          </dt>
+          <dd id="kwsp-pcbbonus" class="font-medium">-</dd>
+        </div>
+        <div class={row}>
+          <dt class="text-gray-600 dark:text-gray-400">Zakat</dt>
+          <dd id="kwsp-zakat" class="font-medium">-</dd>
+        </div>
+        <div class={row}>
+          <dt class="text-gray-600 dark:text-gray-400">
+            PERKESO majikan
+            <span id="perkeso-jenis" class="block text-xs/5 text-gray-500"
+            ></span>
+          </dt>
+          <dd id="kwsp-perkesomajikan" class="font-medium">-</dd>
+        </div>
+        <div class={row}>
+          <dt class="text-gray-600 dark:text-gray-400">
+            PERKESO pekerja
+            <span id="perkeso-skbbk" class="block text-xs/5 text-gray-500"
+            ></span>
+          </dt>
+          <dd id="kwsp-perkesopekerja" class="font-medium">-</dd>
+        </div>
+        <div class={row}>
+          <dt class="text-gray-600 dark:text-gray-400">
+            SIP majikan / pekerja
+            <span id="sip-nota" class="block text-xs/5 text-gray-500"></span>
+          </dt>
+          <dd id="kwsp-sip" class="font-medium">-</dd>
+        </div>
         <div class={row} data-split>
           <dt class="text-gray-600 dark:text-gray-400">
-            Gaji selepas KWSP pekerja
+            Gaji bersih
             <span class="block text-xs/5 text-gray-500"
-              >sebelum PCB, PERKESO dan SIP</span
+              >gaji + bonus, selepas KWSP, PCB, zakat, PERKESO dan SIP pekerja</span
             >
           </dt>
           <dd
@@ -136,6 +332,15 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
         seterusnya. Cara pembundaran itu dibahagi antara majikan dan pekerja
         belum disahkan dengan KWSP, jadi hanya jumlah dipaparkan.
       </p>
+      <details class="mx-2 mt-4 text-sm/6">
+        <summary class="cursor-pointer font-medium">Cara PCB dikira</summary>
+        <p
+          id="pcb-cara"
+          class="mt-2 text-gray-600 tabular-nums dark:text-gray-400"
+        >
+          -
+        </p>
+      </details>
     </div>
 
     <div class="line-y mt-6">
@@ -144,18 +349,46 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
           href={KWSP_URL}
           target="_blank"
           rel="noopener noreferrer"
-          class="link"
-          >Jadual Ketiga KWSP</a
+          class="link">Jadual Ketiga KWSP</a
         >, berkuat kuasa bagi gaji Oktober 2025 dan seterusnya. Gaji sehingga
         RM20,000 ikut jadual julat gaji; atas RM20,000 ikut peratus, dibundarkan
-        ke ringgit seterusnya.
+        ke ringgit seterusnya. PCB mengikut <a
+          href={PCB_2026.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link">spesifikasi PCB {PCB_2026.tahun} LHDN</a
+        > (gaji sama setiap bulan dari Januari). Semak dengan <a
+          href={LHDN_CALC_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link">kalkulator PCB LHDN</a
+        >. PERKESO dan SIP ikut <a
+          href={PERKESO_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link">jadual caruman PERKESO</a
+        > (had siling gaji RM6,000; bonus tahunan bukan gaji bagi PERKESO dan SIP);
+        syer pekerja Skim LINDUNG 24 Jam (0.75%) bermula gaji Jun 2026. Bonus: KWSP
+        atas gaji + bonus; PCB ikut formula saraan tambahan LHDN (dengan anggapan
+        tiada bonus dalam bulan sebelum ini). Umur 60 ke atas dan pekerja asing: Jenis
+        Kedua (bencana pekerjaan), tanpa SIP.
       </p>
     </div>
 
     <div class="line-y mt-6">
       <Disclaimer
         class="mx-2"
-        sources={[{ name: "KWSP (Jadual Ketiga)", href: KWSP_URL }]}
+        sources={[
+          { name: "KWSP (Jadual Ketiga)", href: KWSP_URL },
+          {
+            name: `LHDN (spesifikasi PCB ${PCB_2026.tahun})`,
+            href: PCB_2026.url,
+          },
+          {
+            name: "PERKESO (kadar caruman Akta 4 dan Akta 800)",
+            href: PERKESO_URL,
+          },
+        ]}
       >
         <Fragment
           set:html={`Ini <strong>bukan nasihat kewangan atau cukai</strong>. Potongan sebenar mengikut sistem gaji majikan anda.`}
@@ -168,6 +401,8 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
 
 <script>
   import { caruman, type StatusKwsp } from "../lib/kwsp";
+  import { pcb, pcbBukanPemastautin, type Kategori } from "../lib/pcb";
+  import { perkeso } from "../lib/perkeso";
   import { rm } from "../lib/money";
   import {
     loadState,
@@ -177,7 +412,24 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
   } from "../lib/calc-state";
 
   const KEY = "gaji";
-  const NAMES = ["gaji", "status", "umur60"];
+  const ANAK = ["biasa", "ipt", "oku", "okuipt"] as const;
+  const NAMES = [
+    "gaji",
+    "bonus",
+    "tp1",
+    "status",
+    "umur60",
+    "bulan",
+    "pemastautin",
+    "kategori",
+    ...ANAK.map((a) => `anak-${a}`),
+    "oku",
+    "pasanganoku",
+    "zakat",
+  ];
+  // Default month = this month in Malaysia.
+  const bulanIni = () =>
+    String(new Date(Date.now() + 8 * 3600_000).getUTCMonth() + 1);
 
   const initKwsp = () => {
     const form = document.getElementById("kwsp");
@@ -188,6 +440,39 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
     const umur60 = document.getElementById("kwsp-umur60") as HTMLInputElement;
     const error = document.getElementById("kwsp-error")!;
     const notaF = document.getElementById("kwsp-nota-f")!;
+    const el = <T extends HTMLElement = HTMLInputElement>(id: string) =>
+      document.getElementById(`pcb-${id}`) as T;
+    const bulan = el<HTMLSelectElement>("bulan");
+    const kategori = el<HTMLSelectElement>("kategori");
+    const pemastautin = el("pemastautin");
+    const anak = Object.fromEntries(
+      ANAK.map((a) => [a, el(`anak-${a}`)]),
+    ) as Record<(typeof ANAK)[number], HTMLInputElement>;
+    const oku = el("oku");
+    const pasanganOku = el("pasanganoku");
+    const zakat = el("zakat");
+    const cara = el("cara");
+    // Whole children 0-20 / zakat RM0-100,000; anything else counts as 0 (the field shows what was typed).
+    const kiraan = (i: HTMLInputElement) =>
+      Number.isInteger(i.valueAsNumber) &&
+      i.valueAsNumber >= 0 &&
+      i.valueAsNumber <= 20
+        ? i.valueAsNumber
+        : 0;
+    const bonus = document.getElementById("kwsp-bonus") as HTMLInputElement;
+    const tp1 = el("tp1");
+    const amaun = (i: HTMLInputElement, max: number) =>
+      Number.isFinite(i.valueAsNumber) &&
+      i.valueAsNumber >= 0 &&
+      i.valueAsNumber <= max
+        ? Math.round(i.valueAsNumber * 100)
+        : 0;
+    const zakatSen = () =>
+      Number.isFinite(zakat.valueAsNumber) &&
+      zakat.valueAsNumber >= 0 &&
+      zakat.valueAsNumber <= 100_000
+        ? Math.round(zakat.valueAsNumber * 100)
+        : 0;
     const out = (id: string, text: string) =>
       (document.getElementById(`kwsp-${id}`)!.textContent = text);
 
@@ -198,18 +483,142 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
         ok || gaji.value === ""
           ? ""
           : "Masukkan gaji antara RM0 dan RM1,000,000.";
-      if (!ok)
-        return ["bahagian", "majikan", "pekerja", "jumlah", "bersih"].forEach(
-          (id) => out(id, "-"),
+      const resident = pemastautin.checked;
+      const kat = Number(kategori.value) as Kategori;
+      document
+        .querySelectorAll<HTMLElement>("[data-resident]")
+        .forEach((e) => (e.hidden = !resident));
+      document
+        .querySelectorAll<HTMLElement>("[data-anak]")
+        .forEach((e) => (e.hidden = !resident || kat === 1));
+      document
+        .querySelectorAll<HTMLElement>("[data-pasangan]")
+        .forEach((e) => (e.hidden = !resident || kat !== 2));
+      if (!ok) {
+        cara.textContent = "-";
+        ["perkeso-jenis", "perkeso-skbbk", "sip-nota"].forEach(
+          (id) => (document.getElementById(id)!.textContent = ""),
         );
+        document.getElementById("baris-pcbbonus")!.hidden = true;
+        return [
+          "bahagian",
+          "majikan",
+          "pekerja",
+          "jumlah",
+          "pcb",
+          "pcbbonus",
+          "zakat",
+          "perkesomajikan",
+          "perkesopekerja",
+          "sip",
+          "bersih",
+        ].forEach((id) => out(id, "-"));
+      }
       const sen = Math.round(n * 100);
-      const r = caruman(sen, status.value as StatusKwsp, umur60.checked);
+      const bonusSen = amaun(bonus, 10_000_000);
+      const m = Number(bulan.value);
+      // KWSP on wage + bonus (Part A 13% note inside caruman); the bonus's own EPF is the difference.
+      const biasa = caruman(sen, status.value as StatusKwsp, umur60.checked);
+      const r = caruman(
+        sen + bonusSen,
+        status.value as StatusKwsp,
+        umur60.checked,
+        sen,
+      );
       const f = r.bahagian === "F";
       out("bahagian", `Bahagian ${r.bahagian}`);
       out("majikan", rm(r.majikan));
       out("pekerja", rm(r.pekerja));
       out("jumlah", rm(r.jumlah));
-      out("bersih", rm(sen - r.pekerja));
+      const z = zakatSen();
+      let pcbSen: number;
+      let pcbBonusSen = 0;
+      if (resident) {
+        const p = pcb({
+          gajiSen: sen,
+          kwspSen: biasa.pekerja,
+          bulan: m,
+          lpSen: Array.from({ length: m }, (_, i) =>
+            i === m - 1 ? amaun(tp1, 1_000_000) : 0,
+          ),
+          bonus: bonusSen
+            ? { gajiSen: bonusSen, kwspSen: r.pekerja - biasa.pekerja }
+            : undefined,
+          kategori: kat,
+          anak:
+            kat === 1
+              ? {}
+              : {
+                  biasa: kiraan(anak.biasa),
+                  ipt: kiraan(anak.ipt),
+                  oku: kiraan(anak.oku),
+                  okuIpt: kiraan(anak.okuipt),
+                },
+          oku: oku.checked,
+          pasanganOku: kat === 2 && pasanganOku.checked,
+          zakatSen: z,
+        });
+        pcbSen = p.pcbSen;
+        pcbBonusSen = p.tambahan?.pcbBonus ?? 0;
+        cara.textContent =
+          `Pendapatan bercukai setahun P = ${rm(p.P)} (gaji tolak KWSP layak, had RM4,000 setahun, tolak pelepasan${p.LP ? ` dan TP1 ${rm(p.LP)}` : ""}). ` +
+          (p.R
+            ? `Cukai setahun = (P − ${rm(p.M)}) × ${p.R}% ${p.B < 0 ? "−" : "+"} ${rm(Math.abs(p.B))} = ${rm(p.cukaiSetahun)}. `
+            : "P tidak melebihi RM5,000: tiada cukai. ") +
+          `Ditolak PCB yang sudah dibayar sebelum bulan ini (${rm(p.X)}) dan zakat (${rm(p.Z)}), dibahagi ${p.n + 1} bulan berbaki, dibundarkan naik ke 5 sen = ${rm(p.pcbSebelumZakat)}` +
+          (z ? `, tolak zakat bulan ini = ${rm(p.pcbSen)}.` : ".") +
+          (p.pcbSebelumZakat === 0 && p.cukaiSetahun > 0
+            ? " PCB bawah RM10 tidak dipotong."
+            : "") +
+          (p.tambahan
+            ? ` Bonus: P dengan bonus = ${rm(p.tambahan.P)}, cukai setahun ${rm(p.tambahan.cukaiSetahun)}, tolak PCB gaji biasa setahun ` +
+              `${rm(p.tambahan.setahun)}${p.Z ? ` dan zakat ${rm(p.Z)}` : ""} = PCB bonus ${rm(p.tambahan.pcbBonus)}; jumlah PCB bulan ini ${rm(p.pcbSen)}.`
+            : "");
+      } else {
+        pcbSen = Math.max(pcbBukanPemastautin(sen + bonusSen) - z, 0);
+        pcbBonusSen = bonusSen
+          ? pcbBukanPemastautin(sen + bonusSen) - pcbBukanPemastautin(sen)
+          : 0;
+        cara.textContent =
+          "Bukan pemastautin: 30% daripada gaji" +
+          (bonusSen ? " dan bonus" : "") +
+          ", tanpa pelepasan" +
+          (z ? ", tolak zakat." : ".");
+      }
+      out("pcb", rm(pcbSen));
+      document.getElementById("baris-pcbbonus")!.hidden = !bonusSen;
+      out(
+        "pcbbonus",
+        bonusSen
+          ? `${rm(pcbBonusSen)} (baki bonus ${rm(bonusSen - (r.pekerja - biasa.pekerja) - pcbBonusSen)})`
+          : "-",
+      );
+      out("zakat", rm(z));
+      const ps = perkeso(sen, status.value as StatusKwsp, umur60.checked, m); // bonus is not SOCSO/EIS wages
+      out("perkesomajikan", rm(ps.majikan));
+      out("perkesopekerja", rm(ps.pekerja));
+      out(
+        "sip",
+        ps.sipLayak
+          ? `${rm(ps.sipMajikan)} / ${rm(ps.sipPekerja)}`
+          : "Tidak layak",
+      );
+      document.getElementById("perkeso-jenis")!.textContent =
+        ps.jenis === "pertama"
+          ? "Jenis Pertama: bencana pekerjaan dan keilatan"
+          : "Jenis Kedua: bencana pekerjaan";
+      document.getElementById("perkeso-skbbk")!.textContent = ps.skbbk
+        ? `termasuk LINDUNG 24 Jam ${rm(ps.skbbk)}`
+        : "";
+      document.getElementById("sip-nota")!.textContent = ps.sipLayak
+        ? ""
+        : "warganegara dan PR bawah 60 tahun sahaja";
+      out(
+        "bersih",
+        rm(
+          sen + bonusSen - r.pekerja - pcbSen - z - ps.pekerja - ps.sipPekerja,
+        ),
+      );
       document
         .querySelectorAll<HTMLElement>("[data-split]")
         .forEach((el) => (el.hidden = f));
@@ -217,8 +626,22 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
     };
     const read = (): CalcState => ({
       gaji: gaji.value,
+      bonus: bonus.value === "0" ? "" : bonus.value,
+      tp1: tp1.value === "0" ? "" : tp1.value,
       status: status.value,
       umur60: umur60.checked ? "1" : "",
+      bulan: bulan.value,
+      pemastautin: pemastautin.checked ? "" : "0", // resident is the default, so only "no" is kept
+      kategori: kategori.value,
+      ...Object.fromEntries(
+        ANAK.map((a) => [
+          `anak-${a}`,
+          anak[a].value === "0" ? "" : anak[a].value,
+        ]),
+      ),
+      oku: oku.checked ? "1" : "",
+      pasanganoku: pasanganOku.checked ? "1" : "",
+      zakat: zakat.value === "0" ? "" : zakat.value,
     });
     // Same range as update(); anything else is ignored and the field keeps its value.
     const apply = (s: CalcState) => {
@@ -228,7 +651,31 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
       pickOption(status, s.status);
       if (s.umur60 === "1" || s.umur60 === "")
         umur60.checked = s.umur60 === "1";
+      pickOption(bulan, s.bulan);
+      pickOption(kategori, s.kategori);
+      pemastautin.checked = s.pemastautin !== "0";
+      for (const a of ANAK) {
+        const v = Number(s[`anak-${a}`] || 0);
+        anak[a].value = String(
+          Number.isInteger(v) && v >= 0 && v <= 20 ? v : 0,
+        );
+      }
+      oku.checked = s.oku === "1";
+      pasanganOku.checked = s.pasanganoku === "1";
+      const bv = Number(s.bonus || 0);
+      bonus.value = String(
+        Number.isFinite(bv) && bv >= 0 && bv <= 10_000_000 ? bv : 0,
+      );
+      const tv = Number(s.tp1 || 0);
+      tp1.value = String(
+        Number.isFinite(tv) && tv >= 0 && tv <= 1_000_000 ? tv : 0,
+      );
+      const zv = Number(s.zakat || 0);
+      zakat.value = String(
+        Number.isFinite(zv) && zv >= 0 && zv <= 100_000 ? zv : 0,
+      );
     };
+    pickOption(bulan, bulanIni());
     const defaults = { ...read(), umur60: "" };
     const saved = loadState(KEY, NAMES);
     if (saved) {
@@ -240,8 +687,18 @@ const row = "flex items-baseline justify-between gap-4 px-2 py-3";
       saveState(KEY, NAMES, read());
     };
     gaji.addEventListener("input", changed);
-    status.addEventListener("change", changed);
-    umur60.addEventListener("change", changed);
+    for (const e of [
+      status,
+      umur60,
+      bulan,
+      kategori,
+      pemastautin,
+      oku,
+      pasanganOku,
+    ])
+      e.addEventListener("change", changed);
+    for (const e of [...Object.values(anak), zakat, bonus, tp1])
+      e.addEventListener("input", changed);
     form.querySelector("[data-reset]")!.addEventListener("click", () => {
       apply(defaults);
       saveState(KEY, NAMES, null);
