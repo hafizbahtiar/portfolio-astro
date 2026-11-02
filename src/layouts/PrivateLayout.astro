@@ -10,9 +10,11 @@ import AlertToast from "../components/ui/AlertToast.astro";
 interface Props {
     title?: string;
     description?: string;
+    /** Full-height app page (AI chat): thin padding so the page fills the window under the navbar. */
+    fill?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, fill = false } = Astro.props;
 ---
 
 <CoreLayout
@@ -32,7 +34,12 @@ const { title, description } = Astro.props;
                 <AdminSidebar />
                 <div class="flex min-w-0 grow flex-col">
                     <AdminNavbar />
-                    <main class="container-main grow pt-10 pb-20">
+                    <main
+                        class:list={[
+                            "container-main grow",
+                            fill ? "py-3" : "pt-10 pb-20",
+                        ]}
+                    >
                         <slot />
                     </main>
                 </div>

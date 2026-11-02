@@ -49,6 +49,11 @@ const USE_CASE_META: Record<string, { app: string; label: string; description: s
     label: "Drunk-driver draft",
     description: "Reads the source links of a drunk-driver record and drafts its fields with quotes (verified by the API).",
   },
+  race_extract: {
+    app: "Portfolio",
+    label: "Nubi race draft",
+    description: "Reads a race organiser's page and drafts the Nubi race (quotes verified by the API, Clef checks for duplicates).",
+  },
   admin_chat: {
     app: "Portfolio",
     label: "Admin AI chat",

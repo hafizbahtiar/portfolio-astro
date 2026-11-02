@@ -12,7 +12,7 @@ const module = chatModuleBySlug(slug);
 if (!module) return new Response(null, { status: 404 });
 ---
 
-<PrivateLayout title={`AI Chat · ${module.label}`}>
+<PrivateLayout title={`AI Chat · ${module.label}`} fill>
   <h1 class="sr-only">AI Chat · {module.label}</h1>
   <!-- client:only: reads the URL (?chat=) and runs the tools with the owner's session. -->
   <AiChat client:only="react" slug={slug} />

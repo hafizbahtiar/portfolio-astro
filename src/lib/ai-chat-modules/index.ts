@@ -2,7 +2,8 @@
 // backend entry (hono-workers services/ai/chat-modules.ts, same id).
 import type { ChatModuleClient } from "../ai-chat";
 import { drunkDriversChat } from "./drunk-drivers";
+import { nubiRacesChat } from "./nubi-races";
 
-export const CHAT_MODULES: ChatModuleClient[] = [drunkDriversChat];
+export const CHAT_MODULES: ChatModuleClient[] = [drunkDriversChat, nubiRacesChat];
 
 export const chatModuleBySlug = (slug: string) => CHAT_MODULES.find((m) => m.slug === slug) ?? null;
