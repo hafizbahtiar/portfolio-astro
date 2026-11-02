@@ -50,5 +50,6 @@ export interface RaceDraft {
 /** "Up to date": event pages on the default listing sites that are not saved yet (no AI). */
 export interface RaceDiscovery {
   sources: { name: string; url: string; ok: boolean; error: string | null; found: number }[];
-  candidates: { url: string; title: string; source: string }[];
+  /** date = the race day written on the listing (YYYY-MM-DD) or null; upcoming first, past last. */
+  candidates: { url: string; title: string; source: string; date: string | null }[];
 }

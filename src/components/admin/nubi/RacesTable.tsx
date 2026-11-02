@@ -9,6 +9,9 @@ import type { NubiRace, RaceDiscovery } from "../../../types/nubi-races";
 
 /** Today in Malaysia (race dates are Malaysia time). */
 const todayMY = () => new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10);
+/** "2026-10-24" -> "Sat, 24 Oct 2026" (the date is Malaysia time, shown as written). */
+const fmtDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 /** Checked over 90 days ago and still upcoming = re-check the official page. */
 const stale = (r: NubiRace) => Date.now() - new Date(r.checkedOn).getTime() > 90 * 86400_000;
 
@@ -182,6 +185,10 @@ export const RacesTable = () => {
                       <li key={c.url} className="flex flex-wrap items-center gap-3 py-2">
                         <div className="min-w-0 flex-1">
                           <CellPrimary>{c.title}</CellPrimary>
+                          <p className="flex flex-wrap items-center gap-2 text-xs text-gray-500 tabular-nums dark:text-gray-400">
+                            {c.date ? fmtDate(c.date) : "Date not on the listing"}
+                            {c.date && c.date < todayMY() && <AdminBadge variant="neutral">Past</AdminBadge>}
+                          </p>
                           <a href={c.url} target="_blank" rel="noopener" className="block truncate text-xs text-sky-600 hover:underline">
                             {c.url}
                           </a>
