@@ -22,7 +22,7 @@ import AlertToast from "../../../components/ui/AlertToast.astro";
       </a>
     </AdminPageHeader>
 
-    <FamilyTreeBuilder client:load mode="edit" />
+    <FamilyTreeBuilder client:only="react" mode="edit" />
   </div>
   <AlertToast id="family-builder-alert" />
 </PrivateLayout>

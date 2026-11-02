@@ -10,6 +10,6 @@ import { QuoteTagsManager } from "../../../components/admin/quotes/QuoteTagsMana
       title="Quote Tags"
       description="The shared tags quotes pick from - name and category."
     />
-    <QuoteTagsManager client:load />
+    <QuoteTagsManager client:only="react" />
   </div>
 </PrivateLayout>

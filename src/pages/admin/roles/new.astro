@@ -20,6 +20,6 @@ import { RoleForm } from "../../../components/admin/access/RoleForm";
         Back to list
       </a>
     </AdminPageHeader>
-    <RoleForm client:load mode="new" />
+    <RoleForm client:only="react" mode="new" />
   </div>
 </PrivateLayout>

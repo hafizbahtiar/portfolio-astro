@@ -111,6 +111,14 @@ export default defineConfig({
   },
   integrations: [
     cspStaticHeaders,
+    // Before react(): lucide icons in .astro render as plain SVG, not React SSR (CPU - src/integrations/lucide-svg/server.ts).
+    {
+      name: 'lucide-svg',
+      hooks: {
+        'astro:config:setup': ({ addRenderer }) =>
+          addRenderer({ name: 'lucide-svg', serverEntrypoint: new URL('./src/integrations/lucide-svg/server.ts', import.meta.url) }),
+      },
+    },
     react(),
     // `astro check` / `astro sync` / `astro build` start a type-gen Vite server that
     // re-bundles node_modules/.vite/deps_ssr with a different include list, deleting

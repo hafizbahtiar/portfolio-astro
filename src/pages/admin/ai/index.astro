@@ -12,6 +12,6 @@ export const prerender = false;
       title="AI Models"
       description="Turn AI features on or off, and pick the model and reasoning effort each one uses. Owner only."
     />
-    <AiSettingsManager client:load />
+    <AiSettingsManager client:only="react" />
   </div>
 </PrivateLayout>

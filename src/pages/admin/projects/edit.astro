@@ -25,7 +25,7 @@ const projectId =
 
     {
       projectId != null ? (
-        <ProjectEditor client:load projectId={projectId} />
+        <ProjectEditor client:only="react" projectId={projectId} />
       ) : (
         <p class="admin-help">Missing or invalid project id.</p>
       )

@@ -10,6 +10,6 @@ import { ModerationManager } from "../../../components/admin/access/ModerationMa
       title="Moderation"
       description="Posts and quotes by registered users. Reject, restore or delete with a reason; ban repeat offenders."
     />
-    <ModerationManager client:load />
+    <ModerationManager client:only="react" />
   </div>
 </PrivateLayout>

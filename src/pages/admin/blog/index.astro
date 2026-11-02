@@ -14,6 +14,6 @@ import { BlogPostsTable } from "../../../components/admin/blog/BlogPostsTable";
       </a>
   </AdminPageHeader>
 
-    <BlogPostsTable client:load />
+    <BlogPostsTable client:only="react" />
   </div>
 </PrivateLayout>

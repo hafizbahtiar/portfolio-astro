@@ -11,6 +11,6 @@ import { ContactsTable } from "../../../components/admin/contact/ContactsTable";
       description="Read and triage messages from the contact form."
     />
 
-    <ContactsTable client:load />
+    <ContactsTable client:only="react" />
   </div>
 </PrivateLayout>
