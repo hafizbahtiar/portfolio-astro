@@ -30,7 +30,7 @@ export function ChatComposer(p: {
           e.preventDefault();
           if (canSend) p.onSubmit();
         }}
-        className="rounded-3xl bg-white p-2 ring-1 ring-gray-950/10 transition-shadow focus-within:ring-2 focus-within:ring-sky-500/50 dark:bg-white/5 dark:ring-white/10"
+        className="rounded-3xl bg-white p-2 shadow-sm ring-1 ring-gray-950/10 transition-shadow focus-within:ring-2 focus-within:ring-sky-500/50 dark:bg-white/5 dark:ring-white/10"
       >
         <textarea
           ref={box}

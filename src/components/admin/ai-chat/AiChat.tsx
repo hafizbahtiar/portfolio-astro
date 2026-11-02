@@ -315,8 +315,8 @@ export function AiChat({ slug }: { slug: string }) {
           <>
             <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
               <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6">
-                {chat?.messages.map((m) => (
-                  <ChatMessageRow key={`${m.id}-${m.createdAt}`} message={m}>
+                {chat?.messages.map((m, i, all) => (
+                  <ChatMessageRow key={`${m.id}-${m.createdAt}`} message={m} last={!busy && i === all.length - 1}>
                     {m.toolCalls.length > 0 && (
                       <div className="space-y-2">
                         {m.toolCalls.map((t) => (
